@@ -11,6 +11,7 @@ src/
       domain/           # business rules (framework-agnostic)
       application/      # use cases (orchestrate domain via ports)
       infrastructure/   # adapters (Express, Prisma, Zod, external I/O)
+      services.ts       # context services configuration
     shared/             # code shared by 2+ contexts (e.g. DB client)
   config.ts             # loaded env vars + hardcoded params
   app.ts                # Express app: middleware + routes (no listen)
@@ -23,6 +24,22 @@ src/
 infrastructure  ->  application  ->  domain     (imports point inward only)
 shared          <-  usable by any layer/context; imports from NO context
 ```
+
+## Config Parameters (`src/config.ts`)
+
+Holds config params and loaded `.env` vars. 
+Hardcode non-sensitive values (e.g. default AI model)
+Load sensitive values from env (e.g. API key). 
+`process.env` access is allowed ONLY here. 
+Importable ONLY by `app.ts`, `index.ts`, and context `services.ts` files.
+
+**Example config object**
+````typescript
+export default {
+    port: process.env.PORT ?? 3000,
+    environment: process.env.ENVIRONMENT ?? 'development',
+}
+````
 
 ## Express
 
@@ -44,6 +61,10 @@ export function customMiddleware(req: Request, res: Response, next: NextFunction
   next(); // forgetting this hangs the request
 }
 ```
+- Handlers/Middleware call application use cases through context services:
+  `Handler/Middleware -> service -> Application UseCase`
+
+---
 
 ## Business Logic (`src/logic`)
 
@@ -132,3 +153,15 @@ Cross-context code only (Result type, base error, shared value objects).
 - Used by a single context? It belongs to that context, not here.
 - Keep small and dependency-light. Must not import from any context.
 - When in doubt, leave it out (duplication is cheaper than a wrong abstraction).
+
+### Services (`<context>/services.ts`)
+
+Wires infrastructure adapters and exposes the context's use cases for use outside `logic`. Same pattern for the shared context.
+
+```typescript
+import { CreatePromptUseCase } from "@logic/prompt/application/CreatePromptUseCase";
+import { InMemoryPromptRepository } from "@logic/prompt/infrastructure/database/InMemoryPromptRepository";
+
+const promptRepository = new InMemoryPromptRepository();
+export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
+```
