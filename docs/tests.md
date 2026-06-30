@@ -23,7 +23,7 @@ tests/
 | Unit        | Domain + use cases           | In-memory port impls, no I/O      |
 | Integration | HTTP behavior end-to-end     | Supertest against `src/app.ts`    |
 
-- Unit tests are the bulk: fast, deterministic, no network/DB.
+- Unit tests are the bulk: fast, deterministic, no network/DB. Mock external ports.
 - Integration tests import the app from `src/app.ts` and assert real HTTP
   status codes and bodies.
 - DB-backed integration is deferred until PostgreSQL + Prisma land; a test-DB
@@ -53,17 +53,27 @@ describe('CreatePrompt', () => {
 });
 ```
 
+## Mocking
+
+- **Interfaces:** use `vitest-mock-extended`, e.g. `mock<PromptRepository>()`.
+- **Functions:** use native Vitest, e.g. `vi.fn()`.
+
+### Errors
+
+Assert both the error type and message:
+
+```ts
+expect(() => useCase.execute(input)).toThrow(CreatePromptError);
+expect(() => useCase.execute(input)).toThrow("Error creating the prompt");
+```
+
+
 ## TDD loop
 
 1. Red — smallest failing test for the next item in `tasks.md`.
 2. Green — minimum code to pass.
 3. Refactor — clean up against `coding-style.md`, keep the bar green.
 
-## Test doubles
-
-In-memory port implementations are the standard double — prefer these
-real-but-fast impls over ad-hoc mocks. Reset/reconstruct between tests so state
-never leaks.
 
 ## Tooling
 
