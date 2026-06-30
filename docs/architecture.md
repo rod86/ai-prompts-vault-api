@@ -121,7 +121,7 @@ export interface Prompt {
 }
 ```
 
-**Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend on. Suffixed `Interface`. Name must NOT reference a source (no Database, AWS, etc.).
+**Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend on. Name must NOT reference a source (no Database, AWS, etc.).
 ```typescript
 // src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
 import { Prompt } from "@logic/prompt/domain/Prompt";
@@ -132,7 +132,7 @@ export default interface PromptRepositoryInterface {
 }
 ```
 
-**Errors (`<context>/domain/errors`):** custom errors thrown by use cases. Extend `Error`.
+**Errors (`<context>/domain/errors`):** custom errors thrown by use cases.
 ```typescript
 export default class CreatePromptError extends Error {
   constructor(message: string) {
