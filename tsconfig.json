@@ -19,11 +19,9 @@
     "skipLibCheck": true,
     "declaration": false,
     "sourceMap": true,
-
-    "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"],
-      "@logic/*": ["src/logic/*"]
+      "@src/*": ["./src/*"],
+      "@logic/*": ["./src/logic/*"]
     }
   },
   "include": ["src", "tests", "vitest.config.ts"],
