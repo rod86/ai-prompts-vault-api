@@ -13,6 +13,7 @@ Principle: **strict, small, explicit.** When in doubt, pick the simplest, most m
 - Prefer `type` aliases and **discriminated unions** over loose objects.
 - Treat data as `readonly` by default. Copy, don't mutate.
 - Model missing values explicitly as `T | undefined`. Handle the null/undefined case, never fake it with `!`.
+- No need to type when type inference is available (e. g. `const app = express()`)
 
 ## Naming
 
