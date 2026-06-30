@@ -23,9 +23,7 @@
       { "type": "domain", "pattern": "src/logic/*/domain", "mode": "folder", "capture": ["context"] },
       { "type": "application", "pattern": "src/logic/*/application", "mode": "folder", "capture": ["context"] },
       { "type": "infrastructure", "pattern": "src/logic/*/infrastructure", "mode": "folder", "capture": ["context"] },
-      { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" },
-      { "type": "config", "pattern": "src/config", "mode": "folder" },
-      { "type": "app", "pattern": "src/(app|index).ts", "mode": "full" }
+      { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" }
     ]
   },
   "rules": {
@@ -75,12 +73,7 @@
               ["infrastructure", { "context": "${from.context}" }]
             ]
           },
-          { "from": "shared", "allow": ["shared"] },
-          { "from": "config", "allow": ["config", "shared"] },
-          {
-            "from": "app",
-            "allow": ["app", "config", "shared", "domain", "application", "infrastructure"]
-          }
+          { "from": "shared", "allow": ["shared"] }
         ]
       }
     ]

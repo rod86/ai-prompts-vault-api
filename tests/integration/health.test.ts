@@ -1,12 +1,10 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
-import { createApp } from '../../src/app.js';
+import app from '../../src/app.js';
 
 describe('GET /health', () => {
   it('returns 200 with an ok status', async () => {
-    const app = createApp();
-
     const response = await request(app).get('/health');
 
     expect(response.status).toBe(200);

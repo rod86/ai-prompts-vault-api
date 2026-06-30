@@ -1,126 +1,134 @@
 # Architecture
 
-How the codebase is structured. This is the authoritative architecture guide
-referenced by the [constitution](../specs/memory/constitution.md §5). Tests are
-intentionally **not** covered here — see [`tests.md`](./tests.md).
+Hexagonal architecture, organized by bounded contexts. Tests: see `tests.md` (not covered here).
 
----
-
-## Overview
-
-The project uses **hexagonal architecture (ports & adapters)**, organized by
-**bounded context**. Each context is a self-contained slice of the domain with
-its own three layers:
+## Structure
 
 ```
 src/
-  logic/
-    <context>/            # e.g. prompt/  (created on demand, NOT up front)
-      domain/             # business rules — framework-agnostic
-      application/        # use cases — orchestrate the domain via ports
-      infrastructure/     # adapters — Express, Prisma, Zod, external I/O
-    shared/               # genuinely cross-context code only
-  config/
-    env.ts                # the only place env vars are read + validated
-  app.ts                  # Express app: middleware + route wiring (no listen)
-  index.ts                # composition root + server bootstrap
+  logic/                # business logic, hexagonal, per bounded context
+    <context>/          # e.g. prompt/
+      domain/           # business rules (framework-agnostic)
+      application/      # use cases (orchestrate domain via ports)
+      infrastructure/   # adapters (Express, Prisma, Zod, external I/O)
+    shared/             # code shared by 2+ contexts (e.g. DB client)
+  config.ts             # loaded env vars + hardcoded params
+  app.ts                # Express app: middleware + routes (no listen)
+  index.ts              # composition root + server bootstrap
 ```
 
-> Layers are created **on demand**. An empty `domain/application/infrastructure`
-> trio is never scaffolded ahead of a feature that needs it.
-
----
-
-## The Dependency Rule
-
-Dependencies point **inward only**:
+## Dependency Rule (enforced by `eslint-plugin-boundaries`)
 
 ```
-infrastructure  ──▶  application  ──▶  domain
-     (adapters)        (use cases)      (rules)
-
-shared  ◀── may be used by any layer
-config  ◀── may be used by infrastructure / edges
+infrastructure  ->  application  ->  domain     (imports point inward only)
+shared          <-  usable by any layer/context; imports from NO context
 ```
 
-- The **domain** imports nothing from `application`, `infrastructure`, or any
-  framework.
-- The **application** imports the domain (and ports), never `infrastructure`.
-- The **infrastructure** implements the ports the inner layers declare.
-- Nothing imports `infrastructure` from a more inner layer.
+## Express
 
-This rule is enforced automatically by `eslint-plugin-boundaries`
-(see [`.eslintrc.json`](../.eslintrc.json)).
+**`app.ts` order:** leading global middleware (e.g. JWT) -> routes + per-route middleware (e.g. body schema validation) -> trailing global middleware (404 handler, error handler).
 
----
+**Handlers (`src/handlers`):** one function per file, default export only. Never inline in `app.ts`.
+```typescript
+import { type Request, type Response } from 'express';
+export default (_req: Request, res: Response) => {
+  res.status(200).json(null);
+};
+```
 
-## Domain layer (`logic/<context>/domain`)
+**Middleware (`src/handlers`):** one function per file.
+```typescript
+import { type Request, type Response, type NextFunction } from 'express';
+export function customMiddleware(req: Request, res: Response, next: NextFunction): void {
+  // ...
+  next(); // forgetting this hangs the request
+}
+```
 
-The heart. Pure business rules with **zero framework imports**.
+## Business Logic (`src/logic`)
 
-Contains:
+Three layers per context: `domain`, `application`, `infrastructure`.
 
-- **Entities** — objects with identity and invariants (e.g. `Prompt`). They
-  protect their own validity; an invalid entity cannot be constructed.
-- **Value objects** — immutable values defined by their attributes (e.g.
-  `PromptId`).
-- **Domain errors** — typed error classes (e.g. `PromptNotFoundError`).
-- **Ports** — interfaces the inner layers depend on, implemented later by
-  infrastructure (e.g. `PromptRepository`). Ports live with the domain because
-  the domain owns the contract.
+### Application (`<context>/application`)
 
-Rule of thumb: if it mentions HTTP, SQL, Express, or Prisma, it does **not**
-belong here.
+One use case per meaningful operation. Each file is self-contained: `Query`, `Response`, and the use case class.
 
----
+```typescript
+export interface CreatePromptQuery {
+  id: string;
+  title: string;
+  prompt: string;
+  createdAt: Date;
+}
 
-## Application layer (`logic/<context>/application`)
+export interface CreatePromptResponse {
+  id: string;
+  title: string;
+}
 
-The use cases — one per meaningful operation (e.g. `CreatePrompt`,
-`GetPrompt`, `ListPrompts`, `UpdatePrompt`, `DeletePrompt`).
+export class CreatePromptUseCase {
+  constructor(private readonly service: PromptRepositoryInterface) {}
+  public async invoke(request: CreatePromptQuery): Promise<CreatePromptResponse> {
+    // ...
+  }
+}
+```
 
-- Each use case orchestrates domain objects and talks to the outside world
-  **only through ports**.
-- Coordinates flow and transactions; contains no framework code.
-- Receives its dependencies (the port implementations) via the constructor /
-  factory — it never news up an adapter itself.
+Rules:
+- Class suffixed `UseCase`; filename equals class name.
+- Input interface suffixed `Query`, output interface suffixed `Response`. Omit either if unneeded.
+- Query/Response use only native types (string, number, array, Date, ...). No custom logic types.
+- Orchestrates domain objects, reaches the outside world ONLY through ports.
+- Handles flow + transactions. Contains no framework or library code.
+- Port implementations injected via the constructor.
 
----
+### Domain (`<context>/domain`)
 
-## Infrastructure layer (`logic/<context>/infrastructure`)
+Entities, interfaces, errors. Framework-agnostic.
 
-The adapters — the **only** place frameworks appear.
+**Entities** (domain root folder):
+```typescript
+// src/logic/prompt/domain/Prompt.ts
+export type PromptCategory = 'backend' | 'frontend' | 'devops';
+export interface Prompt {
+  id: string;
+  category: PromptCategory;
+  title: string;
+  prompt: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
 
-- **Driven adapters (persistence):** repository implementations behind the
-  domain ports (e.g. an in-memory `InMemoryPromptRepository` now; a
-  `PrismaPromptRepository` later — no inner code changes when it lands).
-- **Driving adapters (HTTP):** Express controllers and routers that translate
-  HTTP ⇄ use-case calls.
-- **Validation:** Zod schemas that parse requests at the boundary.
-- **External integrations:** any third-party I/O.
+**Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend on. Suffixed `Interface`. Name must NOT reference a source (no Database, AWS, etc.).
+```typescript
+// src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
+import { Prompt } from "@logic/prompt/domain/Prompt";
+export default interface PromptRepositoryInterface {
+  create(prompt: Prompt): Promise<void>;
+  findAll(): Promise<Prompt[]>;
+  findById(id: string): Promise<Prompt>;
+}
+```
 
----
+**Errors (`<context>/domain/errors`):** custom errors thrown by use cases. Extend `Error`.
+```typescript
+export default class CreatePromptError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CreatePromptError';
+    Object.setPrototypeOf(this, CreatePromptError.prototype);
+  }
+}
+```
+
+### Infrastructure (`<context>/infrastructure`)
+
+Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `InMemoryPromptRepository` now, `PrismaPromptRepository` later) with no inner-layer changes when swapped.
 
 ## Shared (`src/logic/shared`)
 
-Cross-context code **only** — things two or more contexts genuinely share (a
-`Result` type, a base error, common value objects). Guidelines:
-
-- If only one context uses it, it belongs to that context, not here.
-- Keep it small and dependency-light. `shared` must not import from any context.
-- When in doubt, leave it out — duplication is cheaper to fix than a wrong shared
-  abstraction.
-
----
-
-## The Edges
-
-These wire everything together and are the only place composition happens:
-
-- **`src/config/env.ts`** — reads and validates environment variables (via Zod)
-  once. Nothing else touches `process.env`.
-- **`src/app.ts`** — builds the Express app (middleware + route wiring) and
-  returns it **without** calling `listen`, so tests can import it. Feature
-  routers are mounted here.
-- **`src/index.ts`** — the composition root: constructs adapters, injects them
-  into use cases/routers, and starts the HTTP server.
+Cross-context code only (Result type, base error, shared value objects).
+- Used by a single context? It belongs to that context, not here.
+- Keep small and dependency-light. Must not import from any context.
+- When in doubt, leave it out (duplication is cheaper than a wrong abstraction).
