@@ -1,0 +1,38 @@
+{
+  "name": "ai-prompt-vault-api",
+  "version": "0.1.0",
+  "description": "A REST API to manage AI prompts, built with Spec-Driven Development and hexagonal architecture.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "lint": "eslint . --ext .ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.10",
+    "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint": "^8.57.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-boundaries": "^4.2.2",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.3.2",
+    "supertest": "^7.0.0",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^2.0.2"
+  }
+}

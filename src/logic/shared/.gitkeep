@@ -1,0 +1,3 @@
+# Cross-context shared code lives here (see docs/architecture.md).
+# Kept empty on purpose — add code only when it is genuinely shared
+# between two or more bounded contexts.
