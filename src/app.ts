@@ -1,4 +1,4 @@
-import express, { json, type Express, type Request, type Response } from 'express';
+import express, { json, type Request, type Response } from 'express';
 
 const app = express();
 
