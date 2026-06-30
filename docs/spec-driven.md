@@ -40,7 +40,7 @@ that …."* No solutions yet.
 ### 2. Specify → `spec.md`
 
 Turn the story into a feature spec using
-[`templates/spec-template.md`](../specs/templates/spec-template.md):
+[`templates/spec-template.md`](./templates/spec-template.md):
 
 - Behavior, fields, and rules.
 - Validation rules and error responses.
@@ -51,14 +51,14 @@ Turn the story into a feature spec using
 ### 3. Plan → `plan.md`
 
 Map the spec onto the architecture using
-[`templates/plan-template.md`](../specs/templates/plan-template.md): which
+[`templates/plan-template.md`](./templates/plan-template.md): which
 bounded context, entity, port, use cases, routes, Zod schemas, and (later)
 persistence adapter. This is the "dump the plan" step — *how*, not *what*.
 
 ### 4. Tasks → `tasks.md`
 
 Break the plan into an ordered, **test-first** checklist using
-[`templates/tasks-template.md`](../specs/templates/tasks-template.md). Each task
+[`templates/tasks-template.md`](./templates/tasks-template.md). Each task
 is a single red→green step: *write the failing test, then make it pass.*
 
 ---
@@ -95,7 +95,7 @@ See [`tests.md`](./tests.md) for the testing mechanics.
 ## Conventions
 
 - Feature folders: `specs/NNN-<slug>/` with `spec.md`, `plan.md`, `tasks.md`.
-- Templates live in [`specs/templates/`](../specs/templates).
+- Templates live in [`docs/templates/`](./templates).
 - The project-wide rules live in the
   [constitution](../specs/memory/constitution.md); this guide governs the *flow*,
   the constitution governs the *principles*.

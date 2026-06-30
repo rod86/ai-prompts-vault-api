@@ -27,10 +27,9 @@ There are only the six npm scripts above by design — do not add more without r
 
 ## Before you start, read the docs
 
-The authoritative details live in `docs/` and `specs/memory/`. Read the relevant file before working in that area:
+The authoritative details live in `docs/`. Read the relevant file before working in that area:
 
 - [docs/spec-driven.md](docs/spec-driven.md) — the spec-driven development workflow (the required process for all feature work, with a hard gate between planning and coding).
 - [docs/architecture.md](docs/architecture.md) — hexagonal architecture, bounded contexts, layer/dependency rules, and the composition edges.
 - [docs/coding-style.md](docs/coding-style.md) — coding conventions and rules.
 - [docs/tests.md](docs/tests.md) — testing strategy.
-- [specs/memory/constitution.md](specs/memory/constitution.md) — governing principles; read before changing conventions.
