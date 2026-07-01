@@ -40,7 +40,7 @@ describe('DatabaseClient', () => {
         } as never);
         drizzleMock.mockReturnValue(connection as never);
 
-        const client = new DatabaseClient(schema, config);
+        const client = new DatabaseClient<typeof connection>(config, schema);
         const result = client.connect();
 
         expect(PoolMock).toHaveBeenCalledWith(config);
@@ -49,7 +49,7 @@ describe('DatabaseClient', () => {
     });
 
     it('reuses the same pool when connect is called again', () => {
-        const client = new DatabaseClient({ prompts: {} }, config);
+        const client = new DatabaseClient<unknown>(config, { prompts: {} });
 
         client.connect();
         client.connect();
@@ -62,7 +62,7 @@ describe('DatabaseClient', () => {
         PoolMock.mockImplementation(function () {
             return { end };
         } as never);
-        const client = new DatabaseClient({ prompts: {} }, config);
+        const client = new DatabaseClient<unknown>(config, { prompts: {} });
 
         client.connect();
         await client.close();
@@ -71,7 +71,7 @@ describe('DatabaseClient', () => {
     });
 
     it('constructs a fresh pool after a close', async () => {
-        const client = new DatabaseClient({ prompts: {} }, config);
+        const client = new DatabaseClient<unknown>(config, { prompts: {} });
 
         client.connect();
         await client.close();
@@ -85,7 +85,7 @@ describe('DatabaseClient', () => {
         PoolMock.mockImplementation(function () {
             return { end };
         } as never);
-        const client = new DatabaseClient({ prompts: {} }, config);
+        const client = new DatabaseClient<unknown>(config, { prompts: {} });
 
         await expect(client.close()).resolves.toBeUndefined();
         expect(end).not.toHaveBeenCalled();
