@@ -145,7 +145,7 @@ export default class CreatePromptError extends Error {
 
 ### Infrastructure (`<context>/infrastructure`)
 
-Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `InMemoryPromptRepository` now, `DatabaseORMPromptRepository` later) with no inner-layer changes when swapped.
+Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `DrizzlePromptCategoryRepository` ) with no inner-layer changes when swapped.
 Never create InMemory adapters. e. g. ``InMemoryPromptsRepository``. Defer that class or ask user.
 
 ## Shared (`src/logic/shared`)
@@ -161,8 +161,9 @@ Wires infrastructure adapters and exposes the context's use cases for use outsid
 
 ```typescript
 import { CreatePromptUseCase } from "@logic/prompt/application/CreatePromptUseCase";
-import { InMemoryPromptRepository } from "@logic/prompt/infrastructure/database/InMemoryPromptRepository";
+import { DrizzlePromptCategoryRepository } from "@logic/prompts/infrastructure/database/DrizzlePromptCategoryRepository";
+import { databaseClient } from "@logic/shared/services";
 
-const promptRepository = new InMemoryPromptRepository();
+const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 ```

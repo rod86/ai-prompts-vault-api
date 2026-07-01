@@ -43,26 +43,60 @@ tests/
   per-test, so setup isn't duplicated across cases.
 
 ```ts
-describe('CreatePrompt', () => {
+describe('CreatePromptUseCase', () => {
+  let repository: MockProxy<PromptRepositoryInterface>;
+  let useCase: CreatePromptUseCase;
+
+  beforeEach(() => {
+    repository = mock<PromptRepositoryInterface>();
+    useCase = new CreatePromptUseCase(repository);
+  });
+
   it('stores a new prompt and returns its id', async () => {
     // Arrange
-    const repo = new InMemoryPromptRepository();
-    const createPrompt = new CreatePrompt(repo);
+    repository.create.mockResolvedValue(undefined);
 
     // Act
-    const id = await createPrompt.execute({ title: 'Greet', content: 'Hi {name}' });
+    const { id } = await useCase.invoke({ title: 'Greet', prompt: 'Hi {name}' });
 
     // Assert
-    expect(await repo.findById(id)).not.toBeNull();
+    expect(repository.create).toHaveBeenCalledOnce();
+    expect(id).toBeDefined();
   });
 });
 ```
 
 ## Mocking
 
-- **Interfaces and classes:** use `vitest-mock-extended`, e.g. `mock<PromptRepository>()`
-  or `mock<Pool>()`.
+- **Interfaces and classes:** use `vitest-mock-extended`, e.g.
+  `mock<PromptRepositoryInterface>()` or `mock<Pool>()`. Never hand-roll fake
+  implementations. Type the held reference as `MockProxy<T>`.
 - **Functions:** use native Vitest, e.g. `vi.fn()`.
+- Construct the mock(s) and the unit under test in `beforeEach`; set each test's
+  return values in its own Arrange step with `.mockResolvedValue(...)`.
+
+```ts
+describe('ListCategoriesUseCase', () => {
+  let repository: MockProxy<PromptCategoryRepositoryInterface>;
+  let useCase: ListCategoriesUseCase;
+
+  beforeEach(() => {
+    repository = mock<PromptCategoryRepositoryInterface>();
+    useCase = new ListCategoriesUseCase(repository);
+  });
+
+  it('returns an empty list without error when no categories exist', async () => {
+    // Arrange
+    repository.findAll.mockResolvedValue([]);
+
+    // Act
+    const response = await useCase.invoke();
+
+    // Assert
+    expect(response).toEqual({ categories: [] });
+  });
+});
+```
 
 ### Errors
 

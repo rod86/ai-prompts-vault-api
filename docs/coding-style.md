@@ -20,7 +20,8 @@ Principle: **strict, small, explicit.** When in doubt, pick the simplest, most m
 - `PascalCase`: types, classes, entities (`Prompt`, `PromptId`).
 - `camelCase`: variables, functions (`createPrompt`, `promptRepository`).
 - Use-case files are verbs: `CreatePrompt.ts`, `ListPrompts.ts`.
-- `Interface` suffix on  ports/interfaces: `PromptRepositoryInterface`.
+- `Interface` suffix on ports/interfaces, prefixed by the entity they serve:
+  `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`.
 - Names reveal intent. A good name removes the need for a comment.
 
 ## Functions & Clean Code
