@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 
 import DatabaseClient, { type DatabaseConfig } from '@logic/shared/database/DatabaseClient.js';
 
@@ -12,45 +13,45 @@ vi.mock('drizzle-orm/node-postgres', () => ({
     drizzle: vi.fn(),
 }));
 
-describe('DatabaseClient', () => {
-    const config: DatabaseConfig = {
-        host: 'localhost',
-        port: 5432,
-        user: 'user',
-        password: 'secret',
-        database: 'vault',
-    };
+const CONFIG: DatabaseConfig = {
+    host: 'localhost',
+    port: 5432,
+    user: 'user',
+    password: 'secret',
+    database: 'vault',
+};
 
+const SCHEMA = { prompts: {} };
+const CONNECTION = { name: 'drizzle-connection' };
+
+describe('DatabaseClient', () => {
     const PoolMock = vi.mocked(Pool);
     const drizzleMock = vi.mocked(drizzle);
 
+    let pool: Pool;
+    let client: DatabaseClient<typeof CONNECTION>;
+
     beforeEach(() => {
         vi.clearAllMocks();
-        PoolMock.mockImplementation(function () {
-            return { end: vi.fn().mockResolvedValue(undefined) };
-        } as never);
-    });
 
-    it('opens the connection bound to the provided schema', () => {
-        const schema = { prompts: {} };
-        const pool = { end: vi.fn() };
-        const connection = { name: 'drizzle-connection' };
+        pool = mock<Pool>();
         PoolMock.mockImplementation(function () {
             return pool;
         } as never);
-        drizzleMock.mockReturnValue(connection as never);
+        drizzleMock.mockReturnValue(CONNECTION as never);
 
-        const client = new DatabaseClient<typeof connection>(config, schema);
+        client = new DatabaseClient<typeof CONNECTION>(CONFIG, SCHEMA);
+    });
+
+    it('opens the connection bound to the provided schema', () => {
         const result = client.connect();
 
-        expect(PoolMock).toHaveBeenCalledWith(config);
-        expect(drizzleMock).toHaveBeenCalledWith(pool, { schema });
-        expect(result).toBe(connection);
+        expect(PoolMock).toHaveBeenCalledWith(CONFIG);
+        expect(drizzleMock).toHaveBeenCalledWith(pool, { schema: SCHEMA });
+        expect(result).toBe(CONNECTION);
     });
 
     it('reuses the same pool when connect is called again', () => {
-        const client = new DatabaseClient<unknown>(config, { prompts: {} });
-
         client.connect();
         client.connect();
 
@@ -58,21 +59,13 @@ describe('DatabaseClient', () => {
     });
 
     it('releases the connection on close', async () => {
-        const end = vi.fn().mockResolvedValue(undefined);
-        PoolMock.mockImplementation(function () {
-            return { end };
-        } as never);
-        const client = new DatabaseClient<unknown>(config, { prompts: {} });
-
         client.connect();
         await client.close();
 
-        expect(end).toHaveBeenCalledTimes(1);
+        expect(pool.end).toHaveBeenCalledTimes(1);
     });
 
     it('constructs a fresh pool after a close', async () => {
-        const client = new DatabaseClient<unknown>(config, { prompts: {} });
-
         client.connect();
         await client.close();
         client.connect();
@@ -81,13 +74,7 @@ describe('DatabaseClient', () => {
     });
 
     it('is a safe no-op when closing without an open connection', async () => {
-        const end = vi.fn();
-        PoolMock.mockImplementation(function () {
-            return { end };
-        } as never);
-        const client = new DatabaseClient<unknown>(config, { prompts: {} });
-
         await expect(client.close()).resolves.toBeUndefined();
-        expect(end).not.toHaveBeenCalled();
+        expect(pool.end).not.toHaveBeenCalled();
     });
 });

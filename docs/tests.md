@@ -36,6 +36,11 @@ tests/
 - Structure every test as Arrange / Act / Assert.
 - One behavior per test. No shared mutable state — build fresh fixtures per test
   (or in `beforeEach`). Test public surfaces, not internals.
+- Hardcoded values shared across tests (config objects, ids, fixtures) go in
+  `const` declarations at the top of the file, not inline in each test.
+- When a unit under test holds internal state (e.g. a client wrapping a
+  connection), construct a fresh instance of it in `beforeEach` rather than
+  per-test, so setup isn't duplicated across cases.
 
 ```ts
 describe('CreatePrompt', () => {
@@ -55,7 +60,8 @@ describe('CreatePrompt', () => {
 
 ## Mocking
 
-- **Interfaces:** use `vitest-mock-extended`, e.g. `mock<PromptRepository>()`.
+- **Interfaces and classes:** use `vitest-mock-extended`, e.g. `mock<PromptRepository>()`
+  or `mock<Pool>()`.
 - **Functions:** use native Vitest, e.g. `vi.fn()`.
 
 ### Errors
