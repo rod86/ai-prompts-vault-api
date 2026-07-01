@@ -146,6 +146,7 @@ export default class CreatePromptError extends Error {
 ### Infrastructure (`<context>/infrastructure`)
 
 Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `InMemoryPromptRepository` now, `DatabaseORMPromptRepository` later) with no inner-layer changes when swapped.
+Never create InMemory adapters. e. g. ``InMemoryPromptsRepository``. Defer that class or ask user.
 
 ## Shared (`src/logic/shared`)
 
