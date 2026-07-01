@@ -33,3 +33,4 @@ The authoritative details live in `docs/`. Read the relevant file before working
 - [docs/architecture.md](docs/architecture.md) — hexagonal architecture, bounded contexts, layer/dependency rules, and the composition edges.
 - [docs/coding-style.md](docs/coding-style.md) — coding conventions and rules.
 - [docs/tests.md](docs/tests.md) — testing strategy.
+- [docs/database.md](./docs/database.md) - Database and migrations

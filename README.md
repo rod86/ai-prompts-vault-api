@@ -73,3 +73,4 @@ tests/               # app tests
 - **[Architecture](./docs/architecture.md)** — layers & dependency rules.
 - **[Coding style](./docs/coding-style.md)** — conventions & what's not allowed.
 - **[Tests](./docs/tests.md)** — testing strategy.
+- **[Database](./docs/database.md) - Database and migrations
