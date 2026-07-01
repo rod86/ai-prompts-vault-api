@@ -14,9 +14,11 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**,
 ## Getting started
 
 ```bash
-nvm use            # switch to the Node version in .nvmrc
-npm install
-npm run dev        # start the API (http://localhost:3000)
+nvm use                   # switch to the Node version in .nvmrc
+npm install               # Install dependencies
+docker compose up -d      # Start postgres
+                          # Run database migrations
+npm run dev               # start the API (http://localhost:3000)
 ```
 
 ## Scripts
