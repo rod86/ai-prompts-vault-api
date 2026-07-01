@@ -45,8 +45,9 @@ convention we do **not** add npm scripts — run the CLI directly:
 
 ```bash
 npx drizzle-kit generate   # emit SQL migrations into ./drizzle from the schema files
-npx drizzle-kit migrate    # apply pending migrations to DATABASE_URL
+npx drizzle-kit migrate    # apply pending migrations
 ```
 
-Generated SQL and metadata are written to `drizzle/`. `DATABASE_URL` must be set
-(see `.env.example`). Migrations are run manually — the app does not migrate on startup.
+Generated SQL and metadata are written to `drizzle/`. 
+Database env vars must be set (see `.env.example`).
+Migrations are run manually — the app does not migrate on startup.

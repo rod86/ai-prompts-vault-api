@@ -17,7 +17,7 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**,
 nvm use                   # switch to the Node version in .nvmrc
 npm install               # Install dependencies
 docker compose up -d      # Start postgres
-                          # Run database migrations
+npm db:migrate            # Run database migrations
 npm run dev               # start the API (http://localhost:3000)
 ```
 
@@ -29,6 +29,7 @@ npm run dev               # start the API (http://localhost:3000)
 - `npm test`: Run the test suite (Vitest)
 - `npm run lint`: ESLint (incl. hexagonal boundaries)
 - `npm run typecheck`: Type-check without emitting
+- `npm run db:migrate`: Apply database migrations
 
 ## How we work — Spec-Driven Development
 

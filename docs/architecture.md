@@ -53,7 +53,7 @@ export default (_req: Request, res: Response) => {
 };
 ```
 
-**Middleware (`src/handlers`):** one function per file.
+**Middleware (`src/handlers`):** one function per file. Suffix with `Handler`. e. g. `GetPromptsHandler`
 ```typescript
 import { type Request, type Response, type NextFunction } from 'express';
 export function customMiddleware(req: Request, res: Response, next: NextFunction): void {
@@ -107,7 +107,7 @@ Rules:
 
 Entities, interfaces, errors. Framework-agnostic.
 
-**Entities** (domain root folder):
+**Entities** (domain root folder, simple TypeScript interfaces):
 ```typescript
 // src/logic/prompt/domain/Prompt.ts
 export type PromptCategory = 'backend' | 'frontend' | 'devops';
