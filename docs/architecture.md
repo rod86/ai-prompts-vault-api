@@ -10,7 +10,7 @@ src/
     <context>/          # e.g. prompt/
       domain/           # business rules (framework-agnostic)
       application/      # use cases (orchestrate domain via ports)
-      infrastructure/   # adapters (Express, Prisma, Zod, external I/O)
+      infrastructure/   # adapters (Express, Database ORM repositories, Zod, external I/O)
       services.ts       # context services configuration
     shared/             # code shared by 2+ contexts (e.g. DB client)
   config.ts             # loaded env vars + hardcoded params
@@ -145,7 +145,7 @@ export default class CreatePromptError extends Error {
 
 ### Infrastructure (`<context>/infrastructure`)
 
-Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `InMemoryPromptRepository` now, `PrismaPromptRepository` later) with no inner-layer changes when swapped.
+Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `InMemoryPromptRepository` now, `DatabaseORMPromptRepository` later) with no inner-layer changes when swapped.
 
 ## Shared (`src/logic/shared`)
 

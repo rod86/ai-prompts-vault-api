@@ -8,7 +8,7 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**,
 - Node v24.16.0
 - TypeScript v5
 - Express v5
-- PostgreSQL + Prisma
+- PostgreSQL + Drizzle ORM
 - Vitest + Supertest
 
 ## Getting started
@@ -59,7 +59,8 @@ docs/
   architecture.md    # the layers, in detail
   coding-style.md    # generic coding rules + what's not allowed
   tests.md           # how tests are organized
-  templates/               # spec / plan / tasks templates
+  database.md        # how database is managed   
+  templates/         # spec / plan / tasks templates
 tests/               # app tests
 ```
 
