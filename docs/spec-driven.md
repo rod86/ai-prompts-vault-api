@@ -1,6 +1,6 @@
 # Spec-Driven Development (SDD)
 
-Authoritative guide for project flow. The [constitution](../specs/memory/constitution.md) governs *principles*; this governs *flow*.
+Authoritative guide for project flow.
 **Stack:** Node + TypeScript REST API (Express, Zod, Prisma).
 
 ## Core rule
@@ -33,7 +33,7 @@ Work `tasks.md` top to bottom. Per task:
 5. **Red:** write the failing test the task describes.
 6. **Green:** minimum code to pass it.
 7. **Refactor:** clean up per `coding-style.md`, keep tests green.
-8. **Verify** (after the full list): every `spec.md` criterion has a passing test, and `npm test` / `lint` / `typecheck` are clean. See [Definition of Done](../specs/memory/constitution.md#8-definition-of-done).
+8. **Verify** (after the full list): every `spec.md` criterion has a passing test, and `npm test` / `lint` / `typecheck` are clean.
 
 Testing mechanics: `tests.md`.
 

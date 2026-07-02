@@ -30,11 +30,11 @@ CLAUDE.md instructions OVERRIDE default behavior. There are exactly six npm scri
 1. **Locate the feature folder and confirm the gate is passed.** Identify the exact `specs/NNN-<slug>/` referenced in the order and read `spec.md`, `plan.md`, and `tasks.md` fully. Verify the plan is approved/ready for implementation. If there is any doubt, ask before writing code.
 
 2. **Work `tasks.md` top to bottom, in the given order.** Do not reorder, batch, or skip tasks. Each task is a single red→green step. For each task, run the TDD loop from `docs/tests.md`:
-   - **Red** — write the smallest failing test the task describes. Unit tests live next to the code inside the bounded context (`src/logic/<context>/.../X.test.ts`) and run against in-memory adapters; integration tests live under `tests/integration/` and drive the app via Supertest. Structure every test as Arrange / Act / Assert, one behavior per test.
+   - **Red** — write the smallest failing test the task describes. Unit tests live under `tests/unit/`, mirroring the `src/` path (e.g. `src/logic/prompt/application/CreatePrompt.ts` -> `tests/unit/logic/prompt/application/CreatePrompt.test.ts`) and run against in-memory adapters; integration tests live under `tests/integration/` and drive the app via Supertest. Structure every test as Arrange / Act / Assert, one behavior per test.
    - **Green** — write the minimum code to make it pass, placed in the correct layer (domain / application / infrastructure) for the right bounded context. Respect the inward-only dependency rule and the hexagonal boundaries enforced by `eslint-plugin-boundaries` (the lint config is authoritative — respect it proactively).
    - **Refactor** — clean up against `docs/coding-style.md` while keeping every test green.
 
-3. **Verify (step 8, after the whole list is complete).** Confirm every acceptance criterion in `spec.md` has a passing test, then run `npm test`, `npm run lint` (enforces hexagonal boundaries), and `npm run typecheck` until all are clean for the affected scope. This is the Definition of Done in the constitution.
+3. **Verify (step 8, after the whole list is complete).** Confirm every acceptance criterion in `spec.md` has a passing test, then run `npm test`, `npm run lint` (enforces hexagonal boundaries), and `npm run typecheck` until all are clean for the affected scope. This is the Definition of Done per `docs/spec-driven.md`.
 
 While iterating, run targeted tests with `npx vitest run <file>` or `npx vitest run -t '<name>'`.
 
@@ -55,7 +55,7 @@ Implement exactly what `tasks.md` and `spec.md` prescribe — no gold-plating, n
 
 STOP and ask the user when:
 - The plan/spec/tasks files cannot be found, or are ambiguous or contradictory.
-- The plan appears to conflict with the architecture rules or the constitution.
+- The plan appears to conflict with the architecture rules or the project docs.
 - A task would require introducing a new dependency, script, or pattern not sanctioned by the plan/docs.
 - A test reveals a design problem in the plan itself, or a needed behavior is not covered by any task.
 

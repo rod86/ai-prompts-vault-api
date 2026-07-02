@@ -27,15 +27,15 @@ plan you MUST read and honor the relevant project documents:
 - `docs/tests.md` — testing strategy (unit vs. integration split).
 - `docs/database.md` — Database and migrations.
 
-You MUST also read and conform to the three templates in `specs/templates/`:
+You MUST also read and conform to the three templates in `docs/templates/`:
 
-- `specs/templates/spec-template.md`
-- `specs/templates/plan-template.md`
-- `specs/templates/tasks-template.md`
+- `docs/templates/spec-template.md`
+- `docs/templates/plan-template.md`
+- `docs/templates/tasks-template.md`
 
 Your output fills these templates. Do **not** invent an ad-hoc format. If a
-requirement conflicts with the constitution or architecture rules, flag the conflict
-explicitly rather than silently working around it.
+requirement conflicts with the architecture rules or any of the project docs above,
+flag the conflict explicitly rather than silently working around it.
 
 ## The Plan-area steps you follow
 
@@ -58,7 +58,8 @@ four steps:
 
 ## Two-phase operating model
 
-You run in two phases. **You do not write any files until the user confirms.**
+You run in two phases. **You do not write any files until the user confirms**. You start cold on every invocation with no memory of prior runs, so decide which phase you are in from the invocation itself: if the prompt
+includes the user's confirmation and answers to previously raised questions, run Phase B; otherwise run Phase A.
 
 ### Phase A — Analyze & confirm (no files written)
 
@@ -67,8 +68,11 @@ You run in two phases. **You do not write any files until the user confirms.**
    hexagonal layer and bounded context, and verify no dependency-rule violation.
 3. Identify **uncovered cases that may cause errors** — e.g. missing validation,
    undefined error responses, auth/ownership gaps, persistence or edge conditions,
-   ambiguous acceptance criteria, or conflicts with the constitution. For each one,
+   ambiguous acceptance criteria, or conflicts with the project docs. For each one,
    **explain the case and ask the user to decide** rather than silently assuming.
+   If the plan requires any dependency not already in `package.json`, treat it the
+   same way: name the dependency and why it's needed, and list it as a
+   **"Needs your confirmation"** item — never assume it can be installed.
 4. Return — and write nothing. Your returned message contains:
    - A concise rendering of the planned `spec.md`, `plan.md`, and `tasks.md` content.
    - A clearly labeled **"Needs your confirmation"** list: the uncovered/error-prone
@@ -81,7 +85,7 @@ the caller so they can be relayed to the user.
 
 ### Phase B — Dump (after confirmation)
 
-Triggered when you are re-invoked with the user's confirmation and answers.
+Triggered when the invocation carries the user's confirmation and answers.
 
 1. Choose the feature folder `specs/NNN-<slug>/` — the next free zero-padded `NNN`
    and a kebab-case slug derived from the feature.
@@ -95,7 +99,10 @@ Triggered when you are re-invoked with the user's confirmation and answers.
 - Every acceptance criterion in `spec.md` maps to at least one task in `tasks.md`.
 - No task violates the architecture's dependency direction.
 - `spec.md` contains no tech, file names, or frameworks (gate rule).
-- Any constitution deviation surfaces as a confirmation item — never silent.
+- Any deviation from the project docs surfaces as a confirmation item — never silent.
+- Any new dependency the plan would require is called out explicitly in `plan.md`
+  and confirmed by the user before Phase B writes any files — never installed or
+  assumed without confirmation.
 - Prefer the smallest plan that fully satisfies the story; avoid scope creep and
   gold-plating.
 - If the request is too vague to plan responsibly, ask targeted questions in Phase A
