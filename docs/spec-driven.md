@@ -58,19 +58,17 @@ Each feature lives in `specs/NNN-<slug>/` (e.g. `specs/001-prompt-crud/`).
 2. **spec.md:** behavior, fields, validation rules, error responses, and
    acceptance criteria as testable Given/When/Then statements. **No tech**
    (no Express, Prisma, Zod, status codes, or file names; errors in domain
-   language). Template: `docs/templates/spec-template.md`.
+   language).
 3. **plan.md:** map spec to architecture (bounded context, entity, port,
    use cases, routes, Zod schemas, persistence adapter). This is the
    *how*. Includes assumptions/dependencies/risks, edge cases, and a
    **traceability table** (every spec item → plan element).
-   Template: `docs/templates/plan-template.md`.
 4. **tasks.md:** ordered, test-first checklist. Each task is **one
    red→green step**: the exact test (Red), the minimal change (Green),
    and the spec criteria it covers. Ordered dependency-first (domain →
    use case → adapters → routes → wiring); no task depends on a later
    one; migration tasks precede the code needing the schema. Every
    acceptance criterion maps to at least one task.
-   Template: `docs/templates/tasks-template.md`.
 
 **Statuses:** each artifact carries `DRAFT` or `READY FOR REVIEW`. The
 planner may not mark READY FOR REVIEW while design-changing questions are
@@ -117,7 +115,6 @@ Testing mechanics: `tests.md`.
 
 - Feature folders `specs/NNN-<slug>/` each contain `spec.md`, `plan.md`,
   `tasks.md`.
-- Templates live in `docs/templates/`; the planner follows them.
 - Agent definitions live in `.claude/agents/planner.md` and
   `.claude/agents/implementer.md`, checked into version control.
 - Traceability chain: story → spec → plan → tasks → tests → code. Any
