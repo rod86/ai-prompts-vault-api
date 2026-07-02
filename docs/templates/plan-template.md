@@ -29,8 +29,7 @@ Link: `./spec.md`
   - `POST /<resource>` → <use case>
   - `GET /<resource>/:id` → <use case>
 - **Validation:** Zod schemas at the boundary
-- **Persistence:** in-memory adapter now (`InMemory<...>Repository`); Prisma
-  adapter deferred
+- **Persistence:** Drizzle ORM adapater now (`Drizzle<...>Repository`);  
 
 ## Edges / wiring
 

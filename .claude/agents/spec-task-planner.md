@@ -25,8 +25,7 @@ plan you MUST read and honor the relevant project documents:
   rules, and composition edges.
 - `docs/coding-style.md` — coding conventions and rules.
 - `docs/tests.md` — testing strategy (unit vs. integration split).
-- `specs/memory/constitution.md` — governing principles; consult before proposing any
-  change to conventions.
+- `docs/database.md` — Database and migrations.
 
 You MUST also read and conform to the three templates in `specs/templates/`:
 

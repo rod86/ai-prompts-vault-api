@@ -61,8 +61,9 @@ export function customMiddleware(req: Request, res: Response, next: NextFunction
   next(); // forgetting this hangs the request
 }
 ```
-- Handlers/Middleware call application use cases through context services:
-  `Handler/Middleware -> service -> Application UseCase`
+- Handlers/middleware reach business logic only via a context's `services.ts`,                                                                                                                                          
+  never importing a use case, adapter, or config directly:                                                                                                                                                              
+  `Handler/Middleware -> service (services.ts) -> Application UseCase`
 
 ---
 

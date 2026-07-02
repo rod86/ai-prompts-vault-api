@@ -11,15 +11,14 @@ Link: `./plan.md`
 ## Tasks
 
 1. [ ] **Domain entity** — failing unit test for `<Entity>` invariants → implement.
-2. [ ] **Port + in-memory adapter** — define `<...>Repository` port; implement
-       `InMemory<...>Repository`.
+2. [ ] **Port adapter** — implement `InMemory<...>Repository` port.
 3. [ ] **Use case: <CreateX>** — failing unit test against in-memory repo → implement.
 4. [ ] **Use case: <GetX>** — failing unit test → implement.
 5. [ ] **Use case: <...>** — failing unit test → implement.
 6. [ ] **HTTP boundary** — Zod schemas + controller/router; Supertest integration
        test (red → green).
 7. [ ] **Wire into `app.ts`** — mount router; end-to-end Supertest passes.
-8. [ ] *(Deferred)* Prisma adapter + DB-backed integration test.
+8. [ ] Drizzle ORM adapter + DB-backed integration test.
 
 ## Verification
 

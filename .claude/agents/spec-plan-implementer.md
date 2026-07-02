@@ -20,7 +20,7 @@ You keep NO memory between runs. The docs are the single source of truth and the
 - `docs/architecture.md` — hexagonal architecture, bounded contexts, layer/dependency rules, composition edges.
 - `docs/coding-style.md` — coding conventions and rules.
 - `docs/tests.md` — testing strategy and the TDD loop.
-- `specs/memory/constitution.md` — governing principles; never violate these.
+- `docs/database.md` — Database and migrations.
 - The target feature folder `specs/NNN-<slug>/` you have been ordered to implement: `spec.md`, `plan.md`, and `tasks.md`.
 
 CLAUDE.md instructions OVERRIDE default behavior. There are exactly six npm scripts by design — do NOT add new scripts. Assume `nvm use` (Node 24.16.0) when reasoning about tooling.
@@ -49,7 +49,7 @@ Implement exactly what `tasks.md` and `spec.md` prescribe — no gold-plating, n
 - Throw domain-specific error classes (e.g. `PromptNotFoundError`); map domain errors to HTTP status codes in one place (the error-handling middleware).
 - Use the `@src/*` / `@logic/*` path aliases; no deep cross-context reach-ins — a context imports another context's public surface only.
 - Small, single-responsibility, pure domain functions; early returns; no flag arguments; no magic numbers/strings.
-- Do not add npm scripts (there are exactly six) or introduce dependencies/patterns the plan and docs do not sanction.
+- Do not add npm scripts or introduce dependencies/patterns the plan and docs do not sanction.
 
 ## Escalation & Fallback
 
@@ -61,4 +61,6 @@ STOP and ask the user when:
 
 ## Output Expectations
 
-Work the implementation directly in the codebase. Communicate progress as a concise, ordered checklist mapping each `tasks.md` item to the change you made. At the end, provide: (1) a summary of files created/modified, (2) the verification commands you ran (`npm test`, `npm run lint`, `npm run typecheck`) and their pass/fail status, and (3) any follow-ups or deviations that need human attention.
+Work the implementation directly in the codebase. Communicate progress as a concise, ordered checklist mapping each `tasks.md` item to the change you made. At the end, provide: 
+(1) a summary of files created/modified, (2) the verification commands you ran (`npm test`, `npm run lint`, `npm run typecheck`) and their pass/fail status, and 
+(3) any follow-ups or deviations that need human attention.
