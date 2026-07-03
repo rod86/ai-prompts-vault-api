@@ -30,7 +30,7 @@ steps 1–4                            │     steps 5–8
 
 Both are Claude Code subagents in `.claude/agents/`, checked into version
 control. Each re-reads the five project docs (`spec-driven.md`,
-`architecture.md`, `coding-style.md`, `tests.md`, `database.md`) at the
+`architecture.md`, `coding-style.md`, `testing.md`, `database.md`) at the
 start of every run; those docs override the agent prompts on conflict.
 **Artifact templates are hardcoded in the planner agent prompt**, which is
 the single source of truth for their structure; there are no template
@@ -108,7 +108,7 @@ the invocation. Then work `tasks.md` strictly top to bottom; never skip,
 reorder, or merge tasks. Names from plan.md (entities, ports, use cases,
 routes, schemas) are used verbatim. Per task:
 
-5. **Red:** write the failing test the task describes (per `tests.md`),
+5. **Red:** write the failing test the task describes (per `testing.md`),
    run it, confirm it fails for the expected reason. A test that passes
    immediately is a defect: stop and record a deviation.
 6. **Green:** minimum code to pass it, in the layer plan.md assigns.
@@ -124,7 +124,7 @@ The implementer finishes by returning a **completion report**: tasks done,
 major decisions, TODOs, deviations, per-AC# PASS/FAIL with test names,
 and test results. The human reviews it before raising a PR.
 
-Testing mechanics: `tests.md`.
+Testing mechanics: `testing.md`.
 
 ## Step boundaries
 

@@ -34,7 +34,7 @@ not look for template files.
     - `docs/architecture.md` — hexagonal architecture, bounded contexts,
       layer/dependency rules, composition edges.
     - `docs/coding-style.md` — coding conventions and rules.
-    - `docs/tests.md` — testing strategy and the TDD loop.
+    - `docs/testing.md` — testing strategy and the TDD loop.
     - `docs/database.md` — database and migrations.
 2. **Read all three artifacts** in `specs/NNN-<slug>/` (structure below).
 3. **Enforce the gate.** Verify ALL of:
@@ -72,7 +72,7 @@ Work through tasks strictly top to bottom. Never skip, reorder, or merge
 tasks. For each task:
 
 1. **Red.** Write exactly the test the task's Red line describes, per
-   `docs/tests.md`. Run it. Confirm it fails for the expected reason. A
+   `docs/testing.md`. Run it. Confirm it fails for the expected reason. A
    test that passes immediately means something is wrong: stop and record
    it as a deviation.
 2. **Green.** Make the task's Green change and nothing more: minimal

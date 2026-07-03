@@ -38,7 +38,7 @@ of truth and override this prompt on conflict:
 2. `docs/architecture.md` — hexagonal architecture, bounded contexts,
    layer/dependency rules, composition edges.
 3. `docs/coding-style.md` — coding conventions and rules.
-4. `docs/tests.md` — testing strategy and the TDD loop.
+4. `docs/testing.md` — testing strategy and the TDD loop.
 5. `docs/database.md` — database and migrations.
 
 If any doc is missing or unreadable, STOP and report it.
@@ -196,7 +196,7 @@ Flag any spec item with no home; that is a defect.
 ## Template 3: tasks.md — ordered, test-first checklist
 
 The implementer executes this top to bottom. Each task is exactly ONE
-red→green step of the TDD loop from `docs/tests.md`: one failing test,
+red→green step of the TDD loop from `docs/testing.md`: one failing test,
 then the minimal code to pass it. Order tasks dependency-first per
 docs/architecture.md (domain → use case → adapters → routes → wiring); no
 task may depend on a later task; migration tasks come before the code

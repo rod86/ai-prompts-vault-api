@@ -32,5 +32,5 @@ The authoritative details live in `docs/`. Read the relevant file before working
 - [docs/spec-driven.md](docs/spec-driven.md) — the spec-driven development workflow (the required process for all feature work, with a hard gate between planning and coding).
 - [docs/architecture.md](docs/architecture.md) — hexagonal architecture, bounded contexts, layer/dependency rules, and the composition edges.
 - [docs/coding-style.md](docs/coding-style.md) — coding conventions and rules.
-- [docs/tests.md](docs/tests.md) — testing strategy.
+- [docs/testing.md](docs/testing.md) — testing strategy.
 - [docs/database.md](./docs/database.md) - Database and migrations

@@ -61,7 +61,7 @@ docs/
   spec-driven.md     # the SDD methodology (step boundaries)
   architecture.md    # the layers, in detail
   coding-style.md    # generic coding rules + what's not allowed
-  tests.md           # how tests are organized
+  testing.md         # how tests are organized
   database.md        # how database is managed   
   templates/         # spec / plan / tasks templates
 tests/               # app tests
@@ -72,5 +72,5 @@ tests/               # app tests
 - **[Spec-Driven Development](./docs/spec-driven.md)** — the workflow.
 - **[Architecture](./docs/architecture.md)** — layers & dependency rules.
 - **[Coding style](./docs/coding-style.md)** — conventions & what's not allowed.
-- **[Tests](./docs/tests.md)** — testing strategy.
+- **[Testing](./docs/testing.md)** — testing strategy.
 - **[Database](./docs/database.md) - Database and migrations

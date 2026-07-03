@@ -1,6 +1,6 @@
 # Architecture
 
-Hexagonal architecture, organized by bounded contexts. Tests: see `tests.md` (not covered here).
+Hexagonal architecture, organized by bounded contexts. Testing: see `testing.md` (not covered here).
 
 ## Structure
 
