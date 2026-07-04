@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783172844424,
+      "tag": "0000_typical_garia",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783172900000,
+      "tag": "0001_seed_prompt_categories",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783178840684,
+      "tag": "0002_high_quasimodo",
+      "breakpoints": true
+    }
+  ]
+}

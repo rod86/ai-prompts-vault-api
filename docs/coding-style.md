@@ -46,7 +46,7 @@ Principle: **strict, small, explicit.** When in doubt, pick the simplest, most m
 
 ## Imports
 
-- Use path aliases `@src/*` and `@logic/*`, not long relative chains.
+- Use path aliases defined in `tsconfig.json`, , not long relative chains. e. g. `@src/*` and `@logic/*`
 - Order: builtin then external then internal then parent/sibling (auto-fixed by `import/order`).
 - No deep cross-context reach-ins. Import a context's public surface, not its inner files (`eslint-plugin-boundaries`).
 

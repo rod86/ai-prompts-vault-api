@@ -1,5 +1,6 @@
 import path from "node:path";
 import process from "node:process";
+import * as promptSchema from '@logic/prompt/infrastructure/database/schema.js';
 
 process.loadEnvFile(path.join(import.meta.dirname, '..', '.env'));
 
@@ -12,5 +13,8 @@ export default {
         user: process.env.DATABASE_USER ?? '',
         password: process.env.DATABASE_PASSWORD ?? '',
         database: process.env.DATABASE_DB ?? '',
+        schema: {
+          ...promptSchema
+        },
     },
 }
