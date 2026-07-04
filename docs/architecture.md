@@ -10,7 +10,7 @@ src/
     <context>/          # e.g. prompt/
       domain/           # business rules (framework-agnostic)
       application/      # use cases (orchestrate domain via ports)
-      infrastructure/   # adapters (Express, Database ORM repositories, Zod, external I/O)
+      infrastructure/   # adapters (Express, Database ORM repositories, external I/O)
       services.ts       # context services configuration
     shared/             # code shared by 2+ contexts (e.g. DB client)
   config.ts             # loaded env vars + hardcoded params

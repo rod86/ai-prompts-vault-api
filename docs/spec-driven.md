@@ -1,7 +1,6 @@
 # Spec-Driven Development (SDD)
 
 Authoritative guide for project flow.
-**Stack:** Node + TypeScript REST API (Express, Zod, Prisma).
 
 ## Core rule
 
@@ -84,10 +83,10 @@ helpers) are decided silently and logged as assumptions in plan.md.
 2. **spec.md:** behavior, fields, validation rules (V#), error responses
    (E#), acceptance criteria (AC#) as testable Given/When/Then
    statements, and the Decisions log from the interview. **No tech** (no
-   Express, Prisma, Zod, status codes, or file names; errors in domain
+   Express, Database ORM, Validation, status codes, or file names; errors in domain
    language).
 3. **plan.md:** map spec to architecture (bounded context, entities,
-   ports, use cases, routes mapping E# to status codes, Zod schemas
+   ports, use cases, routes mapping E# to status codes, Validation schemas
    tracing to V#, persistence adapter with migrations per `database.md`).
    This is the *how*. Includes assumptions/dependencies/risks, edge
    cases, and a **traceability table** (every spec item → plan element).

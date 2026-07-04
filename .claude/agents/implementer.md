@@ -47,7 +47,7 @@ template files.
 
 **plan.md** — the architecture mapping; names are fixed here:
 - §1 Bounded context, §2 Entities and value objects, §3 Ports, §4 Use
-  cases (→ AC#), §5 Routes (E# → status codes), §6 Zod schemas (→ V#),
+  cases (→ AC#), §5 Routes (E# → status codes), §6 Validation schemas (→ V#),
   §7 Persistence adapter (models, migrations), §8 Dependency changes
   (ONLY packages to install/update/remove, with versions; existing
   dependencies in use are intentionally not listed), §9 Assumptions and

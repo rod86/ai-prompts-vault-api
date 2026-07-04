@@ -141,7 +141,7 @@ One per operation: name, input, output, ports called, AC# satisfied.
 Method, path, request/response shape, status codes. Map every E# from
 spec §4 to a status code and body shape.
 
-## 6. Zod schemas
+## 6. Validation schemas
 Names, fields, constraints; each constraint traces to a V# in spec §3.
 State where schemas live per docs/architecture.md and docs/coding-style.md.
 
