@@ -2,7 +2,7 @@
 Plan: specs/002-list-prompts/plan.md
 Status: READY FOR REVIEW
 
-- [ ] T1. Use case returns every prompt provided by the repository, fully shaped
+- [x] T1. Use case returns every prompt provided by the repository, fully shaped
   - Red: `tests/unit/logic/prompt/application/ListPromptsUseCase.test.ts` —
     construct `ListPromptsUseCase` with a `mock<PromptRepositoryInterface>()`
     (per `docs/testing.md`); set `repository.findAll.mockResolvedValue([...])`
@@ -23,7 +23,7 @@ Status: READY FOR REVIEW
     its id, category (id and name), title, prompt text, description,
     createdAt, and updatedAt."
 
-- [ ] T2. Use case returns an empty array when the repository has none
+- [x] T2. Use case returns an empty array when the repository has none
   - Red: same file as T1 — new `it`; `repository.findAll.mockResolvedValue([])`;
     call `useCase.invoke()`; assert it resolves to `[]`.
   - Green: no production change expected if T1's `invoke()` simply returns
@@ -32,7 +32,7 @@ Status: READY FOR REVIEW
   - Covers: AC3 "Given no prompts exist, When the user requests the list
     of prompts, Then the response is an empty list, not an error."
 
-- [ ] T3. Use case forwards a supplied category filter to the repository unchanged
+- [x] T3. Use case forwards a supplied category filter to the repository unchanged
   - Red: same file as T1 — new `it`; call `useCase.invoke({ categoryId: '<fixture-id>' })`;
     assert `repository.findAll` was called with `{ categoryId: '<fixture-id>' }`.
   - Green: no production change expected if T1's `invoke()` already forwards
@@ -43,7 +43,7 @@ Status: READY FOR REVIEW
     category." (use-case-level forwarding; filtering itself is proven at
     the repository level in T7).
 
-- [ ] T4. Install the `zod` dependency
+- [x] T4. Install the `zod` dependency
   - Red: `tests/unit/handlers/schemas/GetPromptsQuerySchema.test.ts` —
     import `GetPromptsQuerySchema` from the not-yet-created schema file,
     which itself imports `zod`; running the suite fails because neither the
@@ -53,7 +53,7 @@ Status: READY FOR REVIEW
   - Covers: no AC directly (dependency install); required before T5/T11's
     HTTP boundary validation, per plan.md §8.
 
-- [ ] T5. Query schema accepts an optional `category` string and passes it through
+- [x] T5. Query schema accepts an optional `category` string and passes it through
   - Red: same file as T4 — `it('parses a present category value')` asserts
     `GetPromptsQuerySchema.parse({ category: 'abc' })` equals
     `{ category: 'abc' }`; `it('parses a missing category value')` asserts
@@ -64,7 +64,7 @@ Status: READY FOR REVIEW
   - Covers: no AC directly (HTTP-boundary schema, no V# per spec §3); supports
     the request parsing used by AC4 and AC5 at the route level (T13, T14).
 
-- [ ] T6. Repository returns every prompt joined with its category, most-recent-first
+- [x] T6. Repository returns every prompt joined with its category, most-recent-first
   - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` —
     per `docs/testing.md` integration conventions, open the DB connection
     once in `beforeAll`; insert a fixture category via the existing
@@ -94,7 +94,7 @@ Status: READY FOR REVIEW
     filter), Then the prompts are ordered from most recently created to
     least recently created."
 
-- [ ] T7. Repository returns only prompts belonging to a given category
+- [x] T7. Repository returns only prompts belonging to a given category
   - Red: same file as T6 — new `it`; insert two fixture categories and
     prompts split across both; call
     `new DrizzlePromptRepository(db).findAll({ categoryId: categoryA.id })`;
@@ -103,7 +103,7 @@ Status: READY FOR REVIEW
     (`eq(prompts.promptCategoryId, filter.categoryId)`) in `findAll()`.
   - Covers: AC4 (see T3 text above).
 
-- [ ] T8. Repository returns an empty array when the category filter matches nothing
+- [x] T8. Repository returns an empty array when the category filter matches nothing
   - Red: same file as T6 — new `it`; call `findAll({ categoryId: faker.string.uuid() })`
     with an id that matches no inserted category/prompt; assert the result
     is `[]`.
@@ -114,7 +114,7 @@ Status: READY FOR REVIEW
     prompts — When the user requests the list of prompts filtered by that
     value, Then the response is an empty list, not an error."
 
-- [ ] T9. Repository returns an empty array when there are no prompts at all
+- [x] T9. Repository returns an empty array when there are no prompts at all
   - Red: same file as T6 — new `it`; with no prompt rows inserted for this
     test (only the shared fixture category, no prompts), call `findAll()`
     with no filter; assert the result is `[]`.
@@ -122,7 +122,7 @@ Status: READY FOR REVIEW
     already returns `[]` for a prompt-less table.
   - Covers: AC3 (see T2 text above).
 
-- [ ] T10. Repository represents a prompt with no description as an absent value
+- [x] T10. Repository represents a prompt with no description as an absent value
   - Red: same file as T6 — new `it`; insert a fixture prompt with no
     `description` (via the seeding helper, omitting the field/passing
     `undefined`); call `findAll()`; assert the matching result item's
@@ -134,7 +134,7 @@ Status: READY FOR REVIEW
     included in the response with no description value, rather than an
     error or being left out of the list."
 
-- [ ] T11. `GET /prompts` returns all prompts ordered most-recently-created-first
+- [x] T11. `GET /prompts` returns all prompts ordered most-recently-created-first
   - Red: `tests/integration/app.test.ts` — using `supertest` against the
     real Express `app`, seed a fixture category and fixture prompts (via
     the seeding helpers, `createdAt` out of order) referencing it; `GET
@@ -153,14 +153,14 @@ Status: READY FOR REVIEW
     `app.get('/prompts', getPromptsHandler)` in `src/app.ts`.
   - Covers: AC1, AC2 (see texts above).
 
-- [ ] T12. `GET /prompts` returns an empty list when there are no prompts
+- [x] T12. `GET /prompts` returns an empty list when there are no prompts
   - Red: same file as T11 — new `it`; with no prompt fixtures inserted for
     this test, `GET /prompts`; assert status `200` and body equals `[]`.
   - Green: no production change expected; confirm the endpoint already
     responds `200` with `[]`.
   - Covers: AC3 (see text above).
 
-- [ ] T13. `GET /prompts?category={id}` returns only prompts in that category
+- [x] T13. `GET /prompts?category={id}` returns only prompts in that category
   - Red: same file as T11 — new `it`; seed two fixture categories and
     prompts split across both; `GET /prompts?category=<categoryA.id>`;
     assert status `200` and body contains only category A's prompts,
@@ -170,14 +170,14 @@ Status: READY FOR REVIEW
     confirm.
   - Covers: AC4 (see text above).
 
-- [ ] T14. `GET /prompts?category={unknown}` returns an empty list
+- [x] T14. `GET /prompts?category={unknown}` returns an empty list
   - Red: same file as T11 — new `it`; `GET /prompts?category=<random uuid
     matching nothing>`; assert status `200` and body equals `[]`.
   - Green: no production change expected; confirm the endpoint already
     responds `200` with `[]` for a non-matching filter.
   - Covers: AC5 (see text above).
 
-- [ ] T15. `GET /prompts` includes a prompt with no description, with no description value
+- [x] T15. `GET /prompts` includes a prompt with no description, with no description value
   - Red: same file as T11 — new `it`; seed a fixture prompt with no
     `description`; `GET /prompts`; assert the matching entry in the JSON
     body has no `description` property (or an `undefined` value), while

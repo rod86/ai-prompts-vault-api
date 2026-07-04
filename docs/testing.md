@@ -21,7 +21,7 @@ All tests live under `tests/` (never inside `src/`). TDD is mandatory.
 tests/
   lib/            # Shared test helpers (seeding, mocks, builders, sample API responses,...)
     config.ts     # Override config from `src`.
-    seeding       # Helpers to seed database
+    seeding       # Helpers to seed database, one file per table schema (e.g. `prompts.ts` for the `prompts` table)
   unit/           # Unit tests
   integration/    # Integration tests
 ```
