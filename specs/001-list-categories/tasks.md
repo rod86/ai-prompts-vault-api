@@ -2,7 +2,7 @@
 Plan: specs/001-list-categories/plan.md
 Status: READY FOR REVIEW
 
-- [ ] T1. Use case returns the categories provided by the repository
+- [x] T1. Use case returns the categories provided by the repository
   - Red: `tests/unit/logic/prompt/application/ListPromptCategoriesUseCase.test.ts` —
     construct `ListPromptCategoriesUseCase` with a `mock<PromptCategoryRepositoryInterface>()`
     (per `docs/testing.md`); set `repository.findAll.mockResolvedValue([...])`
@@ -17,7 +17,7 @@ Status: READY FOR REVIEW
     list of categories, Then the response includes every category, each with
     its id and name."
 
-- [ ] T2. Use case returns an empty array when the repository has none
+- [x] T2. Use case returns an empty array when the repository has none
   - Red: same file — new `it`; `repository.findAll.mockResolvedValue([])`;
     assert `useCase.invoke()` resolves to `[]`.
   - Green: no production change expected if T1's `invoke()` simply returns
@@ -26,7 +26,7 @@ Status: READY FOR REVIEW
   - Covers: AC3 "Given no categories exist, When the user requests the list
     of categories, Then the response is an empty list, not an error."
 
-- [ ] T3. Categories are stored and listed ordered alphabetically by name
+- [x] T3. Categories are stored and listed ordered alphabetically by name
   - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.test.ts` —
     per `docs/testing.md` integration conventions, open the DB connection
     once in `beforeAll`; insert fixture rows with names deliberately out of
@@ -54,7 +54,7 @@ Status: READY FOR REVIEW
     When the user requests the list of categories, Then the categories are
     ordered alphabetically by name, ascending."
 
-- [ ] T4. Repository returns an empty array when the categories table has no rows
+- [x] T4. Repository returns an empty array when the categories table has no rows
   - Red: same file as T3 — new `it`; capture the table's current rows
     (including the seeded starter set), delete all rows, call `findAll()`,
     assert it resolves to `[]`, then re-insert the exact captured rows in a
@@ -64,7 +64,7 @@ Status: READY FOR REVIEW
     confirm.
   - Covers: AC3 (see T2 text above).
 
-- [ ] T5. `GET /categories` returns all categories ordered alphabetically by name
+- [x] T5. `GET /categories` returns all categories ordered alphabetically by name
   - Red: `tests/integration/app.test.ts` — using `supertest` against the
     real Express `app`, seed additional fixture categories via the
     `tests/lib/seeding` helper (names chosen to be out of alphabetical
@@ -82,7 +82,7 @@ Status: READY FOR REVIEW
     `app.get('/categories', getCategoriesHandler)` in `src/app.ts`.
   - Covers: AC1, AC2 (see texts above).
 
-- [ ] T6. `GET /categories` returns an empty list when there are no categories
+- [x] T6. `GET /categories` returns an empty list when there are no categories
   - Red: same file as T5 — new `it`; capture and delete all rows from
     `prompt_categories` via the seeding helper, `GET /categories`, assert
     status `200` and body equals `[]`, then restore the exact captured rows

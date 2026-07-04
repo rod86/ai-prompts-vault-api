@@ -34,6 +34,9 @@ tests/
 - `describe` names the unit under test; `it` states the behavior as an
     expectation: `it('returns 404 when the prompt does not exist')`.
 - Structure every test as Arrange / Act / Assert.
+- No `try/catch` (or `try/finally`) blocks inside tests. Use Vitest hooks
+    (`beforeAll`/`beforeEach` for setup, `afterEach`/`afterAll` for cleanup) so
+    teardown runs regardless of the test outcome.
 - For large test files, group related cases with describe — but nest only one level below the top-level describe.
 - When a unit under test holds internal state (e.g. a client wrapping a
   connection), construct a fresh instance of it in `beforeEach` rather than
@@ -43,6 +46,8 @@ tests/
 - Database schema is managed out of testing scope. when running them, database schema must have been updated outside.
 - Use `faker-js/faker` to generate sample data like input data and mocked returned data
 - Resources (helpers, config, ...) from `lib` directory is restricted to `tests` scope. Any code from `src` should not use it.
+- Code under `tests/lib/` is helper-only: keep it simple and do not write tests
+    for it — it exists solely to support the tests.
 
 ## Mocking
 
