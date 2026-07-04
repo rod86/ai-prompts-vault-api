@@ -62,15 +62,16 @@ export default {
 - **Naming**: column names are `snake_case` in the database. Foreign key
   columns are named after the referenced table's entity with an `_id` suffix,
   e.g. `prompt_id` referencing `prompts.id`.
-- **Timestamps**: tables carry `created_at` and `updated_at` columns of type
-  `timestamptz`, set by the application (consistent with the app-provided `id`
-  rule).
+
+- **Datetime columns**: column names are suffixed with `_at` (e.g.
+  `created_at`, `updated_at`, `expires_at`). They are of type `timestamptz`
+  with values always provided in UTC (to avoid timezone problems), set by the
+  application (consistent with the app-provided `id` rule).
+
 - **Nullability & defaults**: columns are `NOT NULL` by default; make a column
   nullable only when the domain genuinely allows the value to be absent.
   Prefer explicit values from the application over database defaults.
 
-> Known exception: `specs/001-list-categories` predates these conventions and
-> uses a database-generated UUID (`defaultRandom()`).
 
 ## Migrations
 
