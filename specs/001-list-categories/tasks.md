@@ -31,24 +31,25 @@ Status: READY FOR REVIEW
     per `docs/testing.md` integration conventions, open the DB connection
     once in `beforeAll`; insert fixture rows with names deliberately out of
     alphabetical order (e.g. "Writing & Content", "Business & Finance",
-    "Coding & Development") via a `tests/lib/seeding` helper; call
+    "Coding & Development"), each with an explicit application-generated `id`
+    (per `docs/database.md`), via a `tests/lib/seeding` helper; call
     `new DrizzlePromptCategoryRepository(db).findAll()`; assert the returned
     array contains the inserted categories sorted alphabetically by name,
     ascending, each with correct `id`/`name`; delete only the inserted rows
     in `afterEach`; close the connection in `afterAll`. Fails: the
-    `categories` table, schema, and repository class do not exist yet.
-  - Green: define the `categories` table in
+    `prompt_categories` table, schema, and repository class do not exist yet.
+  - Green: define the `prompt_categories` table in
     `src/logic/prompt/infrastructure/database/schema.ts` (`id` uuid primary
-    key default random, `name` text not null); register the schema in
+    key with no default — value always supplied by the caller on insert per
+    `docs/database.md`; `name` text not null); register the schema in
     `src/config.ts`'s `database.schema` aggregation and pass it into
     `DatabaseClient` in `src/logic/shared/services.ts` (replacing `{}`);
     generate and apply the table-creation migration (`npx drizzle-kit
-    generate`, `npx drizzle-kit migrate`), including `CREATE EXTENSION IF
-    NOT EXISTS pgcrypto;`; add a hand-authored seed migration inserting the
-    eleven initial categories listed in spec §1 "Initial data" (also in
-    plan.md §7); implement
-    `DrizzlePromptCategoryRepository.findAll()` ordering by
-    `lower(name)` then `id`.
+    generate`, `npx drizzle-kit migrate`); add a hand-authored seed migration
+    inserting the eleven initial categories listed in spec §1 "Initial data"
+    (also in plan.md §7), each with its fixed literal `id` UUID from plan.md
+    §7 step 2; implement `DrizzlePromptCategoryRepository.findAll()` ordering
+    by `lower(name)` then `id`.
   - Covers: AC1 (see T1 text above); AC2 "Given multiple categories exist,
     When the user requests the list of categories, Then the categories are
     ordered alphabetically by name, ascending."
@@ -83,9 +84,9 @@ Status: READY FOR REVIEW
 
 - [ ] T6. `GET /categories` returns an empty list when there are no categories
   - Red: same file as T5 — new `it`; capture and delete all rows from
-    `categories` via the seeding helper, `GET /categories`, assert status
-    `200` and body equals `[]`, then restore the exact captured rows in a
-    `finally` block (mirrors T4's approach at the route level).
+    `prompt_categories` via the seeding helper, `GET /categories`, assert
+    status `200` and body equals `[]`, then restore the exact captured rows
+    in a `finally` block (mirrors T4's approach at the route level).
   - Green: no production change expected; confirm the endpoint already
     responds `200` with `[]` rather than an error.
   - Covers: AC3 (see text above).

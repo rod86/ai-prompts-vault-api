@@ -100,16 +100,21 @@ so there is no input to validate. No V# exist in spec §3 to trace.
 **Schema** (new) — `src/logic/prompt/infrastructure/database/schema.ts`
 
 ```ts
-export const categories = pgTable('categories', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const promptCategories = pgTable('prompt_categories', {
+  id: uuid('id').primaryKey(),
   name: text('name').notNull(),
 });
 ```
 
-- Table: `categories`. `id` is a database-generated UUID; `name` is required
-  text. No uniqueness constraint is required by this read-only feature
-  (spec §3 has no validation rules); adding one is deferred to the future
-  category-creation feature that will define that invariant.
+- Table: `prompt_categories`, per `docs/database.md`'s "Owned entities" naming
+  convention, which gives `prompt_categories` as the worked example for the
+  *PromptCategory* entity (owned by the `prompt` context, per Decision #1).
+- `id` is a `uuid` primary key with **no** `.defaultRandom()` default: per
+  `docs/database.md`'s Column conventions, every `id` value is always provided
+  by the caller/application on insert, never database-generated. `name` is
+  required text. No uniqueness constraint is required by this read-only
+  feature (spec §3 has no validation rules); adding one is deferred to the
+  future category-creation feature that will define that invariant.
 
 **Repository adapter** (new) —
 `src/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.ts`
@@ -118,17 +123,17 @@ implements `PromptCategoryRepositoryInterface`:
 ```ts
 public async findAll(): Promise<PromptCategory[]> {
   return this.db
-    .select({ id: categories.id, name: categories.name })
-    .from(categories)
-    .orderBy(sql`lower(${categories.name})`, categories.id);
+    .select({ id: promptCategories.id, name: promptCategories.name })
+    .from(promptCategories)
+    .orderBy(sql`lower(${promptCategories.name})`, promptCategories.id);
 }
 ```
 
 - Ordering is case-insensitive alphabetical by name (`lower(name)`), with
   `id` as a secondary sort key so the result order is stable/deterministic
   when two categories share the same name (spec AC2; see §9 Assumption 3).
-- Domain↔storage mapping is direct: `categories.id` → `PromptCategory.id`,
-  `categories.name` → `PromptCategory.name`.
+- Domain↔storage mapping is direct: `prompt_categories.id` → `PromptCategory.id`,
+  `prompt_categories.name` → `PromptCategory.name`.
 
 **Wiring:**
 - `src/config.ts`: aggregate the new schema, e.g.
@@ -143,27 +148,30 @@ public async findAll(): Promise<PromptCategory[]> {
 
 **Migrations** (per `docs/database.md`, Drizzle Kit CLI, run manually):
 
-1. `npx drizzle-kit generate` from the schema above to emit the `categories`
-   table creation SQL into `drizzle/`.
+1. `npx drizzle-kit generate` from the schema above to emit the
+   `prompt_categories` table creation SQL into `drizzle/`.
 2. A second, hand-authored data migration seeds the initial categories (per
    spec §1 "Initial data" and §6 Decision #2), inserting exactly the eleven
-   rows listed in the spec (name only — `id` is database-generated):
-   - Writing & Content
-   - Marketing & Social Media
-   - Coding & Development
-   - Data & Analytics
-   - Business & Finance
-   - Learning & Research
-   - Productivity
-   - Design & UX
-   - Career & Job Search
-   - Customer Support
-   - Legal & Compliance
+   rows listed in the spec. Per `docs/database.md`'s Column conventions, `id`
+   is never database-generated, so the migration provides an explicit,
+   hardcoded literal UUID (generated once, at authoring time) for each row:
+   - `d290f1ee-6c54-4b01-90e6-d701748f0851` — Writing & Content
+   - `c56a4180-65aa-42ec-a945-5fd21dec0538` — Marketing & Social Media
+   - `f47ac10b-58cc-4372-a567-0e02b2c3d479` — Coding & Development
+   - `9b2e3f1a-7c4d-4e8b-9a2f-1d3c5e7b9a0d` — Data & Analytics
+   - `3fa85f64-5717-4562-b3fc-2c963f66afa6` — Business & Finance
+   - `7c9e6679-7425-40de-944b-e07fc1f90ae7` — Learning & Research
+   - `e8a1c2b3-4d5f-4a6b-8c7d-9e0f1a2b3c4d` — Productivity
+   - `2f4a6b8c-1d3e-4f5a-9b7c-8d6e4f2a1b3c` — Design & UX
+   - `5d4c3b2a-1e0f-4a9b-8c7d-6e5f4a3b2c1d` — Career & Job Search
+   - `1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d` — Customer Support
+   - `9f8e7d6c-5b4a-4c3d-9e2f-1a0b9c8d7e6f` — Legal & Compliance
 3. Rollback: the table-creation migration's down step is `DROP TABLE
-   categories;`; the seed migration's down step is `DELETE FROM categories
-   WHERE name IN (<the eleven names above>);`. Both are written by hand
-   alongside the generated SQL, since `drizzle-kit generate` only emits the
-   forward (up) schema SQL, not seed data or down scripts.
+   prompt_categories;`; the seed migration's down step is `DELETE FROM
+   prompt_categories WHERE id IN (<the eleven literal UUIDs above>);`. Both
+   are written by hand alongside the generated SQL, since `drizzle-kit
+   generate` only emits the forward (up) schema SQL, not seed data or down
+   scripts.
 
 ## 8. Dependency changes
 
@@ -173,13 +181,18 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
 ## 9. Assumptions and risks
 
 **Assumptions**
-1. Table name is `categories` (not e.g. `prompt_categories`), matching the
-   `/categories` route and the `name`/`id` field names directly. If wrong,
+1. Table name is `prompt_categories`, per `docs/database.md`'s "Owned
+   entities" naming convention (which gives `prompt_categories` as its own
+   worked example for the *PromptCategory* entity), rather than a bare
+   `categories`. The `/categories` route name is unaffected — it is
+   user-facing API naming, independent of the storage table name. If wrong,
    only the table/schema identifier changes; no behavior changes.
-2. `id` is a database-generated UUID (`defaultRandom()`, requiring the
-   `pgcrypto` extension). If wrong (e.g. a serial integer id is preferred
-   instead), only the schema column type and repository row mapping change;
-   the domain and spec-level type remains an opaque `string`.
+2. `id` is an application-generated UUID, provided by the caller on insert
+   (never database-generated), per `docs/database.md`'s Column conventions.
+   The eleven starter rows use fixed, hand-picked literal UUIDs authored
+   directly in the seed migration (§7 step 2). If wrong, only the id
+   generation/seeding mechanism changes; the domain and spec-level type
+   remains an opaque `string`.
 3. Ordering ties (two categories with the same name, case-insensitively) are
    broken by a secondary sort on `id`, to keep the result order deterministic
    for tests and API consumers. If wrong, only the tie-break rule changes;
@@ -199,19 +212,21 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
 **Risks**
 1. *(low likelihood, medium impact)* Integration tests for the "no
    categories" case (AC3) run against a database that already has the seed
-   migration applied (§7), so the `categories` table is never naturally
-   empty. Mitigation: the relevant tests capture the pre-existing rows,
-   delete them to exercise the empty state, assert the empty-list behavior,
-   then restore the exact captured rows in a `finally`/`afterEach` block —
-   satisfying `docs/testing.md`'s "leave everything else untouched" by
-   restoring precisely what was temporarily removed.
-2. *(low likelihood, low impact)* The `defaultRandom()` UUID generator
-   depends on a Postgres extension (`pgcrypto`) being enabled. Mitigation:
-   the table-creation migration includes `CREATE EXTENSION IF NOT EXISTS
-   pgcrypto;` before the table statement.
+   migration applied (§7), so the `prompt_categories` table is never
+   naturally empty. Mitigation: the relevant tests capture the pre-existing
+   rows, delete them to exercise the empty state, assert the empty-list
+   behavior, then restore the exact captured rows in a `finally`/`afterEach`
+   block — satisfying `docs/testing.md`'s "leave everything else untouched"
+   by restoring precisely what was temporarily removed.
+2. *(low likelihood, low impact)* Since the seed migration hardcodes eleven
+   literal UUIDs (§7 step 2) rather than relying on database generation,
+   re-running the seed migration without a guard would attempt to insert
+   duplicate primary keys. Mitigation: the migration is written to run
+   exactly once (standard Drizzle Kit migration semantics — applied
+   migrations are tracked and not re-run).
 3. *(medium likelihood, low impact)* `src/logic/prompt/infrastructure/database/schema.ts`
    will later grow to include a `prompts` table when the prompt-management
-   feature is built. Mitigation: keep the `categories` table as an
+   feature is built. Mitigation: keep the `prompt_categories` table as an
    additive, independently named export so future schema additions to the
    same file do not require changes here.
 
@@ -230,14 +245,14 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
 
 | Spec item | Plan element(s) |
 |---|---|
-| Field: id | `PromptCategory.id` (§2); `categories.id` column (§7); route response body (§5) |
-| Field: name | `PromptCategory.name` (§2); `categories.name` column (§7); route response body (§5) |
+| Field: id | `PromptCategory.id` (§2); `prompt_categories.id` column (§7); route response body (§5) |
+| Field: name | `PromptCategory.name` (§2); `prompt_categories.name` column (§7); route response body (§5) |
 | §3 (no validation rules) | §6 Zod schemas: none required |
 | §4 (no error responses) | §5 Routes: no E# to map |
 | §1 Initial data (eleven starter categories) | §7 Migrations, seed migration step 2 |
 | AC1 | `ListPromptCategoriesUseCase` (§4); `DrizzlePromptCategoryRepository.findAll` (§7); `GET /categories` (§5) |
 | AC2 | `DrizzlePromptCategoryRepository.findAll` ORDER BY (§7); `PromptCategoryRepositoryInterface.findAll` contract (§3) |
 | AC3 | `ListPromptCategoriesUseCase` pass-through (§4); `DrizzlePromptCategoryRepository.findAll` on empty table (§7); `GET /categories` 200 with `[]` (§5) |
-| Decision #1 (bounded context) | §1 |
+| Decision #1 (bounded context) | §1; §7 table naming |
 | Decision #2 (starter data / empty state) | §1 Initial data (spec); §7 Migrations; §9 Risk 1 |
 | Decision #3 (ordering) | §3, §7, §9 Assumption 4 |
