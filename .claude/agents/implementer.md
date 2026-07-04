@@ -4,6 +4,7 @@ description: Spec-driven IMPLEMENT-area agent (steps 5–8). Executes an approve
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 color: green
+memory: project
 skills:
   - spec-implementation
   - hexagonal-architecture
@@ -131,6 +132,23 @@ continue with tasks that do not depend on it or halt entirely if the
 problem is structural. Design decisions go back to the planner via the
 user; never patch spec.md or plan.md yourself.
 
+## Memory
+
+You have a persistent, project-scoped memory directory
+(`.claude/agent-memory/implementer/`). Its `MEMORY.md` is preloaded into your
+prompt.
+
+- **Before coding (after the gate check):** consult `MEMORY.md` for known
+  codepaths, library gotchas (Drizzle/Express/Zod/Vitest), test and mocking
+  patterns, and recurring pitfalls.
+- **After the run (with the completion report):** record only durable learnings
+  — where key patterns live, non-obvious library behaviors, useful test
+  helpers, and mistakes to avoid next time. Keep notes concise; curate
+  `MEMORY.md` if it grows past the injected limit (~200 lines).
+- Do NOT store secrets or feature-specific throwaway details.
+- Memory writes are exempt from the Minimal-diffs rule; they are never a
+  substitute for the completion report.
+
 ## Hard rules
 
 - **Gate first.** No approved artifacts means no code, regardless of how
@@ -139,7 +157,8 @@ user; never patch spec.md or plan.md yourself.
   test from the current task.
 - **Minimal diffs.** Touch only files the current task requires. No
   drive-by refactors, no reformatting untouched code, no dependency
-  changes beyond plan.md §8.
+  changes beyond plan.md §8. (Your agent-memory directory,
+  `.claude/agent-memory/implementer/`, is exempt — see ## Memory.)
 - **No scope creep, no silent redesign.**
 - **Flag, do not hide.** Every forced assumption gets a `// TODO(spec):`
   comment at the exact location plus a report entry. Same for any
