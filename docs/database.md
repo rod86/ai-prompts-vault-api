@@ -6,18 +6,19 @@
 
 ## Generic client (`src/logic/shared/database/DatabaseClient.ts`)
 
-`DatabaseClient<DatabaseConnection, DatabaseSchema>` wraps a lazily-created `pg`
-`Pool` and returns a Drizzle connection.
+`DatabaseClient<DatabaseSchema>` wraps a lazily-created `pg` `Pool` and returns a
+Drizzle connection typed against the schema it was constructed with.
 
 ```ts
-const client = new DatabaseClient<MyConnection, MySchema>(config, schema);
-const db = client.connect(); // creates the Pool on first call, returns drizzle(pool, { schema })
+const client = new DatabaseClient(config, schema); // DatabaseSchema is inferred from `schema`
+const db = client.connect(); // NodePgDatabase<typeof schema> — typed db.query.<table>
 await client.close();        // ends the Pool (idempotent)
 ```
 
 - `config: DatabaseConfig` — `{ host, port, user, password, database }`.
 - `schema: DatabaseSchema` — `Record<string, unknown>` of table definitions.
-- `connect()` reuses the existing Pool; safe to call repeatedly.
+- `connect()` returns `NodePgDatabase<DatabaseSchema>`; reuses the existing Pool,
+  safe to call repeatedly.
 - `close()` no-ops if never connected.
 
 ## Schemas
@@ -25,17 +26,25 @@ await client.close();        // ends the Pool (idempotent)
 Table definitions live in each context's infrastructure layer:
 `src/logic/<context>/infrastructure/database/schema.ts`
 
-Aggregate schemas in `config.ts` and pass them into the client:
+Aggregate every context's schema in `config.ts`. This is a composition-root job, so it lives in `config.ts` (exempt
+from the boundary rules) rather than under `src/logic/shared/**`, which may not
+import a context's infrastructure.
 
 ```ts
-import * as promptSchema from "@src/logic/prompts/infrastructure/schema.ts";
-import * as usersSchema from "@src/logic/users/infrastructure/schema.ts";
+import * as promptSchema from "@logic/prompt/infrastructure/database/schema.js";
+import * as userSchema from "@logic/user/infrastructure/database/schema.js";
 
 export default {
     database: {
-        schema: { ...promptSchema, ...usersSchema },
+        schema: { ...promptSchema, ...userSchema },  // spread each context — the flat { tableName: table } shape Drizzle expects
     },
 };
+```
+
+`services.ts` then passes it straight through — the connection type follows automatically:
+```ts
+export const databaseClient = new DatabaseClient(config.database, config.database.schema);
+// databaseClient.connect() is NodePgDatabase<GlobalSchema>
 ```
 
 ## Table conventions

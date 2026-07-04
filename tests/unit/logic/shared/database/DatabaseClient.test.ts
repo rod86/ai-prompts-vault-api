@@ -2,7 +2,6 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
-
 import DatabaseClient, { type DatabaseConfig } from '@logic/shared/database/DatabaseClient.js';
 
 vi.mock('pg', () => ({
@@ -29,7 +28,7 @@ describe('DatabaseClient', () => {
     const drizzleMock = vi.mocked(drizzle);
 
     let pool: Pool;
-    let client: DatabaseClient<typeof CONNECTION>;
+    let client: DatabaseClient<typeof SCHEMA>;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -40,7 +39,7 @@ describe('DatabaseClient', () => {
         } as never);
         drizzleMock.mockReturnValue(CONNECTION as never);
 
-        client = new DatabaseClient<typeof CONNECTION>(CONFIG, SCHEMA);
+        client = new DatabaseClient(CONFIG, SCHEMA);
     });
 
     it('opens the connection bound to the provided schema', () => {

@@ -1,4 +1,4 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 export type DatabaseConfig = {
@@ -9,10 +9,7 @@ export type DatabaseConfig = {
     database: string;
 };
 
-export default class DatabaseClient<
-    DatabaseConnection,
-    DatabaseSchema extends Record<string, unknown> = Record<string, unknown>,
-> {
+export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>> {
     private pool: Pool | undefined;
 
     constructor(
@@ -20,12 +17,12 @@ export default class DatabaseClient<
         private readonly schema: DatabaseSchema,
     ) {}
 
-    public connect(): DatabaseConnection {
+    public connect(): NodePgDatabase<DatabaseSchema> {
         if (this.pool === undefined) {
             this.pool = new Pool(this.config);
         }
 
-        return drizzle(this.pool, { schema: this.schema }) as DatabaseConnection;
+        return drizzle(this.pool, { schema: this.schema });
     }
 
     public async close(): Promise<void> {
