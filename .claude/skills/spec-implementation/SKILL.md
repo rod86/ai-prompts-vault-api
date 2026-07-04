@@ -6,7 +6,7 @@ description: The spec-driven IMPLEMENT workflow (steps 5–8) — gate check, th
 # Spec-Driven Development — IMPLEMENT workflow (steps 5–8)
 
 The IMPLEMENT area of the project's spec-driven workflow, owned by the
-`implementer` agent. Testing mechanics live in `testing.md`.
+`implementer` agent. Testing mechanics live in the `testing` skill.
 
 ## Core rule
 
@@ -46,12 +46,12 @@ used verbatim.
 
 Per task:
 
-5. **Red:** write the failing test the task describes (per `testing.md`), run
+5. **Red:** write the failing test the task describes (per the `testing` skill), run
    it, confirm it fails for the expected reason. A test that passes immediately
    is a defect: stop and record a deviation.
 6. **Green:** minimum code to pass it, in the layer plan.md assigns. Reuse
    existing patterns before inventing new ones. Minimal diffs only.
-7. **Refactor:** clean up per `coding-style.md`, keep tests green, stay inside
+7. **Refactor:** clean up per the `coding-style` skill, keep tests green, stay inside
    the task's scope. Tick the task checkbox (`- [x]`).
 8. **Verify** (after the full list): every AC# in `spec.md` has a passing test,
    and `npm test` / `lint` / `typecheck` are clean. Never weaken or delete a

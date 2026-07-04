@@ -71,21 +71,22 @@ user story → spec.md → plan.md → tasks.md ─┊─ red → green → refa
 
 ```
 src/                 # Project source code
-specs/               # spec plans created by spec planner subagent 
-docs/                
-  architecture.md    # the layers, in detail
-  coding-style.md    # generic coding rules + what's not allowed
-  testing.md         # how tests are organized
-  database.md        # how database is managed   
-  templates/         # spec / plan / tasks templates
+specs/               # spec plans created by the planner subagent
+.claude/skills/      # the project conventions, as agent skills (see below)
 tests/               # app tests
 ```
 
 ## Documentation
 
-- **Spec-Driven Development** — the workflow, split across the `spec-planner`
-  (PLAN) and `spec-implementation` (IMPLEMENT) skills in `.claude/skills/`.
-- **[Architecture](./docs/architecture.md)** — layers & dependency rules.
-- **[Coding style](./docs/coding-style.md)** — conventions & what's not allowed.
-- **[Testing](./docs/testing.md)** — testing strategy.
-- **[Database](./docs/database.md) - Database and migrations
+The project conventions live as skills under `.claude/skills/`, preloaded into
+the `planner` and `implementer` agents (and available in any session):
+
+- **Spec-Driven Development** — `spec-planner` (PLAN) and `spec-implementation`
+  (IMPLEMENT).
+- **Architecture** — `hexagonal-architecture` (layers & dependency rules).
+- **Coding style** — `coding-style` (conventions & what's not allowed).
+- **Testing** — `testing` (strategy & TDD).
+- **Database modeling** — `database-modeling` (table/column conventions & migrations).
+- **Project stack** — `project-stack` (concrete Express/Drizzle/Zod/Vitest patterns).
+
+The concrete stack and cross-cutting rules are summarized in [CLAUDE.md](./CLAUDE.md).

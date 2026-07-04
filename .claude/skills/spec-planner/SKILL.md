@@ -63,7 +63,8 @@ decided silently and logged as assumptions in plan.md.
    Validation, status codes, or file names; errors in domain language).
 3. **plan.md:** map spec to architecture (bounded context, entities, ports,
    use cases, routes mapping E# to status codes, Validation schemas tracing to
-   V#, persistence adapter with migrations per `database.md`). This is the
+   V#, persistence adapter with migrations per the `database-modeling` skill).
+   This is the
    *how*. Includes assumptions/dependencies/risks, edge cases, and a
    **traceability table** (every spec item → plan element).
 4. **tasks.md:** ordered, test-first checklist. Each task is **one red→green

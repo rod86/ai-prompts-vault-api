@@ -1,6 +1,13 @@
-# Architecture
+---
+name: hexagonal-architecture
+description: Hexagonal (ports-and-adapters) architecture organized by bounded contexts — layers, the dependency rule, use cases, ports, entities, and composition wiring. Use when deciding where code belongs or mapping a spec onto the architecture. Library-agnostic; concrete framework/ORM patterns live in the project-stack skill.
+---
 
-Hexagonal architecture, organized by bounded contexts. Testing: see `testing.md` (not covered here).
+# Hexagonal Architecture
+
+Hexagonal architecture, organized by bounded contexts. Framework- and
+library-agnostic: the concrete HTTP-framework, ORM, and validation patterns live
+in the `project-stack` skill; testing lives in the `testing` skill.
 
 ## Structure
 
@@ -10,15 +17,15 @@ src/
     <context>/          # e.g. prompt/
       domain/           # business rules (framework-agnostic)
       application/      # use cases (orchestrate domain via ports)
-      infrastructure/   # adapters (Express, Database ORM repositories, external I/O)
+      infrastructure/   # adapters (HTTP framework, DB ORM repositories, external I/O)
       services.ts       # context services configuration
     shared/             # code shared by 2+ contexts (e.g. DB client)
   config.ts             # loaded env vars + hardcoded params
-  app.ts                # Express app: middleware + routes (no listen)
+  app.ts                # HTTP app: middleware + routes (no listen)
   index.ts              # composition root + server bootstrap
 ```
 
-## Dependency Rule (enforced by `eslint-plugin-boundaries`)
+## Dependency Rule (enforced by boundary linting)
 
 ```
 infrastructure  ->  application  ->  domain     (imports point inward only)
@@ -27,45 +34,32 @@ shared          <-  usable by any layer/context; imports from NO context
 
 ## Config Parameters (`src/config.ts`)
 
-Holds config params and loaded `.env` vars. 
-Hardcode non-sensitive values (e.g. default AI model)
-Load sensitive values from env (e.g. API key). 
-`process.env` access is allowed ONLY here. 
+Holds config params and loaded `.env` vars.
+Hardcode non-sensitive values (e.g. default AI model).
+Load sensitive values from env (e.g. API key).
+`process.env` access is allowed ONLY here.
 Importable ONLY by `app.ts`, `index.ts`, and context `services.ts` files.
 
 **Example config object**
-````typescript
+```typescript
 export default {
     port: process.env.PORT ?? 3000,
     environment: process.env.ENVIRONMENT ?? 'development',
 }
-````
-
-## Express
-
-**`app.ts` order:** leading global middleware (e.g. JWT) -> routes + per-route middleware (e.g. body schema validation) -> trailing global middleware (404 handler, error handler).
-
-**Handlers (`src/handlers`):** one function per file, default export only. Never inline in `app.ts`.
-```typescript
-import { type Request, type Response } from 'express';
-export default (_req: Request, res: Response) => {
-  res.status(200).json(null);
-};
 ```
 
-**Middleware (`src/handlers`):** one function per file. Suffix with `Handler`. e. g. `GetPromptsHandler`
-```typescript
-import { type Request, type Response, type NextFunction } from 'express';
-export function customMiddleware(req: Request, res: Response, next: NextFunction): void {
-  // ...
-  next(); // forgetting this hangs the request
-}
-```
-- Handlers/middleware reach business logic only via a context's `services.ts`,                                                                                                                                          
-  never importing a use case, adapter, or config directly:                                                                                                                                                              
-  `Handler/Middleware -> service (services.ts) -> Application UseCase`
+## HTTP adapter (inbound)
 
----
+- **Ordering:** leading global middleware (e.g. auth) → routes + per-route
+  middleware (e.g. body validation) → trailing global middleware (404 handler,
+  error handler).
+- **Handlers/middleware:** one function per file, default export for handlers;
+  never inline in `app.ts`.
+- Handlers and middleware reach business logic ONLY via a context's
+  `services.ts`, never importing a use case, adapter, or config directly:
+  `Handler/Middleware -> service (services.ts) -> Application UseCase`.
+
+Concrete framework skeletons: see the `project-stack` skill.
 
 ## Business Logic (`src/logic`)
 
@@ -73,7 +67,8 @@ Three layers per context: `domain`, `application`, `infrastructure`.
 
 ### Application (`<context>/application`)
 
-One use case per meaningful operation. Each file is self-contained: `Query`, `Response`, and the use case class.
+One use case per meaningful operation. Each file is self-contained: `Query`,
+`Response`, and the use case class.
 
 ```typescript
 export interface CreatePromptQuery {
@@ -98,8 +93,10 @@ export class CreatePromptUseCase {
 
 Rules:
 - Class suffixed `UseCase`; filename equals class name.
-- Input interface suffixed `Query`, output interface suffixed `Response`. Omit either if unneeded.
-- Query/Response use only native types (string, number, array, Date, ...). No custom logic types.
+- Input interface suffixed `Query`, output interface suffixed `Response`. Omit
+  either if unneeded.
+- Query/Response use only native types (string, number, array, Date, ...). No
+  custom logic types.
 - Orchestrates domain objects, reaches the outside world ONLY through ports.
 - Handles flow + transactions. Contains no framework or library code.
 - Port implementations injected via the constructor.
@@ -122,7 +119,8 @@ export interface Prompt {
 }
 ```
 
-**Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend on. Name must NOT reference a source (no Database, AWS, etc.).
+**Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend
+on. Name must NOT reference a source (no Database, AWS, etc.).
 ```typescript
 // src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
 import { Prompt } from "@logic/prompt/domain/Prompt";
@@ -146,8 +144,10 @@ export default class CreatePromptError extends Error {
 
 ### Infrastructure (`<context>/infrastructure`)
 
-Adapters. The ONLY place frameworks appear. Implements domain ports (e.g. `DrizzlePromptCategoryRepository` ) with no inner-layer changes when swapped.
-Never create InMemory adapters. e. g. ``InMemoryPromptsRepository``. Defer that class or ask user.
+Adapters. The ONLY place frameworks and libraries appear. Implements domain
+ports with no inner-layer changes when swapped.
+Never create InMemory adapters (e.g. `InMemoryPromptsRepository`). Defer that
+class or ask the user.
 
 ## Shared (`src/logic/shared`)
 
@@ -158,13 +158,13 @@ Cross-context code only (Result type, base error, shared value objects).
 
 ### Services (`<context>/services.ts`)
 
-Wires infrastructure adapters and exposes the context's use cases for use outside `logic`. Same pattern for the shared context.
+Wires infrastructure adapters and exposes the context's use cases for use
+outside `logic`. Same pattern for the shared context.
 
 ```typescript
-import { CreatePromptUseCase } from "@logic/prompt/application/CreatePromptUseCase";
-import { DrizzlePromptCategoryRepository } from "@logic/prompts/infrastructure/database/DrizzlePromptCategoryRepository";
-import { databaseClient } from "@logic/shared/services";
-
-const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
+const promptRepository = new /* concrete adapter */Repository(databaseClient);
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 ```
+
+Concrete wiring (with the real ORM adapter and DB client) is in the
+`project-stack` skill.

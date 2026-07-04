@@ -1,0 +1,146 @@
+---
+name: project-stack
+description: The concrete stack patterns for ai-prompts-vault-api — Express handlers/middleware, Drizzle + pg persistence, Zod boundary validation, Vitest/supertest/faker testing, and drizzle-kit migrations, plus path aliases and boundary linting. Use when writing actual code that touches a library. The library-agnostic principles live in the hexagonal-architecture, coding-style, testing, and database-modeling skills.
+---
+
+# Project Stack
+
+Concrete, library-specific patterns for this codebase. The principles behind
+them live in the `hexagonal-architecture`, `coding-style`, `testing`, and
+`database-modeling` skills; the stack summary is in `CLAUDE.md`.
+
+## HTTP (Express)
+
+**`app.ts` order:** leading global middleware (e.g. JWT) → routes + per-route
+middleware (e.g. body schema validation) → trailing global middleware (404
+handler, error handler).
+
+**Handlers (`src/handlers`):** one function per file, default export only. Never
+inline in `app.ts`.
+```typescript
+import { type Request, type Response } from 'express';
+export default (_req: Request, res: Response) => {
+  res.status(200).json(null);
+};
+```
+
+**Middleware (`src/middleware`):** one function per file. Suffix with `Middleware`,
+e.g. `ValidationMidleware`.
+```typescript
+import { type Request, type Response, type NextFunction } from 'express';
+export function customMiddleware(req: Request, res: Response, next: NextFunction): void {
+  // ...
+  next(); // forgetting this hangs the request
+}
+```
+
+Handlers/middleware reach business logic only via a context's `services.ts`:
+`Handler/Middleware -> service (services.ts) -> Application UseCase`.
+
+## Input Data Validation
+
+[WIP]
+
+## Persistence (Drizzle ORM + pg)
+
+- ORM: Drizzle ORM (`drizzle-orm/node-postgres`)
+- Engine: PostgreSQL, via a `pg` connection `Pool`
+
+**Generic client (`src/logic/shared/database/DatabaseClient.ts`):**
+`DatabaseClient<DatabaseSchema>` wraps a lazily-created `pg` `Pool` and returns a
+Drizzle connection typed against the schema it was constructed with.
+```ts
+const client = new DatabaseClient(config, schema); // DatabaseSchema inferred from `schema`
+const db = client.connect(); // NodePgDatabase<typeof schema> — typed db.query.<table>
+await client.close();        // ends the Pool (idempotent)
+```
+- `config: DatabaseConfig` — `{ host, port, user, password, database }`.
+- `schema: DatabaseSchema` — `Record<string, unknown>` of table definitions.
+- `connect()` returns `NodePgDatabase<DatabaseSchema>`; reuses the existing Pool,
+  safe to call repeatedly.
+- `close()` no-ops if never connected.
+
+**Schema aggregation (composition root, `config.ts`):**
+```ts
+import * as promptSchema from "@logic/prompt/infrastructure/database/schema.js";
+import * as userSchema from "@logic/user/infrastructure/database/schema.js";
+
+export default {
+    database: {
+        schema: { ...promptSchema, ...userSchema },  // spread each context — the flat { tableName: table } shape Drizzle expects
+    },
+};
+```
+
+**Wiring (`services.ts`):** passes it straight through — the connection type
+follows automatically:
+```ts
+import { CreatePromptUseCase } from "@logic/prompt/application/CreatePromptUseCase";
+import { DrizzlePromptCategoryRepository } from "@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository";
+import { databaseClient } from "@logic/shared/services";
+
+const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
+export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
+// databaseClient.connect() is NodePgDatabase<GlobalSchema>
+```
+The `id` (uuid) is app-provided on insert — do not use `defaultRandom()` /
+`gen_random_uuid()` defaults.
+
+## Migrations (drizzle-kit)
+
+Managed with the `drizzle-kit` CLI (config in `drizzle.config.ts`). By project
+convention we do **not** add npm scripts — run the CLI directly:
+```bash
+npx drizzle-kit generate   # emit SQL migrations into ./drizzle from the schema files
+npx drizzle-kit migrate    # apply pending migrations
+```
+Generated SQL and metadata are written to `drizzle/`. Database env vars must be
+set (see `.env.example`). Migrations are run manually — the app does not migrate
+on startup.
+
+## Testing (Vitest)
+
+- Runner: Vitest (`vitest.config.ts`), path aliases via `vite-tsconfig-paths`.
+- Mocking: `vitest-mock-extended` for interfaces/classes; native `vi.fn()` for
+  functions. Type the held reference as `MockProxy<T>`.
+- HTTP assertions: `supertest`.
+- Sample data: `@faker-js/faker`.
+- Run the suite: `npm test` (`vitest run`, single pass — the CI command).
+
+**Mocking example:**
+```ts
+describe('CreatePromptUseCase', () => {
+  let repository: MockProxy<PromptRepositoryInterface>;
+  let useCase: CreatePromptUseCase;
+
+  beforeEach(() => {
+    repository = mock<PromptRepositoryInterface>();
+    useCase = new CreatePromptUseCase(repository);
+  });
+
+  it('stores a new prompt and returns its id', async () => {
+    // Arrange
+    repository.create.mockResolvedValue(undefined);
+
+    // Act
+    const { id } = await useCase.invoke({ title: 'Greet', prompt: 'Hi {name}' });
+
+    // Assert
+    expect(repository.create).toHaveBeenCalledOnce();
+    expect(id).toBeDefined();
+  });
+});
+```
+
+The Vitest hooks are `beforeAll`/`beforeEach` (setup) and `afterEach`/`afterAll`
+(cleanup); the `testing` skill covers when to use them (setup, cleanup, and
+database changes) and how to assert errors.
+
+## Tooling
+
+- **Path aliases** (`tsconfig.json`): `@src/*`, `@logic/*`. Use them instead of
+  long relative chains.
+- **Boundaries**: `eslint-plugin-boundaries` enforces the hexagonal dependency
+  rule and blocks deep cross-context reach-ins. `npm run lint` must pass.
+- **Formatting**: Prettier owns formatting — 4-space indent, single quotes,
+  trailing commas, 100-col width. Don't hand-format.
