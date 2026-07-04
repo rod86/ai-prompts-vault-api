@@ -29,7 +29,7 @@ There are only the six npm scripts above by design — do not add more without r
 
 The authoritative details live in `docs/`. Read the relevant file before working in that area:
 
-- [docs/spec-driven.md](docs/spec-driven.md) — the spec-driven development workflow (the required process for all feature work, with a hard gate between planning and coding).
+- The spec-driven development workflow (the required process for all feature work, with a hard gate between planning and coding) lives in two skills under `.claude/skills/`: `spec-planner` (PLAN area, steps 1–4) and `spec-implementation` (IMPLEMENT area, steps 5–8).
 - [docs/architecture.md](docs/architecture.md) — hexagonal architecture, bounded contexts, layer/dependency rules, and the composition edges.
 - [docs/coding-style.md](docs/coding-style.md) — coding conventions and rules.
 - [docs/testing.md](docs/testing.md) — testing strategy.

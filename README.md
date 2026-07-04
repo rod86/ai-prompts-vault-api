@@ -33,9 +33,24 @@ npm run dev               # start the API (http://localhost:3000)
 
 ## How we work — Spec-Driven Development
 
-- We create a user story and generate a spec plan using the agent `spec-task-planner`.
+The workflow is split across two Claude Code skills under `.claude/skills/`,
+each used by one agent:
 
-- Once the plan is ready, we implement the plan using the agent `spec-plan-implementer`.
+| Agent | Owns | Model | Skill |
+|---|---|---|---|
+| `planner` | PLAN, steps 1–4 | opus | `spec-planner` |
+| `implementer` | IMPLEMENT, steps 5–8 | sonnet | `spec-implementation` |
+
+**Invocation:**
+
+```
+Use the planner subagent on "<feature story>".
+# if the planner returns INTERVIEW REQUIRED: answer each question,
+# re-invoke the planner with the full Q&A list
+# review artifacts, then approve:
+The artifacts for specs/NNN-<slug>/ are approved.
+Use the implementer subagent on specs/NNN-<slug>/.
+```
 
 Every feature flows through the SDD pipeline, with a hard gate between planning
 and implementation:
@@ -58,7 +73,6 @@ user story → spec.md → plan.md → tasks.md ─┊─ red → green → refa
 src/                 # Project source code
 specs/               # spec plans created by spec planner subagent 
 docs/                
-  spec-driven.md     # the SDD methodology (step boundaries)
   architecture.md    # the layers, in detail
   coding-style.md    # generic coding rules + what's not allowed
   testing.md         # how tests are organized
@@ -69,7 +83,8 @@ tests/               # app tests
 
 ## Documentation
 
-- **[Spec-Driven Development](./docs/spec-driven.md)** — the workflow.
+- **Spec-Driven Development** — the workflow, split across the `spec-planner`
+  (PLAN) and `spec-implementation` (IMPLEMENT) skills in `.claude/skills/`.
 - **[Architecture](./docs/architecture.md)** — layers & dependency rules.
 - **[Coding style](./docs/coding-style.md)** — conventions & what's not allowed.
 - **[Testing](./docs/testing.md)** — testing strategy.

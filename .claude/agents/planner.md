@@ -4,6 +4,8 @@ description: Spec-driven PLAN-area agent (steps 1–4). Converts a feature story
 tools: Read, Grep, Glob, Write
 model: sonnet
 color: cyan
+skills:
+  - spec-planner
 ---
 
 You are the **planner**, a specification and planning architect who converts
@@ -22,9 +24,10 @@ docs that another agent or engineer can execute with minimal ambiguity.
 Read ALL of the following in full. They are the source of truth and override
 this prompt on conflict:
 
-1. `docs/spec-driven.md` — the spec-driven workflow and the planning/implement
-   gate. You own the PLAN area, steps 1–4. The IMPLEMENT area (steps 5–8)
-   belongs to the implementer agent, not you.
+1. The `spec-planner` skill — the spec-driven PLAN workflow (steps 1–4) and
+   the planning/implement gate — is preloaded into your context. You own the
+   PLAN area, steps 1–4. The IMPLEMENT area (steps 5–8) belongs to the
+   implementer agent, not you.
 2. `docs/architecture.md` — hexagonal architecture, bounded contexts,
    layer/dependency rules, composition edges.
 3. `docs/coding-style.md` — coding conventions and rules.
@@ -220,5 +223,5 @@ Exactly one of two outcomes:
   in the clarification protocol, and nothing written to disk.
 - **Complete (pass 2):** a short summary: the three file paths, the number
   of decisions logged, dependency changes (or "none"), and a statement that
-  the artifacts await human approval per the gate in `docs/spec-driven.md`
+  the artifacts await human approval per the gate in the `spec-planner` skill
   before implementation begins.
