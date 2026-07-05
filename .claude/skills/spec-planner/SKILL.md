@@ -6,7 +6,7 @@ description: The spec-driven PLAN workflow (steps 1–4) — the interview loop 
 # Spec-Driven Development — PLAN workflow (steps 1–4)
 
 The PLAN area of the project's spec-driven workflow, owned by the `planner`
-agent. This skill covers the *workflow*; the artifact templates are hardcoded
+agent. This skill covers the _workflow_; the artifact templates are hardcoded
 in `.claude/agents/planner.md` (the single source of truth for their structure).
 
 ## Core rule
@@ -65,7 +65,7 @@ decided silently and logged as assumptions in plan.md.
    use cases, routes mapping E# to status codes, Validation schemas tracing to
    V#, persistence adapter with migrations per the `database-modeling` skill).
    This is the
-   *how*. Includes assumptions/dependencies/risks, edge cases, and a
+   _how_. Includes assumptions/dependencies/risks, edge cases, and a
    **traceability table** (every spec item → plan element).
 4. **tasks.md:** ordered, test-first checklist. Each task is **one red→green
    step**: the exact test (Red), the minimal change (Green), and the IDs it
@@ -78,14 +78,14 @@ The planner never writes production code, tests, or migrations.
 
 ## Step boundaries (PLAN)
 
-| Step | Agent | Input | Output | Touches | Do NOT |
-|---|---|---|---|---|---|
-| 1 Story | planner | a need | story note | spec.md (top) | propose a solution |
-| — Interview | planner ↔ human | ambiguity | Q&A list | nothing | guess on design; batch questions |
-| 2 Specify | planner | story + Q&A | spec.md | spec doc | mention tech, files, frameworks |
-| 3 Plan | planner | spec.md | plan.md | plan doc | write production code |
-| 4 Tasks | planner | plan.md | tasks.md | tasks doc | bundle many behaviors per task |
-| — Gate | human | 3 artifacts | approval | nothing | approve incomplete coverage |
+| Step        | Agent           | Input       | Output     | Touches       | Do NOT                           |
+| ----------- | --------------- | ----------- | ---------- | ------------- | -------------------------------- |
+| 1 Story     | planner         | a need      | story note | spec.md (top) | propose a solution               |
+| — Interview | planner ↔ human | ambiguity   | Q&A list   | nothing       | guess on design; batch questions |
+| 2 Specify   | planner         | story + Q&A | spec.md    | spec doc      | mention tech, files, frameworks  |
+| 3 Plan      | planner         | spec.md     | plan.md    | plan doc      | write production code            |
+| 4 Tasks     | planner         | plan.md     | tasks.md   | tasks doc     | bundle many behaviors per task   |
+| — Gate      | human           | 3 artifacts | approval   | nothing       | approve incomplete coverage      |
 
 ## Conventions
 

@@ -1,4 +1,5 @@
 # Spec: List categories
+
 Status: READY FOR REVIEW
 Story: As a user, I want to see all categories so that I can browse and filter prompts by topic.
 
@@ -32,10 +33,10 @@ set is initial data, not a guaranteed invariant.
 
 ## 2. Fields
 
-| Field | Meaning | Domain type | Required | Default |
-|---|---|---|---|---|
-| id | Unique identifier of the category | text | true | — |
-| name | Human-readable label of the category, used for browsing and filtering prompts | text | true | — |
+| Field | Meaning                                                                       | Domain type | Required | Default |
+| ----- | ----------------------------------------------------------------------------- | ----------- | -------- | ------- |
+| id    | Unique identifier of the category                                             | text        | true     | —       |
+| name  | Human-readable label of the category, used for browsing and filtering prompts | text        | true     | —       |
 
 ## 3. Validation rules
 
@@ -63,8 +64,8 @@ empty list (see AC3). No error responses are defined for this operation.
 
 ## 6. Decisions log
 
-| # | Question asked | Answer | Effect on this spec |
-|---|---|---|---|
-| 1 | Where should the category concept live architecturally? | Categories are grouped together with prompt-related concepts rather than treated as a fully separate area. | No effect on user-facing behavior; recorded for the design mapping in plan.md. |
-| 2 | Should categories come with a starter set of data, or start out empty? | Start with an initial starter set of eleven categories (listed in §1, Initial data), inserted by a data migration, while the system must still correctly support the empty state. | Added the "Initial data" list to §1; confirms AC3 (empty list) is a genuinely supported state, not merely a startup default; the migration itself is specified in plan.md §7. |
-| 3 | In what order should the categories be listed? | Alphabetically by name, ascending. | Added AC2, requiring alphabetical ordering by name. |
+| #   | Question asked                                                         | Answer                                                                                                                                                                            | Effect on this spec                                                                                                                                                           |
+| --- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Where should the category concept live architecturally?                | Categories are grouped together with prompt-related concepts rather than treated as a fully separate area.                                                                        | No effect on user-facing behavior; recorded for the design mapping in plan.md.                                                                                                |
+| 2   | Should categories come with a starter set of data, or start out empty? | Start with an initial starter set of eleven categories (listed in §1, Initial data), inserted by a data migration, while the system must still correctly support the empty state. | Added the "Initial data" list to §1; confirms AC3 (empty list) is a genuinely supported state, not merely a startup default; the migration itself is specified in plan.md §7. |
+| 3   | In what order should the categories be listed?                         | Alphabetically by name, ascending.                                                                                                                                                | Added AC2, requiring alphabetical ordering by name.                                                                                                                           |

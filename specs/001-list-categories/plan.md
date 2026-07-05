@@ -1,4 +1,5 @@
 # Plan: List categories
+
 Spec: specs/001-list-categories/spec.md
 Status: READY FOR REVIEW
 
@@ -21,15 +22,15 @@ other bounded context exists yet.
 
 **`PromptCategory`** (new) — `src/logic/prompt/domain/PromptCategory.ts`
 
-| Field | Type | From spec | Invariants |
-|---|---|---|---|
-| id | `string` | spec §2 `id` | none enforced by this read-only feature (spec §3) |
-| name | `string` | spec §2 `name` | none enforced by this read-only feature (spec §3) |
+| Field | Type     | From spec      | Invariants                                        |
+| ----- | -------- | -------------- | ------------------------------------------------- |
+| id    | `string` | spec §2 `id`   | none enforced by this read-only feature (spec §3) |
+| name  | `string` | spec §2 `name` | none enforced by this read-only feature (spec §3) |
 
 ```ts
 export interface PromptCategory {
-  id: string;
-  name: string;
+    id: string;
+    name: string;
 }
 ```
 
@@ -42,7 +43,7 @@ export interface PromptCategory {
 import { PromptCategory } from '@logic/prompt/domain/PromptCategory';
 
 export default interface PromptCategoryRepositoryInterface {
-  findAll(): Promise<PromptCategory[]>;
+    findAll(): Promise<PromptCategory[]>;
 }
 ```
 
@@ -64,16 +65,16 @@ export default interface PromptCategoryRepositoryInterface {
 
 ```ts
 export interface PromptCategoryResponse {
-  id: string;
-  name: string;
+    id: string;
+    name: string;
 }
 
 export class ListPromptCategoriesUseCase {
-  constructor(private readonly repository: PromptCategoryRepositoryInterface) {}
+    constructor(private readonly repository: PromptCategoryRepositoryInterface) {}
 
-  public async invoke(): Promise<PromptCategoryResponse[]> {
-    return this.repository.findAll();
-  }
+    public async invoke(): Promise<PromptCategoryResponse[]> {
+        return this.repository.findAll();
+    }
 }
 ```
 
@@ -101,14 +102,14 @@ so there is no input to validate. No V# exist in spec §3 to trace.
 
 ```ts
 export const promptCategories = pgTable('prompt_categories', {
-  id: uuid('id').primaryKey(),
-  name: text('name').notNull(),
+    id: uuid('id').primaryKey(),
+    name: text('name').notNull(),
 });
 ```
 
 - Table: `prompt_categories`, per `docs/database.md`'s "Owned entities" naming
   convention, which gives `prompt_categories` as the worked example for the
-  *PromptCategory* entity (owned by the `prompt` context, per Decision #1).
+  _PromptCategory_ entity (owned by the `prompt` context, per Decision #1).
 - `id` is a `uuid` primary key with **no** `.defaultRandom()` default: per
   `docs/database.md`'s Column conventions, every `id` value is always provided
   by the caller/application on insert, never database-generated. `name` is
@@ -136,6 +137,7 @@ public async findAll(): Promise<PromptCategory[]> {
   `prompt_categories.name` → `PromptCategory.name`.
 
 **Wiring:**
+
 - `src/config.ts`: aggregate the new schema, e.g.
   `import * as promptSchema from '@logic/prompt/infrastructure/database/schema.js';`
   and add it to `database.schema` (currently `{}` in
@@ -155,22 +157,22 @@ public async findAll(): Promise<PromptCategory[]> {
    rows listed in the spec. Per `docs/database.md`'s Column conventions, `id`
    is never database-generated, so the migration provides an explicit,
    hardcoded literal UUID (generated once, at authoring time) for each row:
-   - `d290f1ee-6c54-4b01-90e6-d701748f0851` — Writing & Content
-   - `c56a4180-65aa-42ec-a945-5fd21dec0538` — Marketing & Social Media
-   - `f47ac10b-58cc-4372-a567-0e02b2c3d479` — Coding & Development
-   - `9b2e3f1a-7c4d-4e8b-9a2f-1d3c5e7b9a0d` — Data & Analytics
-   - `3fa85f64-5717-4562-b3fc-2c963f66afa6` — Business & Finance
-   - `7c9e6679-7425-40de-944b-e07fc1f90ae7` — Learning & Research
-   - `e8a1c2b3-4d5f-4a6b-8c7d-9e0f1a2b3c4d` — Productivity
-   - `2f4a6b8c-1d3e-4f5a-9b7c-8d6e4f2a1b3c` — Design & UX
-   - `5d4c3b2a-1e0f-4a9b-8c7d-6e5f4a3b2c1d` — Career & Job Search
-   - `1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d` — Customer Support
-   - `9f8e7d6c-5b4a-4c3d-9e2f-1a0b9c8d7e6f` — Legal & Compliance
+    - `d290f1ee-6c54-4b01-90e6-d701748f0851` — Writing & Content
+    - `c56a4180-65aa-42ec-a945-5fd21dec0538` — Marketing & Social Media
+    - `f47ac10b-58cc-4372-a567-0e02b2c3d479` — Coding & Development
+    - `9b2e3f1a-7c4d-4e8b-9a2f-1d3c5e7b9a0d` — Data & Analytics
+    - `3fa85f64-5717-4562-b3fc-2c963f66afa6` — Business & Finance
+    - `7c9e6679-7425-40de-944b-e07fc1f90ae7` — Learning & Research
+    - `e8a1c2b3-4d5f-4a6b-8c7d-9e0f1a2b3c4d` — Productivity
+    - `2f4a6b8c-1d3e-4f5a-9b7c-8d6e4f2a1b3c` — Design & UX
+    - `5d4c3b2a-1e0f-4a9b-8c7d-6e5f4a3b2c1d` — Career & Job Search
+    - `1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d` — Customer Support
+    - `9f8e7d6c-5b4a-4c3d-9e2f-1a0b9c8d7e6f` — Legal & Compliance
 3. Rollback: the table-creation migration's down step is `DROP TABLE
-   prompt_categories;`; the seed migration's down step is `DELETE FROM
-   prompt_categories WHERE id IN (<the eleven literal UUIDs above>);`. Both
+prompt_categories;`; the seed migration's down step is `DELETE FROM
+prompt_categories WHERE id IN (<the eleven literal UUIDs above>);`. Both
    are written by hand alongside the generated SQL, since `drizzle-kit
-   generate` only emits the forward (up) schema SQL, not seed data or down
+generate` only emits the forward (up) schema SQL, not seed data or down
    scripts.
 
 ## 8. Dependency changes
@@ -181,9 +183,10 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
 ## 9. Assumptions and risks
 
 **Assumptions**
+
 1. Table name is `prompt_categories`, per `docs/database.md`'s "Owned
    entities" naming convention (which gives `prompt_categories` as its own
-   worked example for the *PromptCategory* entity), rather than a bare
+   worked example for the _PromptCategory_ entity), rather than a bare
    `categories`. The `/categories` route name is unaffected — it is
    user-facing API naming, independent of the storage table name. If wrong,
    only the table/schema identifier changes; no behavior changes.
@@ -210,7 +213,8 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
    rename is needed.
 
 **Risks**
-1. *(low likelihood, medium impact)* Integration tests for the "no
+
+1. _(low likelihood, medium impact)_ Integration tests for the "no
    categories" case (AC3) run against a database that already has the seed
    migration applied (§7), so the `prompt_categories` table is never
    naturally empty. Mitigation: the relevant tests capture the pre-existing
@@ -218,13 +222,13 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
    behavior, then restore the exact captured rows in a `finally`/`afterEach`
    block — satisfying `docs/testing.md`'s "leave everything else untouched"
    by restoring precisely what was temporarily removed.
-2. *(low likelihood, low impact)* Since the seed migration hardcodes eleven
+2. _(low likelihood, low impact)_ Since the seed migration hardcodes eleven
    literal UUIDs (§7 step 2) rather than relying on database generation,
    re-running the seed migration without a guard would attempt to insert
    duplicate primary keys. Mitigation: the migration is written to run
    exactly once (standard Drizzle Kit migration semantics — applied
    migrations are tracked and not re-run).
-3. *(medium likelihood, low impact)* `src/logic/prompt/infrastructure/database/schema.ts`
+3. _(medium likelihood, low impact)_ `src/logic/prompt/infrastructure/database/schema.ts`
    will later grow to include a `prompts` table when the prompt-management
    feature is built. Mitigation: keep the `prompt_categories` table as an
    additive, independently named export so future schema additions to the
@@ -243,16 +247,16 @@ per `docs/database.md`; no new, updated, or removed packages are needed.
 
 ## 11. Traceability
 
-| Spec item | Plan element(s) |
-|---|---|
-| Field: id | `PromptCategory.id` (§2); `prompt_categories.id` column (§7); route response body (§5) |
-| Field: name | `PromptCategory.name` (§2); `prompt_categories.name` column (§7); route response body (§5) |
-| §3 (no validation rules) | §6 Zod schemas: none required |
-| §4 (no error responses) | §5 Routes: no E# to map |
-| §1 Initial data (eleven starter categories) | §7 Migrations, seed migration step 2 |
-| AC1 | `ListPromptCategoriesUseCase` (§4); `DrizzlePromptCategoryRepository.findAll` (§7); `GET /categories` (§5) |
-| AC2 | `DrizzlePromptCategoryRepository.findAll` ORDER BY (§7); `PromptCategoryRepositoryInterface.findAll` contract (§3) |
-| AC3 | `ListPromptCategoriesUseCase` pass-through (§4); `DrizzlePromptCategoryRepository.findAll` on empty table (§7); `GET /categories` 200 with `[]` (§5) |
-| Decision #1 (bounded context) | §1; §7 table naming |
-| Decision #2 (starter data / empty state) | §1 Initial data (spec); §7 Migrations; §9 Risk 1 |
-| Decision #3 (ordering) | §3, §7, §9 Assumption 4 |
+| Spec item                                   | Plan element(s)                                                                                                                                      |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Field: id                                   | `PromptCategory.id` (§2); `prompt_categories.id` column (§7); route response body (§5)                                                               |
+| Field: name                                 | `PromptCategory.name` (§2); `prompt_categories.name` column (§7); route response body (§5)                                                           |
+| §3 (no validation rules)                    | §6 Zod schemas: none required                                                                                                                        |
+| §4 (no error responses)                     | §5 Routes: no E# to map                                                                                                                              |
+| §1 Initial data (eleven starter categories) | §7 Migrations, seed migration step 2                                                                                                                 |
+| AC1                                         | `ListPromptCategoriesUseCase` (§4); `DrizzlePromptCategoryRepository.findAll` (§7); `GET /categories` (§5)                                           |
+| AC2                                         | `DrizzlePromptCategoryRepository.findAll` ORDER BY (§7); `PromptCategoryRepositoryInterface.findAll` contract (§3)                                   |
+| AC3                                         | `ListPromptCategoriesUseCase` pass-through (§4); `DrizzlePromptCategoryRepository.findAll` on empty table (§7); `GET /categories` 200 with `[]` (§5) |
+| Decision #1 (bounded context)               | §1; §7 table naming                                                                                                                                  |
+| Decision #2 (starter data / empty state)    | §1 Initial data (spec); §7 Migrations; §9 Risk 1                                                                                                     |
+| Decision #3 (ordering)                      | §3, §7, §9 Assumption 4                                                                                                                              |

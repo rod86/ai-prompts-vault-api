@@ -1,82 +1,130 @@
 {
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module"
-  },
-  "plugins": ["@typescript-eslint", "import", "boundaries"],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:import/recommended",
-    "plugin:import/typescript",
-    "plugin:boundaries/recommended"
-  ],
-  "settings": {
-    "import/resolver": {
-      "typescript": true,
-      "node": true
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module"
     },
-    "boundaries/include": ["src/**/*"],
-    "boundaries/elements": [
-      { "type": "domain", "pattern": "src/logic/*/domain", "mode": "folder", "capture": ["context"] },
-      { "type": "application", "pattern": "src/logic/*/application", "mode": "folder", "capture": ["context"] },
-      { "type": "infrastructure", "pattern": "src/logic/*/infrastructure", "mode": "folder", "capture": ["context"] },
-      { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" }
-    ]
-  },
-  "rules": {
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/no-non-null-assertion": "error",
-    "@typescript-eslint/explicit-function-return-type": [
-      "warn",
-      { "allowExpressions": true }
+    "plugins": ["@typescript-eslint", "import", "boundaries"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "plugin:boundaries/recommended"
     ],
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
-    ],
-    "import/order": [
-      "warn",
-      {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-        "newlines-between": "never",
-        "alphabetize": { "order": "asc", "caseInsensitive": true }
-      }
-    ],
-    "boundaries/no-unknown": "off",
-    "boundaries/element-types": [
-      "error",
-      {
-        "default": "disallow",
-        "rules": [
-          {
-            "from": "domain",
-            "allow": ["shared", ["domain", { "context": "${from.context}" }]]
-          },
-          {
-            "from": "application",
-            "allow": [
-              "shared",
-              ["domain", { "context": "${from.context}" }],
-              ["application", { "context": "${from.context}" }]
-            ]
-          },
-          {
-            "from": "infrastructure",
-            "allow": [
-              "shared",
-              "config",
-              ["domain", { "context": "${from.context}" }],
-              ["application", { "context": "${from.context}" }],
-              ["infrastructure", { "context": "${from.context}" }]
-            ]
-          },
-          { "from": "shared", "allow": ["shared"] }
+    "settings": {
+        "import/resolver": {
+            "typescript": true,
+            "node": true
+        },
+        "boundaries/include": ["src/**/*"],
+        "boundaries/elements": [
+            {
+                "type": "domain",
+                "pattern": "src/logic/*/domain",
+                "mode": "folder",
+                "capture": ["context"]
+            },
+            {
+                "type": "application",
+                "pattern": "src/logic/*/application",
+                "mode": "folder",
+                "capture": ["context"]
+            },
+            {
+                "type": "infrastructure",
+                "pattern": "src/logic/*/infrastructure",
+                "mode": "folder",
+                "capture": ["context"]
+            },
+            { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" }
         ]
-      }
-    ]
-  },
-  "ignorePatterns": ["dist", "node_modules", "coverage", "*.config.ts"]
+    },
+    "rules": {
+        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-non-null-assertion": "error",
+        "@typescript-eslint/explicit-function-return-type": ["warn", { "allowExpressions": true }],
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+        ],
+        "import/order": [
+            "warn",
+            {
+                "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+                "newlines-between": "never",
+                "alphabetize": { "order": "asc", "caseInsensitive": true }
+            }
+        ],
+        "boundaries/no-unknown": "off",
+        "boundaries/dependencies": [
+            "error",
+            {
+                "default": "disallow",
+                "rules": [
+                    {
+                        "from": { "type": "domain" },
+                        "allow": [
+                            { "to": { "type": "shared" } },
+                            {
+                                "to": {
+                                    "type": "domain",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "from": { "type": "application" },
+                        "allow": [
+                            { "to": { "type": "shared" } },
+                            {
+                                "to": {
+                                    "type": "domain",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            },
+                            {
+                                "to": {
+                                    "type": "application",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "from": { "type": "infrastructure" },
+                        "allow": [
+                            { "to": { "type": "shared" } },
+                            { "to": { "type": "config" } },
+                            {
+                                "to": {
+                                    "type": "domain",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            },
+                            {
+                                "to": {
+                                    "type": "application",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            },
+                            {
+                                "to": {
+                                    "type": "infrastructure",
+                                    "captured": { "context": "{{from.captured.context}}" }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "from": { "type": "shared" },
+                        "allow": [{ "to": { "type": "shared" } }]
+                    }
+                ]
+            }
+        ]
+    },
+    "ignorePatterns": ["dist", "node_modules", "coverage", "*.config.ts"]
 }

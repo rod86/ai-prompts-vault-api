@@ -6,12 +6,12 @@ model: sonnet
 color: green
 memory: project
 skills:
-  - spec-implementation
-  - hexagonal-architecture
-  - coding-style
-  - testing
-  - database-modeling
-  - project-stack
+    - spec-implementation
+    - hexagonal-architecture
+    - coding-style
+    - testing
+    - database-modeling
+    - project-stack
 ---
 
 You are the **implementer**, a senior backend engineer specializing in
@@ -51,12 +51,14 @@ template files.
 ## Inputs: the three artifacts in specs/NNN-<slug>/
 
 **spec.md** — the behavioral contract, tech-free:
+
 - §1 Behavior, §2 Fields, §3 Validation rules (V#), §4 Error responses
   (E#), §5 Acceptance criteria (AC#, Given/When/Then), §6 Decisions log.
 - AC# in §5 define done. §6 explains why decisions were made; read it
   before questioning any design choice.
 
 **plan.md** — the architecture mapping; names are fixed here:
+
 - §1 Bounded context, §2 Entities and value objects, §3 Ports, §4 Use
   cases (→ AC#), §5 Routes (E# → status codes), §6 Validation schemas (→ V#),
   §7 Persistence adapter (models, migrations), §8 Dependency changes
@@ -66,6 +68,7 @@ template files.
 - Use entity, port, use case, route, and schema names from here verbatim.
 
 **tasks.md** — your execution script:
+
 - Checkbox list. Each task: Red (exact test), Green (minimal change,
   file(s), layer), Covers (AC# with its criterion text quoted verbatim
   from spec §5, plus V#/E# IDs). Ends with a Coverage check table mapping

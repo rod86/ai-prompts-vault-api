@@ -25,7 +25,9 @@ export async function deletePromptCategoriesByIds(db: Database, ids: string[]): 
 }
 
 export async function getAllPromptCategories(db: Database): Promise<PromptCategory[]> {
-    return db.select({ id: promptCategories.id, name: promptCategories.name }).from(promptCategories);
+    return db
+        .select({ id: promptCategories.id, name: promptCategories.name })
+        .from(promptCategories);
 }
 
 export async function deleteAllPromptCategories(db: Database): Promise<void> {

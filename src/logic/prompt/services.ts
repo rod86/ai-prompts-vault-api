@@ -7,5 +7,7 @@ import { databaseClient } from '@logic/shared/services.js';
 const promptCategoryRepository = new DrizzlePromptCategoryRepository(databaseClient.connect());
 const promptRepository = new DrizzlePromptRepository(databaseClient.connect());
 
-export const listPromptCategoriesUseCase = new ListPromptCategoriesUseCase(promptCategoryRepository);
+export const listPromptCategoriesUseCase = new ListPromptCategoriesUseCase(
+    promptCategoryRepository,
+);
 export const listPromptsUseCase = new ListPromptsUseCase(promptRepository);

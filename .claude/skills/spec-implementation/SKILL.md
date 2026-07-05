@@ -64,11 +64,11 @@ results. The human reviews it before raising a PR.
 
 ## Step boundaries (IMPLEMENT)
 
-| Step | Agent | Input | Output | Touches | Do NOT |
-|---|---|---|---|---|---|
-| — Gate | human | 3 artifacts | approval | nothing | approve incomplete coverage |
-| 5-7 Red/Green/Refactor | implementer | tasks.md | code + tests | src/, tests | add scope not in spec.md |
-| 8 Verify | implementer | spec + suite | green build + report | nothing new | call it done with criteria untested |
+| Step                   | Agent       | Input        | Output               | Touches     | Do NOT                              |
+| ---------------------- | ----------- | ------------ | -------------------- | ----------- | ----------------------------------- |
+| — Gate                 | human       | 3 artifacts  | approval             | nothing     | approve incomplete coverage         |
+| 5-7 Red/Green/Refactor | implementer | tasks.md     | code + tests         | src/, tests | add scope not in spec.md            |
+| 8 Verify               | implementer | spec + suite | green build + report | nothing new | call it done with criteria untested |
 
 ## Conventions
 

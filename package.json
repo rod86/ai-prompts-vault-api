@@ -1,45 +1,45 @@
 {
-  "name": "ai-prompt-vault-api",
-  "version": "0.1.0",
-  "description": "A REST API to manage AI prompts, built with Spec-Driven Development and hexagonal architecture.",
-  "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
-    "test": "vitest run",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "db:migrate": "drizzle-kit migrate"
-  },
-  "dependencies": {
-    "drizzle-orm": "^0.45.2",
-    "express": "^5.1.0",
-    "pg": "^8.22.0",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@faker-js/faker": "^10.5.0",
-    "@types/express": "^5.0.0",
-    "@types/node": "^20.14.10",
-    "@types/pg": "^8.20.0",
-    "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^7.16.0",
-    "@typescript-eslint/parser": "^7.16.0",
-    "drizzle-kit": "^0.31.10",
-    "eslint": "^8.57.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-boundaries": "^6.0.2",
-    "eslint-plugin-import": "^2.29.1",
-    "prettier": "^3.3.2",
-    "supertest": "^7.0.0",
-    "tsx": "^4.16.2",
-    "typescript": "^5.5.3",
-    "vitest": "^4.1.9",
-    "vitest-mock-extended": "^4.0.0"
-  }
+    "name": "ai-prompt-vault-api",
+    "version": "0.1.0",
+    "description": "A REST API to manage AI prompts, built with Spec-Driven Development and hexagonal architecture.",
+    "type": "module",
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc -p tsconfig.json",
+        "start": "node dist/index.js",
+        "test": "vitest run",
+        "lint": "eslint . --ext .ts",
+        "lint:fix": "eslint . --ext .ts --fix && prettier --write .",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "db:migrate": "drizzle-kit migrate"
+    },
+    "dependencies": {
+        "drizzle-orm": "^0.45.2",
+        "express": "^5.1.0",
+        "pg": "^8.22.0",
+        "zod": "^3.25.76"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^10.5.0",
+        "@types/express": "^5.0.0",
+        "@types/node": "^20.14.10",
+        "@types/pg": "^8.20.0",
+        "@types/supertest": "^6.0.2",
+        "@typescript-eslint/eslint-plugin": "^7.16.0",
+        "@typescript-eslint/parser": "^7.16.0",
+        "drizzle-kit": "^0.31.10",
+        "eslint": "^8.57.0",
+        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-plugin-boundaries": "^6.0.2",
+        "eslint-plugin-import": "^2.29.1",
+        "prettier": "^3.3.2",
+        "supertest": "^7.0.0",
+        "tsx": "^4.16.2",
+        "typescript": "^5.5.3",
+        "vitest": "^4.1.9",
+        "vitest-mock-extended": "^4.0.0"
+    }
 }

@@ -66,7 +66,7 @@ Assert both the error **type** and **message**:
 
 ```ts
 expect(() => useCase.execute(input)).toThrow(CreatePromptError);
-expect(() => useCase.execute(input)).toThrow("Error creating the prompt");
+expect(() => useCase.execute(input)).toThrow('Error creating the prompt');
 ```
 
 ## Test Types
@@ -76,13 +76,13 @@ expect(() => useCase.execute(input)).toThrow("Error creating the prompt");
 - One piece in isolation, all its dependencies mocked.
 - Mock the dependency **type**, not the real implementation. If a constructor
   takes `PromptRepositoryInterface`, mock the interface, not its implementation.
-- Applies to *use cases* in the `application` layer.
+- Applies to _use cases_ in the `application` layer.
 
 ### Integration (`tests/integration`)
 
 - Two or more real pieces working together — your code with a database, with an
   HTTP API, or two of your own modules combined.
-- Applies to *adapter* implementations in the `infrastructure` layer and *routes*
+- Applies to _adapter_ implementations in the `infrastructure` layer and _routes_
   in `app.ts`.
 - When a test touches the database:
     1. Open the connection once, before all tests.

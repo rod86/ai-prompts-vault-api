@@ -8,7 +8,6 @@ import {
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
 
-
 describe('DrizzlePromptCategoryRepository', () => {
     let db: NodePgDatabase<Record<string, unknown>>;
     let repository: DrizzlePromptCategoryRepository;
@@ -24,9 +23,9 @@ describe('DrizzlePromptCategoryRepository', () => {
 
     describe('findAll', () => {
         const categories = [
-          promptCategoryModelFactory.create({ name: 'Writing & Content' }),
-          promptCategoryModelFactory.create({ name: 'Business & Finance' }),
-          promptCategoryModelFactory.create({ name: 'Coding & Development' }),
+            promptCategoryModelFactory.create({ name: 'Writing & Content' }),
+            promptCategoryModelFactory.create({ name: 'Business & Finance' }),
+            promptCategoryModelFactory.create({ name: 'Coding & Development' }),
         ];
         afterEach(async () => {
             await deletePromptCategoriesByIds(
@@ -43,11 +42,7 @@ describe('DrizzlePromptCategoryRepository', () => {
             const fixtureIds = new Set(categories.map((category) => category.id));
             const fixturesInResult = result.filter((category) => fixtureIds.has(category.id));
 
-            expect(fixturesInResult).toEqual([
-                categories[1],
-                categories[2],
-                categories[0],
-            ]);
+            expect(fixturesInResult).toEqual([categories[1], categories[2], categories[0]]);
         });
     });
 });

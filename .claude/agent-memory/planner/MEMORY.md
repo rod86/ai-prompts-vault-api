@@ -21,7 +21,7 @@ Durable planning knowledge for ai-prompts-vault-api. Design/decision level only
 
 - `PromptCategory { id, name }`.
 - `Prompt { id, category: { id, name }, title, prompt, description?, createdAt,
-  updatedAt }` — the category is a **nested reference** (id + name together), not
+updatedAt }` — the category is a **nested reference** (id + name together), not
   a flat foreign key (002 Decision #2).
 
 ## Recurring design conventions (apply to future list/read features)

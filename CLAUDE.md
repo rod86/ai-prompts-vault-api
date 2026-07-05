@@ -41,18 +41,19 @@ into the `planner` and `implementer` agents:
 
 ## Stack
 
-| Library | Version | Role |
-|---|---|---|
-| Node | 24.16.0 (`.nvmrc`) | runtime |
-| TypeScript | v5, `strict` | language |
-| Express | v5 | HTTP framework |
-| Drizzle ORM + `pg` | node-postgres | persistence over PostgreSQL (`Pool`) |
-| drizzle-kit | — | migrations (run via `npx`, no npm scripts) |
-| Zod | — | validation at the HTTP boundary |
-| Vitest + supertest + vitest-mock-extended + @faker-js/faker | — | testing |
-| Prettier + ESLint (+ eslint-plugin-boundaries) | — | formatting + boundary linting |
+| Library                                                     | Version            | Role                                       |
+| ----------------------------------------------------------- | ------------------ | ------------------------------------------ |
+| Node                                                        | 24.16.0 (`.nvmrc`) | runtime                                    |
+| TypeScript                                                  | v5, `strict`       | language                                   |
+| Express                                                     | v5                 | HTTP framework                             |
+| Drizzle ORM + `pg`                                          | node-postgres      | persistence over PostgreSQL (`Pool`)       |
+| drizzle-kit                                                 | —                  | migrations (run via `npx`, no npm scripts) |
+| Zod                                                         | —                  | validation at the HTTP boundary            |
+| Vitest + supertest + vitest-mock-extended + @faker-js/faker | —                  | testing                                    |
+| Prettier + ESLint (+ eslint-plugin-boundaries)              | —                  | formatting + boundary linting              |
 
 Must-know rules:
+
 - `process.env` is read **only** in `src/config.ts`.
 - Validate all external input with Zod at the HTTP boundary; only parsed values
   flow inward.

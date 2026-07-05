@@ -20,9 +20,9 @@ context's infrastructure. Concrete aggregation code is in `project-stack`.
 ## Table conventions
 
 - **Naming**: table names are lowercase `snake_case`, plural, and spelled out in
-  full (no abbreviations), e.g. `prompts` for the *Prompt* entity.
+  full (no abbreviations), e.g. `prompts` for the _Prompt_ entity.
 - **Owned entities**: tables for entities owned by another entity are prefixed
-  with the owner's table name, e.g. `prompt_categories` for *PromptCategory*.
+  with the owner's table name, e.g. `prompt_categories` for _PromptCategory_.
 - **Join tables**: many-to-many relationships use a join table named by
   combining both table names, e.g. `prompts_tags` linking `prompts` and `tags`.
 - **One table per entity**: each domain entity maps to its own table, defined in

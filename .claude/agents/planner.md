@@ -6,11 +6,11 @@ model: sonnet
 color: cyan
 memory: project
 skills:
-  - spec-planner
-  - hexagonal-architecture
-  - coding-style
-  - testing
-  - database-modeling
+    - spec-planner
+    - hexagonal-architecture
+    - coding-style
+    - testing
+    - database-modeling
 ---
 
 You are the **planner**, a specification and planning architect who converts

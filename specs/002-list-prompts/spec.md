@@ -1,4 +1,5 @@
 # Spec: List prompts
+
 Status: READY FOR REVIEW
 Story: As a user, I want to retrieve all prompts, optionally filtered by category, so that I can find the ones I need.
 
@@ -33,16 +34,16 @@ error and does not exclude the prompt from the list.
 
 ## 2. Fields
 
-| Field | Meaning | Domain type | Required | Default |
-|---|---|---|---|---|
-| id | Unique identifier of the prompt | text | true | — |
-| category.id | Unique identifier of the category the prompt belongs to | text | true | — |
-| category.name | Human-readable name of the category the prompt belongs to | text | true | — |
-| title | Short label for the prompt | text | true | — |
-| prompt | The prompt's text content | text | true | — |
-| description | Optional short summary of the prompt | text | false | none |
-| createdAt | When the prompt was created | date | true | — |
-| updatedAt | When the prompt was last updated | date | true | — |
+| Field         | Meaning                                                   | Domain type | Required | Default |
+| ------------- | --------------------------------------------------------- | ----------- | -------- | ------- |
+| id            | Unique identifier of the prompt                           | text        | true     | —       |
+| category.id   | Unique identifier of the category the prompt belongs to   | text        | true     | —       |
+| category.name | Human-readable name of the category the prompt belongs to | text        | true     | —       |
+| title         | Short label for the prompt                                | text        | true     | —       |
+| prompt        | The prompt's text content                                 | text        | true     | —       |
+| description   | Optional short summary of the prompt                      | text        | false    | none    |
+| createdAt     | When the prompt was created                               | date        | true     | —       |
+| updatedAt     | When the prompt was last updated                          | date        | true     | —       |
 
 `category.id` and `category.name` together describe one category reference
 per prompt (see Behavior above); they are not independent, unrelated
@@ -91,9 +92,9 @@ responses are defined for this operation.
 
 ## 6. Decisions log
 
-| # | Question asked | Answer | Effect on this spec |
-|---|---|---|---|
-| 1 | What fields does a prompt have, beyond id and the category reference? | Minimal set plus an optional description: id, category reference, title, prompt (body text), description (optional), createdAt, updatedAt. | Fixed the §2 Fields table; added AC6 to cover the optional description explicitly. |
-| 2 | How is the category represented in a returned prompt? | Nested category reference — the prompt carries its category's id and name together (grouped), rather than only a bare identifier. | §2 Fields models `category.id`/`category.name` as one grouped reference; §1 Behavior describes prompts as "shown with the category it belongs to." |
-| 3 | What order are prompts returned in? | Most recently created first. | Added AC2, requiring most-recent-first ordering, applying to both the filtered and unfiltered main/alternate flows. |
-| 4 | How is a malformed or non-matching category filter value handled? | Treated identically to any other non-matching value: no format validation, opaque equality comparison, any non-match (whether from a nonexistent category or one with no prompts) returns an empty list, never an error. | §3 states no validation rule makes a filter value "invalid"; merged what would otherwise be two near-identical acceptance criteria into a single AC5 covering every non-matching case; §4 confirms no error responses exist for this operation. |
+| #   | Question asked                                                        | Answer                                                                                                                                                                                                                   | Effect on this spec                                                                                                                                                                                                                             |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | What fields does a prompt have, beyond id and the category reference? | Minimal set plus an optional description: id, category reference, title, prompt (body text), description (optional), createdAt, updatedAt.                                                                               | Fixed the §2 Fields table; added AC6 to cover the optional description explicitly.                                                                                                                                                              |
+| 2   | How is the category represented in a returned prompt?                 | Nested category reference — the prompt carries its category's id and name together (grouped), rather than only a bare identifier.                                                                                        | §2 Fields models `category.id`/`category.name` as one grouped reference; §1 Behavior describes prompts as "shown with the category it belongs to."                                                                                              |
+| 3   | What order are prompts returned in?                                   | Most recently created first.                                                                                                                                                                                             | Added AC2, requiring most-recent-first ordering, applying to both the filtered and unfiltered main/alternate flows.                                                                                                                             |
+| 4   | How is a malformed or non-matching category filter value handled?     | Treated identically to any other non-matching value: no format validation, opaque equality comparison, any non-match (whether from a nonexistent category or one with no prompts) returns an empty list, never an error. | §3 states no validation rule makes a filter value "invalid"; merged what would otherwise be two near-identical acceptance criteria into a single AC5 covering every non-matching case; §4 confirms no error responses exist for this operation. |

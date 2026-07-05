@@ -37,7 +37,7 @@ is where things live and how they're built.
 ## Testing patterns
 
 - **Unit:** `mock<...RepositoryInterface>()` + `repository.findAll.mockResolvedValue(...)`
-  + faker for fixtures; build the mock in `beforeEach`.
+    - faker for fixtures; build the mock in `beforeEach`.
 - **Integration:** open the DB in `beforeAll`; seed via `tests/lib/seeding`
   helpers (one helper per table); `afterEach` deletes **only** inserted rows;
   close in `afterAll`.

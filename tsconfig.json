@@ -1,31 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
-    "outDir": "dist",
-    "rootDir": ".",
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": ["ES2022"],
+        "outDir": "dist",
+        "rootDir": ".",
 
-    "strict": true,
-    "noImplicitAny": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
 
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "declaration": false,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["./src/*"],
-      "@logic/*": ["./src/logic/*"],
-      "@tests/*": ["./tests/*"]
-    }
-  },
-  "include": ["src", "tests", "vitest.config.ts"],
-  "exclude": ["node_modules", "dist"]
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "declaration": false,
+        "sourceMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "@src/*": ["./src/*"],
+            "@logic/*": ["./src/logic/*"],
+            "@tests/*": ["./tests/*"]
+        }
+    },
+    "include": ["src", "tests", "vitest.config.ts"],
+    "exclude": ["node_modules", "dist"]
 }

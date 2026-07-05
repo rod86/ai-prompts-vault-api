@@ -7,8 +7,8 @@ import { type Prompt } from '@logic/prompt/domain/Prompt.js';
 import { promptModelFactory, promptCategoryModelFactory } from '@tests/lib/config.js';
 
 const buildPrompt = (): Prompt => {
-  const { categoryId:_, ...prompt } = promptModelFactory.create();
-  return { ...prompt, category: promptCategoryModelFactory.create() };
+    const { categoryId: _, ...prompt } = promptModelFactory.create();
+    return { ...prompt, category: promptCategoryModelFactory.create() };
 };
 
 describe('ListPromptsUseCase', () => {

@@ -1,4 +1,5 @@
 # Plan: List prompts
+
 Spec: specs/002-list-prompts/spec.md
 Status: READY FOR REVIEW
 
@@ -26,25 +27,25 @@ separate flat-`categoryId` entity for future write features (create/
 update) was considered and dropped as unnecessary speculative scope for
 this feature — see the Decisions log entry below and §9 Assumption 1.
 
-| Field | Type | From spec | Invariants |
-|---|---|---|---|
-| id | `string` | spec §2 `id` | none enforced by this read-only feature (spec §3) |
-| category | `{ id: string; name: string }` | spec §2 `category.id` / `category.name` | none enforced by this read-only feature (spec §3) |
-| title | `string` | spec §2 `title` | none enforced by this read-only feature (spec §3) |
-| prompt | `string` | spec §2 `prompt` | none enforced by this read-only feature (spec §3) |
-| description | `string \| undefined` | spec §2 `description` | optional (spec §2 Required = false) |
-| createdAt | `Date` | spec §2 `createdAt` | none enforced by this read-only feature (spec §3) |
-| updatedAt | `Date` | spec §2 `updatedAt` | none enforced by this read-only feature (spec §3) |
+| Field       | Type                           | From spec                               | Invariants                                        |
+| ----------- | ------------------------------ | --------------------------------------- | ------------------------------------------------- |
+| id          | `string`                       | spec §2 `id`                            | none enforced by this read-only feature (spec §3) |
+| category    | `{ id: string; name: string }` | spec §2 `category.id` / `category.name` | none enforced by this read-only feature (spec §3) |
+| title       | `string`                       | spec §2 `title`                         | none enforced by this read-only feature (spec §3) |
+| prompt      | `string`                       | spec §2 `prompt`                        | none enforced by this read-only feature (spec §3) |
+| description | `string \| undefined`          | spec §2 `description`                   | optional (spec §2 Required = false)               |
+| createdAt   | `Date`                         | spec §2 `createdAt`                     | none enforced by this read-only feature (spec §3) |
+| updatedAt   | `Date`                         | spec §2 `updatedAt`                     | none enforced by this read-only feature (spec §3) |
 
 ```ts
 export interface Prompt {
-  id: string;
-  category: { id: string; name: string };
-  title: string;
-  prompt: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
+    id: string;
+    category: { id: string; name: string };
+    title: string;
+    prompt: string;
+    description?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 ```
 
@@ -61,11 +62,11 @@ export interface Prompt {
 import { type Prompt } from '@logic/prompt/domain/Prompt';
 
 export interface PromptFilter {
-  categoryId?: string;
+    categoryId?: string;
 }
 
 export default interface PromptRepositoryInterface {
-  findAll(filter?: PromptFilter): Promise<Prompt[]>;
+    findAll(filter?: PromptFilter): Promise<Prompt[]>;
 }
 ```
 
@@ -92,25 +93,25 @@ export default interface PromptRepositoryInterface {
 
 ```ts
 export interface ListPromptsQuery {
-  categoryId?: string;
+    categoryId?: string;
 }
 
 export interface ListPromptsResponse {
-  id: string;
-  category: { id: string; name: string };
-  title: string;
-  prompt: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
+    id: string;
+    category: { id: string; name: string };
+    title: string;
+    prompt: string;
+    description?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export class ListPromptsUseCase {
-  constructor(private readonly repository: PromptRepositoryInterface) {}
+    constructor(private readonly repository: PromptRepositoryInterface) {}
 
-  public async invoke(query: ListPromptsQuery = {}): Promise<ListPromptsResponse[]> {
-    return this.repository.findAll({ categoryId: query.categoryId });
-  }
+    public async invoke(query: ListPromptsQuery = {}): Promise<ListPromptsResponse[]> {
+        return this.repository.findAll({ categoryId: query.categoryId });
+    }
 }
 ```
 
@@ -143,7 +144,7 @@ export class ListPromptsUseCase {
 import { z } from 'zod';
 
 export const GetPromptsQuerySchema = z.object({
-  category: z.string().optional(),
+    category: z.string().optional(),
 });
 ```
 
@@ -167,21 +168,21 @@ export const GetPromptsQuerySchema = z.object({
 
 ```ts
 export const prompts = pgTable('prompts', {
-  id: uuid('id').primaryKey(),
-  promptCategoryId: uuid('prompt_category_id')
-    .notNull()
-    .references(() => promptCategories.id),
-  title: text('title').notNull(),
-  prompt: text('prompt').notNull(),
-  description: text('description'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    id: uuid('id').primaryKey(),
+    promptCategoryId: uuid('prompt_category_id')
+        .notNull()
+        .references(() => promptCategories.id),
+    title: text('title').notNull(),
+    prompt: text('prompt').notNull(),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
 });
 ```
 
 - Table: `prompts` — plain, unprefixed name per `docs/database.md`'s
   "Naming" convention (`Prompt` is not owned by another entity; it
-  *references* `PromptCategory`, which is a different relationship than
+  _references_ `PromptCategory`, which is a different relationship than
   "owned entities" like `prompt_categories`).
 - FK column: `prompt_category_id`, referencing `prompt_categories.id`, per
   `docs/database.md`'s Column conventions ("Foreign key columns are named
@@ -258,6 +259,7 @@ public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
   → `.createdAt`/`.updatedAt`.
 
 **Wiring:**
+
 - `src/config.ts`: no change needed — it already imports
   `* as promptSchema from '@logic/prompt/infrastructure/database/schema.js'`
   and spreads it into `database.schema`, so the new `prompts` export is
@@ -290,6 +292,7 @@ public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
 ## 9. Assumptions and risks
 
 **Assumptions**
+
 1. `Prompt` is the single domain type for this feature, with a nested
    `category` reference, rather than a separate flat-`categoryId` entity
    plus a distinct nested read-model. An earlier draft of this plan defined
@@ -328,19 +331,20 @@ public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
    "filename equals class name"). If wrong, only renames are needed.
 
 **Risks**
-1. *(low likelihood, medium impact)* This is the first Zod dependency and
+
+1. _(low likelihood, medium impact)_ This is the first Zod dependency and
    first query-parameter validation in the codebase; ESLint's boundary
    rules (`eslint-plugin-boundaries`) have not been exercised against a
    `src/handlers/schemas/` folder before. Mitigation: colocate the schema
    with its handler (both outside `src/logic/`), avoiding any new
    cross-context or cross-layer import that boundary rules would flag.
-2. *(medium likelihood, low impact)* `prompts.prompt_category_id` is
+2. _(medium likelihood, low impact)_ `prompts.prompt_category_id` is
    `NOT NULL` with a `REFERENCES` constraint, so any test fixture must
    insert a valid category row before inserting a prompt row, or the
    insert fails at the database level. Mitigation: the prompt-seeding test
    helper (tasks.md) requires a `categoryId` argument and integration
    tests always seed a category first.
-3. *(low likelihood, low impact)* The join in `findAll()` silently drops
+3. _(low likelihood, low impact)_ The join in `findAll()` silently drops
    any prompt whose `prompt_category_id` no longer matches a row in
    `prompt_categories` (an orphaned FK), since it uses an inner join. This
    cannot occur under the stated invariants (the FK constraint prevents an
@@ -371,25 +375,25 @@ public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
 
 ## 11. Traceability
 
-| Spec item | Plan element(s) |
-|---|---|
-| Field: id | `Prompt.id` (§2); `prompts.id` column (§7); route response body (§5) |
-| Field: category.id / category.name | `Prompt.category` (§2); join to `prompt_categories` in `DrizzlePromptRepository.findAll` (§7); route response body (§5) |
-| Field: title | `Prompt.title` (§2); `prompts.title` column (§7) |
-| Field: prompt | `Prompt.prompt` (§2); `prompts.prompt` column (§7) |
-| Field: description | `Prompt.description?` (§2); `prompts.description` nullable column (§7); AC6 |
-| Field: createdAt | `Prompt.createdAt` (§2); `prompts.created_at` column (§7); ordering (§7 `orderBy`) |
-| Field: updatedAt | `Prompt.updatedAt` (§2); `prompts.updated_at` column (§7) |
-| §3 (no validation rules; opaque filter) | §6 `GetPromptsQuerySchema` (boundary-only, no V# traced); §3 `PromptFilter` contract |
-| §4 (no error responses) | §5 Routes: no E# to map, every request resolves `200` |
-| AC1 | `ListPromptsUseCase` (§4); `DrizzlePromptRepository.findAll` (§7); `GET /prompts` (§5) |
-| AC2 | `DrizzlePromptRepository.findAll` `orderBy` (§7); `ListPromptsUseCase` pass-through (§4) |
-| AC3 | `ListPromptsUseCase` pass-through (§4); `DrizzlePromptRepository.findAll` on empty table (§7); `GET /prompts` `200` with `[]` (§5) |
-| AC4 | `PromptFilter.categoryId` (§3); `DrizzlePromptRepository.findAll` `whereClause` (§7); `GET /prompts?category=` (§5) |
-| AC5 | `PromptFilter` "no validation" contract (§3); `DrizzlePromptRepository.findAll` non-matching filter (§7, §10); `GET /prompts?category=` `200` with `[]` (§5) |
-| AC6 | `Prompt.description?` (§2); `description ?? undefined` mapping (§7); `GET /prompts` response (§5) |
-| Decision #1 (prompt fields) | §2 `Prompt`; §7 `prompts` table columns |
-| Decision #2 (nested category) | §2 `Prompt.category`; §3 port return type; §7 join |
-| Decision #3 (ordering) | §7 `orderBy(desc(createdAt), id)`; §9 Assumption 4 |
-| Decision #4 (no format validation on filter) | §3 `PromptFilter` contract; §6 `GetPromptsQuerySchema` (structural-only); §10 edge cases |
-| Review decision (drop speculative flat-`categoryId` entity) | §2 `Prompt` (single type); §9 Assumption 1 |
+| Spec item                                                   | Plan element(s)                                                                                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Field: id                                                   | `Prompt.id` (§2); `prompts.id` column (§7); route response body (§5)                                                                                         |
+| Field: category.id / category.name                          | `Prompt.category` (§2); join to `prompt_categories` in `DrizzlePromptRepository.findAll` (§7); route response body (§5)                                      |
+| Field: title                                                | `Prompt.title` (§2); `prompts.title` column (§7)                                                                                                             |
+| Field: prompt                                               | `Prompt.prompt` (§2); `prompts.prompt` column (§7)                                                                                                           |
+| Field: description                                          | `Prompt.description?` (§2); `prompts.description` nullable column (§7); AC6                                                                                  |
+| Field: createdAt                                            | `Prompt.createdAt` (§2); `prompts.created_at` column (§7); ordering (§7 `orderBy`)                                                                           |
+| Field: updatedAt                                            | `Prompt.updatedAt` (§2); `prompts.updated_at` column (§7)                                                                                                    |
+| §3 (no validation rules; opaque filter)                     | §6 `GetPromptsQuerySchema` (boundary-only, no V# traced); §3 `PromptFilter` contract                                                                         |
+| §4 (no error responses)                                     | §5 Routes: no E# to map, every request resolves `200`                                                                                                        |
+| AC1                                                         | `ListPromptsUseCase` (§4); `DrizzlePromptRepository.findAll` (§7); `GET /prompts` (§5)                                                                       |
+| AC2                                                         | `DrizzlePromptRepository.findAll` `orderBy` (§7); `ListPromptsUseCase` pass-through (§4)                                                                     |
+| AC3                                                         | `ListPromptsUseCase` pass-through (§4); `DrizzlePromptRepository.findAll` on empty table (§7); `GET /prompts` `200` with `[]` (§5)                           |
+| AC4                                                         | `PromptFilter.categoryId` (§3); `DrizzlePromptRepository.findAll` `whereClause` (§7); `GET /prompts?category=` (§5)                                          |
+| AC5                                                         | `PromptFilter` "no validation" contract (§3); `DrizzlePromptRepository.findAll` non-matching filter (§7, §10); `GET /prompts?category=` `200` with `[]` (§5) |
+| AC6                                                         | `Prompt.description?` (§2); `description ?? undefined` mapping (§7); `GET /prompts` response (§5)                                                            |
+| Decision #1 (prompt fields)                                 | §2 `Prompt`; §7 `prompts` table columns                                                                                                                      |
+| Decision #2 (nested category)                               | §2 `Prompt.category`; §3 port return type; §7 join                                                                                                           |
+| Decision #3 (ordering)                                      | §7 `orderBy(desc(createdAt), id)`; §9 Assumption 4                                                                                                           |
+| Decision #4 (no format validation on filter)                | §3 `PromptFilter` contract; §6 `GetPromptsQuerySchema` (structural-only); §10 edge cases                                                                     |
+| Review decision (drop speculative flat-`categoryId` entity) | §2 `Prompt` (single type); §9 Assumption 1                                                                                                                   |

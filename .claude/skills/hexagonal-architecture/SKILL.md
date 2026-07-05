@@ -41,11 +41,12 @@ Load sensitive values from env (e.g. API key).
 Importable ONLY by `app.ts`, `index.ts`, and context `services.ts` files.
 
 **Example config object**
+
 ```typescript
 export default {
     port: process.env.PORT ?? 3000,
     environment: process.env.ENVIRONMENT ?? 'development',
-}
+};
 ```
 
 ## HTTP adapter (inbound)
@@ -72,26 +73,27 @@ One use case per meaningful operation. Each file is self-contained: `Query`,
 
 ```typescript
 export interface CreatePromptQuery {
-  id: string;
-  title: string;
-  prompt: string;
-  createdAt: Date;
+    id: string;
+    title: string;
+    prompt: string;
+    createdAt: Date;
 }
 
 export interface CreatePromptResponse {
-  id: string;
-  title: string;
+    id: string;
+    title: string;
 }
 
 export class CreatePromptUseCase {
-  constructor(private readonly service: PromptRepositoryInterface) {}
-  public async invoke(request: CreatePromptQuery): Promise<CreatePromptResponse> {
-    // ...
-  }
+    constructor(private readonly service: PromptRepositoryInterface) {}
+    public async invoke(request: CreatePromptQuery): Promise<CreatePromptResponse> {
+        // ...
+    }
 }
 ```
 
 Rules:
+
 - Class suffixed `UseCase`; filename equals class name.
 - Input interface suffixed `Query`, output interface suffixed `Response`. Omit
   either if unneeded.
@@ -106,39 +108,42 @@ Rules:
 Entities, interfaces, errors. Framework-agnostic.
 
 **Entities** (domain root folder, simple TypeScript interfaces):
+
 ```typescript
 // src/logic/prompt/domain/Prompt.ts
 export type PromptCategory = 'backend' | 'frontend' | 'devops';
 export interface Prompt {
-  id: string;
-  category: PromptCategory;
-  title: string;
-  prompt: string;
-  createdAt: Date;
-  updatedAt: Date;
+    id: string;
+    category: PromptCategory;
+    title: string;
+    prompt: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 ```
 
 **Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend
 on. Name must NOT reference a source (no Database, AWS, etc.).
+
 ```typescript
 // src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
-import { Prompt } from "@logic/prompt/domain/Prompt";
+import { Prompt } from '@logic/prompt/domain/Prompt';
 export default interface PromptRepositoryInterface {
-  create(prompt: Prompt): Promise<void>;
-  findAll(): Promise<Prompt[]>;
-  findById(id: string): Promise<Prompt>;
+    create(prompt: Prompt): Promise<void>;
+    findAll(): Promise<Prompt[]>;
+    findById(id: string): Promise<Prompt>;
 }
 ```
 
 **Errors (`<context>/domain/errors`):** custom errors thrown by use cases.
+
 ```typescript
 export default class CreatePromptError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'CreatePromptError';
-    Object.setPrototypeOf(this, CreatePromptError.prototype);
-  }
+    constructor(message: string) {
+        super(message);
+        this.name = 'CreatePromptError';
+        Object.setPrototypeOf(this, CreatePromptError.prototype);
+    }
 }
 ```
 
@@ -152,6 +157,7 @@ class or ask the user.
 ## Shared (`src/logic/shared`)
 
 Cross-context code only (Result type, base error, shared value objects).
+
 - Used by a single context? It belongs to that context, not here.
 - Keep small and dependency-light. Must not import from any context.
 - When in doubt, leave it out (duplication is cheaper than a wrong abstraction).
@@ -162,7 +168,7 @@ Wires infrastructure adapters and exposes the context's use cases for use
 outside `logic`. Same pattern for the shared context.
 
 ```typescript
-const promptRepository = new /* concrete adapter */Repository(databaseClient);
+const promptRepository = new /* concrete adapter */ Repository(databaseClient);
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 ```
 

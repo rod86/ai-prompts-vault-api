@@ -135,9 +135,7 @@ describe('GET /prompts', () => {
     it('returns only prompts in the requested category when filtered', async () => {
         await insertPrompts(db, [olderPrompt, newerPrompt, otherCategoryPrompt]);
 
-        const response = await request(app).get(
-            `/prompts?category=${promptsFixtureCategory.id}`,
-        );
+        const response = await request(app).get(`/prompts?category=${promptsFixtureCategory.id}`);
 
         const fixtureIds = new Set([olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>

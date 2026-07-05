@@ -36,9 +36,9 @@ npm run dev               # start the API (http://localhost:3000)
 The workflow is split across two Claude Code skills under `.claude/skills/`,
 each used by one agent:
 
-| Agent | Owns | Model | Skill |
-|---|---|---|---|
-| `planner` | PLAN, steps 1–4 | opus | `spec-planner` |
+| Agent         | Owns                 | Model  | Skill                 |
+| ------------- | -------------------- | ------ | --------------------- |
+| `planner`     | PLAN, steps 1–4      | opus   | `spec-planner`        |
 | `implementer` | IMPLEMENT, steps 5–8 | sonnet | `spec-implementation` |
 
 **Invocation:**
