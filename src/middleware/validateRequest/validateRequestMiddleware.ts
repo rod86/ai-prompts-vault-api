@@ -1,14 +1,5 @@
 import { type NextFunction, type Request, type Response } from 'express';
-import { type RequestData, type RequestSchema, validate } from '@src/middleware/validateRequest/validation.js';
-
-declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
-    namespace Express {
-        interface Request {
-            parsedRequest?: RequestData;
-        }
-    }
-}
+import { type RequestSchema, validate } from '@src/middleware/validateRequest/validation.js';
 
 export function validateRequestMiddleware<T extends RequestSchema>(
     schema: T,
