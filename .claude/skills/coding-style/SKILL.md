@@ -33,6 +33,10 @@ maintainable option.
 - `Interface` suffix on ports/interfaces, prefixed by the entity they serve:
   `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`.
 - Names reveal intent. A good name removes the need for a comment.
+- Unused variables/args must be prefixed with `_` (the linter's
+  `no-unused-vars` ignore pattern). When destructuring to discard a property,
+  rename it to `_` via colon syntax rather than binding it under its original
+  name: `const { categoryId: _, ...rest } = value;`.
 
 ## Functions & Clean Code
 
@@ -63,8 +67,9 @@ maintainable option.
 ## Imports
 
 - Use the project path aliases (see `project-stack`), not long relative chains.
-- Order: builtin → external → internal → parent/sibling (auto-fixed by the
-  linter).
+- Order: builtin → external → internal → parent → sibling → index, with no
+  blank lines between groups, and alphabetized (case-insensitive) within each
+  group. Auto-fixed by the linter (`import/order`).
 - No deep cross-context reach-ins. Import a context's public surface, not its
   inner files (enforced by boundary linting).
 
@@ -72,5 +77,6 @@ maintainable option.
 
 - The **formatter owns formatting** — don't hand-format. Exact config in
   `project-stack` / `CLAUDE.md`.
+- 4-space indentation.
 - **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`,
   `chore:`.

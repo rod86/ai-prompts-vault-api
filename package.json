@@ -12,6 +12,7 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:migrate": "drizzle-kit migrate"
   },
