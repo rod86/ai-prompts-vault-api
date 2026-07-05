@@ -2,8 +2,7 @@ import { faker } from '@faker-js/faker';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DrizzlePromptRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptRepository.js';
-import { databaseClient } from '@logic/shared/services.js';
-import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import { databaseClient, promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
