@@ -1,3 +1,4 @@
+import { GetPromptUseCase } from '@logic/prompt/application/GetPromptUseCase.js';
 import { ListPromptCategoriesUseCase } from '@logic/prompt/application/ListPromptCategoriesUseCase.js';
 import { ListPromptsUseCase } from '@logic/prompt/application/ListPromptsUseCase.js';
 import { DrizzlePromptCategoryRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
@@ -11,3 +12,4 @@ export const listPromptCategoriesUseCase = new ListPromptCategoriesUseCase(
     promptCategoryRepository,
 );
 export const listPromptsUseCase = new ListPromptsUseCase(promptRepository);
+export const getPromptUseCase = new GetPromptUseCase(promptRepository);

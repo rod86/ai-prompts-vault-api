@@ -3,7 +3,7 @@
 Plan: specs/003-get-prompt/plan.md
 Status: READY FOR REVIEW
 
-- [ ] T1. Use case returns the prompt provided by the repository, fully shaped
+- [x] T1. Use case returns the prompt provided by the repository, fully shaped
     - Red: `tests/unit/logic/prompt/application/GetPromptUseCase.test.ts` —
       construct `GetPromptUseCase` with a `mock<PromptRepositoryInterface>()`
       (per `testing` skill); set `repository.findById.mockResolvedValue(fixture)`
@@ -21,7 +21,7 @@ Status: READY FOR REVIEW
       Then the response includes that prompt's id, category (id and name),
       title, prompt text, description, createdAt, and updatedAt."
 
-- [ ] T2. Use case throws PromptNotFoundError when the repository finds nothing
+- [x] T2. Use case throws PromptNotFoundError when the repository finds nothing
     - Red: same file as T1 — new `it`; `repository.findById.mockResolvedValue(undefined)`;
       assert `await expect(useCase.invoke('missing-id')).rejects.toThrow(PromptNotFoundError)`
       and `.rejects.toThrow('Prompt not found: missing-id')` (asserting both
@@ -33,7 +33,7 @@ Status: READY FOR REVIEW
       user opens a prompt by that id, Then the user is told the prompt was
       not found (E1), and no prompt data is returned."
 
-- [ ] T3. Use case returns a prompt with no description unchanged
+- [x] T3. Use case returns a prompt with no description unchanged
     - Red: same file as T1 — new `it`; build a fixture `Prompt` with
       `description: undefined`; `repository.findById.mockResolvedValue(fixture)`;
       call `useCase.invoke(fixture.id)`; assert the result's `description`
@@ -44,7 +44,7 @@ Status: READY FOR REVIEW
       opens it by its id, Then the response includes that prompt with no
       description value, rather than an error."
 
-- [ ] T4. Repository returns a prompt joined with its category by id
+- [x] T4. Repository returns a prompt joined with its category by id
     - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` —
       new `describe('findById', ...)` block; per `testing` skill integration
       conventions, insert a fixture category via
@@ -61,7 +61,7 @@ Status: READY FOR REVIEW
       `findAll` does (per plan.md §7).
     - Covers: AC1 (see T1 text above).
 
-- [ ] T5. Repository returns undefined when no prompt matches the id
+- [x] T5. Repository returns undefined when no prompt matches the id
     - Red: same file as T4 — new `it`; call
       `findById(faker.string.uuid())` with an id that matches no inserted
       prompt; assert the result is `undefined`.
@@ -70,7 +70,7 @@ Status: READY FOR REVIEW
       Run the test to confirm.
     - Covers: AC3 (see T2 text above).
 
-- [ ] T6. Repository returns undefined when the id is not UUID-shaped
+- [x] T6. Repository returns undefined when the id is not UUID-shaped
     - Red: same file as T4 — new `it`; call `findById('not-a-uuid')`;
       assert the result is `undefined` (not a thrown database error).
     - Green: no production change expected if T4's `::text` cast is already
@@ -78,7 +78,7 @@ Status: READY FOR REVIEW
     - Covers: AC3 (see T2 text above); plan.md §9 Assumption 1 (malformed
       id treated as not-found).
 
-- [ ] T7. Repository represents a prompt with no description as an absent value
+- [x] T7. Repository represents a prompt with no description as an absent value
     - Red: same file as T4 — new `it`; insert a fixture prompt with no
       `description` (via the seeding helper, omitting the field); call
       `findById(fixture.id)`; assert the result's `description` is
@@ -87,7 +87,7 @@ Status: READY FOR REVIEW
       mapping is already in place; run the test to confirm.
     - Covers: AC2 (see T3 text above).
 
-- [ ] T8. `GET /prompts/:id` returns the full prompt when it exists
+- [x] T8. `GET /prompts/:id` returns the full prompt when it exists
     - Red: `tests/integration/app.test.ts` — new `describe('GET /prompts/:id', ...)`
       block; using `supertest` against the real Express `app`, seed a
       fixture category and a fixture prompt referencing it (via the
@@ -108,7 +108,7 @@ Status: READY FOR REVIEW
       `app.get('/prompts/:id', getPromptHandler)` in `src/app.ts`.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T9. `GET /prompts/:id` returns 404 when the id matches no prompt
+- [x] T9. `GET /prompts/:id` returns 404 when the id matches no prompt
     - Red: same file as T8 — new `it`; `GET /prompts/<faker.string.uuid() that matches nothing>`;
       assert status `404` and the JSON body contains an `error` message.
     - Green: `GetPromptHandler.ts`'s `catch` block catches
@@ -117,14 +117,14 @@ Status: READY FOR REVIEW
       re-thrown, not swallowed (plan.md §5, §9 Assumption 3).
     - Covers: AC3 (see T2 text above).
 
-- [ ] T10. `GET /prompts/:id` returns 404 when the id is not UUID-shaped
+- [x] T10. `GET /prompts/:id` returns 404 when the id is not UUID-shaped
     - Red: same file as T8 — new `it`; `GET /prompts/not-a-uuid`; assert
       status `404` (not `400` or `500`).
     - Green: no production change expected if T9's handling and T6's
       repository cast are already in place; run the test to confirm.
     - Covers: AC3 (see T2 text above); plan.md §9 Assumption 1.
 
-- [ ] T11. `GET /prompts/:id` includes a prompt with no description, with no description value
+- [x] T11. `GET /prompts/:id` includes a prompt with no description, with no description value
     - Red: same file as T8 — new `it`; seed a fixture prompt with no
       `description`; `GET /prompts/<fixture.id>`; assert status `200` and
       the response body has no `description` property (or an `undefined`

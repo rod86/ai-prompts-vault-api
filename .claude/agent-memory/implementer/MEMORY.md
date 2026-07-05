@@ -11,16 +11,35 @@ is where things live and how they're built.
 - **Ports:** `domain/interfaces/<Entity>RepositoryInterface.ts` — plus
   `PromptFilter { categoryId?: string }` for the prompt port's `findAll(filter?)`.
 - **Use cases:** `application/List<X>UseCase.ts` (`invoke()` returns
-  `this.repository.findAll(...)`).
+  `this.repository.findAll(...)`); single-item fetch use cases are
+  `application/Get<X>UseCase.ts` (`invoke(id)` calls `repository.findById(id)`,
+  throws a domain `<X>NotFoundError` when it resolves `undefined`).
+- **Domain errors:** `domain/errors/<X>NotFoundError.ts` — `extends Error`,
+  sets `this.name`, message like `` `${X} not found: ${id}` ``. (No
+  `Object.setPrototypeOf` needed in this codebase's precedent — plain
+  `extends Error` is what's actually used, despite the hexagonal-architecture
+  skill's example showing it.)
 - **Adapters:** `infrastructure/database/Drizzle<Entity>Repository.ts` +
   `infrastructure/database/schema.ts` (tables `promptCategories`, `prompts`).
-- **Handlers:** `src/handlers/Get{Categories,Prompts}.ts` (default export) +
-  `src/handlers/schemas/GetPromptsQuerySchema.ts`.
+  A single-row `findById(id)` mirrors `findAll`'s join/mapping exactly, just
+  adds `.where(eq(sql\`${table.id}::text\`, id)).limit(1)` and returns
+  `rows[0] ? mapped : undefined`.
+- **Handlers:** `src/handlers/Get{Categories,Prompts,Prompt}.ts` (default
+  export) + `src/handlers/schemas/Get{Prompts,Prompt}{Query,Params}Schema.ts`.
+  A by-id handler parses `req.params` (not `req.query`) with a
+  `z.object({ id: z.string() })` schema, then wraps the use-case call in
+  `try/catch`, catching only the specific `NotFoundError` locally for a 404
+  `{ error: message }` response and re-throwing anything else (no shared
+  error middleware exists yet in this project as of 003-get-prompt).
 - **Wiring:** `src/logic/prompt/services.ts` (exports `listPromptCategoriesUseCase`,
-  `listPromptsUseCase`); `src/logic/shared/services.ts` (`databaseClient`);
-  `src/config.ts` (schema aggregation `* as promptSchema`).
+  `listPromptsUseCase`, `getPromptUseCase` — the latter reuses the same
+  `promptRepository` instance as `listPromptsUseCase`); `src/logic/shared/services.ts`
+  (`databaseClient`); `src/config.ts` (schema aggregation `* as promptSchema`).
 - **Routes:** registered in `src/app.ts` (`app.get('/categories', ...)`,
-  `app.get('/prompts', ...)`).
+  `app.get('/prompts', ...)`, `app.get('/prompts/:id', ...)` — the plural list
+  route must be registered before or after the `:id` route without conflict
+  since Express only matches `:id` for `/prompts/<something>`, not `/prompts`
+  itself).
 
 ## Drizzle patterns
 
@@ -47,6 +66,13 @@ is where things live and how they're built.
 - **Prompt fixtures must seed a category first** — the FK is NOT NULL, so a
   prompt row needs an existing `prompt_categories` row.
 - **Routes:** `supertest` against the real Express `app` in `tests/integration/app.test.ts`.
+- **Unit-test builder for a domain entity missing an optional field:** the
+  model factory's `create(data)` pattern (`data.field ?? faker...`) cannot
+  produce an explicitly-`undefined` optional field, since `undefined ?? x`
+  falls through to the faker default. To build a fixture with a field forced
+  absent, destructure it off an already-built object instead:
+  `const { description: _description, ...rest } = buildPrompt();` — never pass
+  `{ description: undefined }` into the factory expecting it to stick.
 
 ## Migrations
 

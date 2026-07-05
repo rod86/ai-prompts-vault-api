@@ -139,4 +139,82 @@ describe('DrizzlePromptRepository', () => {
             await deletePromptsByIds(db, [promptWithoutDescription.id]);
         });
     });
+
+    describe('findById', () => {
+        let db: NodePgDatabase<Record<string, unknown>>;
+        let repository: DrizzlePromptRepository;
+        const fixtureCategory = promptCategoryModelFactory.create({ name: 'Get Prompt Category' });
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            title: 'Fixture prompt',
+        });
+
+        beforeAll(async () => {
+            db = databaseClient.connect();
+            repository = new DrizzlePromptRepository(db);
+            await insertPromptCategories(db, [fixtureCategory]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
+            await databaseClient.close();
+        });
+
+        afterEach(async () => {
+            await deletePromptsByIds(db, [fixturePrompt.id]);
+        });
+
+        it('returns a prompt joined with its category by id', async () => {
+            await insertPrompts(db, [fixturePrompt]);
+
+            const result = await repository.findById(fixturePrompt.id);
+
+            expect(result).toEqual({
+                id: fixturePrompt.id,
+                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                title: fixturePrompt.title,
+                prompt: fixturePrompt.prompt,
+                description: fixturePrompt.description,
+                createdAt: fixturePrompt.createdAt,
+                updatedAt: fixturePrompt.updatedAt,
+            });
+        });
+
+        it('returns undefined when no prompt matches the id', async () => {
+            await insertPrompts(db, [fixturePrompt]);
+
+            const result = await repository.findById(faker.string.uuid());
+
+            expect(result).toBeUndefined();
+        });
+
+        it('returns undefined when the id is not UUID-shaped', async () => {
+            await insertPrompts(db, [fixturePrompt]);
+
+            const result = await repository.findById('not-a-uuid');
+
+            expect(result).toBeUndefined();
+        });
+
+        it('represents a prompt with no description as an absent value', async () => {
+            // Built by hand, not via promptModelFactory: the factory always fills in a
+            // fake description, but this test needs one explicitly absent.
+            const promptWithoutDescription: PromptModel = {
+                id: faker.string.uuid(),
+                categoryId: fixtureCategory.id,
+                title: 'Prompt without description',
+                prompt: faker.lorem.paragraph(),
+                createdAt: faker.date.recent(),
+                updatedAt: faker.date.recent(),
+            };
+
+            await insertPrompts(db, [promptWithoutDescription]);
+
+            const result = await repository.findById(promptWithoutDescription.id);
+
+            expect(result?.description).toBeUndefined();
+
+            await deletePromptsByIds(db, [promptWithoutDescription.id]);
+        });
+    });
 });
