@@ -26,20 +26,42 @@ is where things live and how they're built.
   `rows[0] ? mapped : undefined`.
 - **Handlers:** `src/handlers/Get{Categories,Prompts,Prompt}.ts` (default
   export) + `src/handlers/schemas/Get{Prompts,Prompt}{Query,Params}Schema.ts`.
-  A by-id handler parses `req.params` (not `req.query`) with a
-  `z.object({ id: z.string() })` schema, then wraps the use-case call in
-  `try/catch`, catching only the specific `NotFoundError` locally for a 404
-  `{ error: message }` response and re-throwing anything else (no shared
-  error middleware exists yet in this project as of 003-get-prompt).
+  As of `004-request-validation-middleware`, `GetPromptsHandler`/`GetPromptHandler`
+  no longer call `SomeSchema.parse(req.query/params)` themselves — they read
+  `req.validated?.query` / `req.validated?.params` (cast via
+  `z.infer<typeof SomeSchema>`), populated by `validateRequestMiddleware`
+  registered per-route in `app.ts`. `GetPromptHandler`'s `try/catch` around the
+  use-case call for `PromptNotFoundError` is untouched and still the only
+  error handling in that handler (no shared error middleware exists in this
+  project).
+- **Request validation middleware:** `src/middleware/validateRequest/{validation,validateRequestMiddleware}.ts`
+  — sibling to `src/handlers/`, NOT under `src/logic/**` (cross-cutting HTTP
+  infra with no business logic, so it's outside `eslint-plugin-boundaries`'
+  tracked element types, same as `src/handlers/`). `validation.ts` is pure
+  (no Express import): `validateRequestParts(schemas, request)` runs each
+  part's `schema.safeParse(...)`, accumulates every failing part's issues
+  (prefixed `part.fieldPath`) instead of stopping at the first, and returns
+  a discriminated `{valid:true,data} | {valid:false,issues}`.
+  `validateRequestMiddleware.ts` wraps it for Express, adding the
+  `Request.validated?: Partial<Record<RequestPart, unknown>>` declaration-merging
+  augmentation (`declare global { namespace Express { interface Request {...} } }`,
+  needs `// eslint-disable-next-line @typescript-eslint/no-namespace` — this
+  codebase has no prior precedent for augmenting Express's types, this is the
+  first). On failure it responds `res.status(400).json({ message, issues })`
+  directly and returns (no throw, no shared error middleware — deliberately
+  out of scope per that feature's spec).
 - **Wiring:** `src/logic/prompt/services.ts` (exports `listPromptCategoriesUseCase`,
   `listPromptsUseCase`, `getPromptUseCase` — the latter reuses the same
   `promptRepository` instance as `listPromptsUseCase`); `src/logic/shared/services.ts`
   (`databaseClient`); `src/config.ts` (schema aggregation `* as promptSchema`).
 - **Routes:** registered in `src/app.ts` (`app.get('/categories', ...)`,
-  `app.get('/prompts', ...)`, `app.get('/prompts/:id', ...)` — the plural list
-  route must be registered before or after the `:id` route without conflict
-  since Express only matches `:id` for `/prompts/<something>`, not `/prompts`
-  itself).
+  `app.get('/prompts', validateRequestMiddleware({query:...}), ...)`,
+  `app.get('/prompts/:id', validateRequestMiddleware({params:...}), ...)` —
+  the plural list route must be registered before or after the `:id` route
+  without conflict since Express only matches `:id` for `/prompts/<something>`,
+  not `/prompts` itself). Per-route middleware is passed as an extra arg
+  between the path and handler in the same `app.get(...)` call, not
+  registered separately via `app.use`.
 
 ## Drizzle patterns
 
@@ -82,9 +104,19 @@ is where things live and how they're built.
 
 ## Gotchas
 
-- Repeated `?category=` yields an **array** in Express; the handler takes the
-  first value before handing it to Zod.
+- Repeated `?category=` yields an **array** in Express; as of the
+  `validateRequestMiddleware`, this now fails `z.string().optional()` (since
+  an array isn't a string) and surfaces as a 400 with `field: 'query.category'`
+  — this is the intended, spec'd behavior (a real E1 case), not a bug. Before
+  that middleware existed, handlers had to take the first array value manually.
 - `innerJoin` silently drops a prompt whose FK is orphaned — prevented by the
   NOT NULL + FK constraint, so it should never happen, but don't switch to a
   left join without a reason.
 - `zod` was installed by feature 002 as the first HTTP-input dependency.
+- Splitting a single cohesive Green implementation (given verbatim in plan.md)
+  across multiple granular Red/Green tasks (e.g. tasks.md T1+T2, or T3+T4)
+  means the second task's test can pass immediately once the first task's
+  Green step is written — not a defect, just an artifact of task granularity
+  vs. a plan that hands over one complete function/file at once. Note it as a
+  minor deviation in the completion report rather than treating it as a
+  blocking Red-step failure.

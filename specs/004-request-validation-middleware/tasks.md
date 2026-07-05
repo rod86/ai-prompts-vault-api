@@ -3,7 +3,7 @@
 Plan: specs/004-request-validation-middleware/plan.md
 Status: READY FOR REVIEW
 
-- [ ] T1. validateRequestParts returns parsed data for every provided part when all are valid
+- [x] T1. validateRequestParts returns parsed data for every provided part when all are valid
     - Red: `tests/unit/middleware/validateRequest/validation.test.ts` —
       schemas `{ params: z.object({ id: z.string() }), query: z.object({ category: z.string().optional() }) }`;
       request `{ params: { id: 'abc' }, query: {} }`; call
@@ -20,7 +20,7 @@ Status: READY FOR REVIEW
       produces that operation's normal result, with no invalid-request
       notice."
 
-- [ ] T2. validateRequestParts combines issues from every invalid part, each prefixed by its part name
+- [x] T2. validateRequestParts combines issues from every invalid part, each prefixed by its part name
     - Red: same file as T1 — new `it`; schemas
       `{ params: z.object({ id: z.string() }), query: z.object({ category: z.string() }) }`;
       request `{ params: {}, query: {} }` (both parts invalid); call
@@ -50,7 +50,7 @@ Status: READY FOR REVIEW
       handled, Then the user is told about every failing field together in
       the same notice (E1), not only the first one found."
 
-- [ ] T3. validateRequestMiddleware calls next() and exposes parsed data via req.validated when every part is valid
+- [x] T3. validateRequestMiddleware calls next() and exposes parsed data via req.validated when every part is valid
     - Red: `tests/unit/middleware/validateRequest/validateRequestMiddleware.test.ts` —
       a mock `req = { params: { id: 'abc' }, query: {} }` (plain object, no
       Express app involved), a mock `res` (unused, can be an empty object),
@@ -67,7 +67,7 @@ Status: READY FOR REVIEW
       alongside it.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T4. validateRequestMiddleware responds 400 with combined issues directly, without calling next(), when any part is invalid
+- [x] T4. validateRequestMiddleware responds 400 with combined issues directly, without calling next(), when any part is invalid
     - Red: same file as T3 — new `it`; mock
       `res = { status: vi.fn().mockReturnThis(), json: vi.fn() }`; schemas
       with both `params` and `query` invalid (as in T2); mock
@@ -83,7 +83,7 @@ Status: READY FOR REVIEW
     - Covers: E1 "Malformed request"; AC2 (see T1 above); AC3 (see T2
       above).
 
-- [ ] T5. GET /prompts returns a malformed-request response for an invalid query, end-to-end
+- [x] T5. GET /prompts returns a malformed-request response for an invalid query, end-to-end
     - Red: `tests/integration/handlers/GetPromptsHandler.test.ts` — new `it`;
       using `supertest` against the real `app`, request
       `GET /prompts?category=a&category=b` (a repeated query key, which
@@ -102,7 +102,7 @@ Status: READY FOR REVIEW
       middleware is registered anywhere.
     - Covers: AC2 (see T1 above).
 
-- [ ] T6. GET /prompts?category=<valid> still succeeds after migration (regression)
+- [x] T6. GET /prompts?category=<valid> still succeeds after migration (regression)
     - Red: no new test — the existing `it`s in
       `tests/integration/handlers/GetPromptsHandler.test.ts` (all added by
       `002-list-prompts`: ordering, empty list, category filter, no
@@ -115,7 +115,7 @@ Status: READY FOR REVIEW
       already-valid `category` query value.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T7. GET /prompts/:id still succeeds and still 404s after migration (regression)
+- [x] T7. GET /prompts/:id still succeeds and still 404s after migration (regression)
     - Red: no new test — `req.params.id` can never be malformed through
       real HTTP (Express always supplies path parameters as plain
       strings), so there is no new observable malformed-request case for

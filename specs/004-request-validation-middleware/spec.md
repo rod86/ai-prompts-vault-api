@@ -23,9 +23,9 @@ why. No result specific to that operation is returned in this case.
 | Field         | Meaning                                                       | Domain type   | Required | Default |
 | ------------- | -------------------------------------------------------------- | ------------- | -------- | ------- |
 | message       | A short summary telling the user what happened                 | text          | true     | —       |
-| issues        | Which specific piece(s) of the request were invalid, and why   | list of issue | true     | —       |
-| issue.field   | The name of the invalid piece of input                         | text          | true     | —       |
-| issue.problem | Human-readable reason that piece of input was rejected          | text          | true     | —       |
+| errors        | Which specific piece(s) of the request were invalid, and why   | list of error | true     | —       |
+| error.field   | The name of the invalid piece of input                         | text          | true     | —       |
+| error.error   | Human-readable reason that piece of input was rejected          | text          | true     | —       |
 
 ## 3. Validation rules
 
@@ -43,9 +43,9 @@ why. No result specific to that operation is returned in this case.
 - **E1 — Malformed request:** Triggered when the input for an operation
   fails one or more of that operation's own rules. The user is told the
   request was invalid, together with the message and the full list of
-  issues (§2). No operation-specific result is returned. Distinguished from
+  errors (§2). No operation-specific result is returned. Distinguished from
   a successful response by carrying no operation result and a non-empty
-  `issues` list.
+  `errors` list.
 
 ## 5. Acceptance criteria
 

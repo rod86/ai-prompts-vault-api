@@ -1,10 +1,11 @@
 import { type Request, type Response } from 'express';
+import { type z } from 'zod';
 import { PromptNotFoundError } from '@logic/prompt/domain/errors/PromptNotFoundError.js';
 import { getPromptUseCase } from '@logic/prompt/services.js';
-import { GetPromptParamsSchema } from '@src/handlers/schemas/GetPromptParamsSchema.js';
+import { type GetPromptParamsSchema } from '@src/handlers/schemas/GetPromptParamsSchema.js';
 
 export default async (req: Request, res: Response): Promise<void> => {
-    const { id } = GetPromptParamsSchema.parse(req.params);
+    const { id } = req.parsedRequest?.params as z.infer<typeof GetPromptParamsSchema>;
 
     try {
         const prompt = await getPromptUseCase.invoke({ id });
