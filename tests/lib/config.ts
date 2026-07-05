@@ -4,6 +4,7 @@ import { PromptCategoryModelFactory } from '@tests/lib/modelFactories/PromptCate
 import { PromptModelFactory } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 export const databaseClient = new DatabaseClient<typeof config.database.schema>(config.database, config.database.schema);
+export type TestDatabaseConnection = ReturnType<typeof databaseClient.connect>;
 
 export const promptCategoryModelFactory = new PromptCategoryModelFactory();
 export const promptModelFactory = new PromptModelFactory();

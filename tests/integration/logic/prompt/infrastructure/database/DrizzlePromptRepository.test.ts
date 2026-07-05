@@ -1,8 +1,12 @@
 import { faker } from '@faker-js/faker';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DrizzlePromptRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptRepository.js';
-import { databaseClient, promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import {
+    databaseClient,
+    promptCategoryModelFactory,
+    promptModelFactory,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
@@ -12,7 +16,7 @@ import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js
 
 describe('DrizzlePromptRepository', () => {
     describe('findAll', () => {
-        let db: NodePgDatabase<Record<string, unknown>>;
+        let db: TestDatabaseConnection;
         let repository: DrizzlePromptRepository;
         const fixtureCategory = promptCategoryModelFactory.create({ name: 'Coding & Development' });
         const otherCategory = promptCategoryModelFactory.create({ name: 'Business & Finance' });
@@ -140,7 +144,7 @@ describe('DrizzlePromptRepository', () => {
     });
 
     describe('findById', () => {
-        let db: NodePgDatabase<Record<string, unknown>>;
+        let db: TestDatabaseConnection;
         let repository: DrizzlePromptRepository;
         const fixtureCategory = promptCategoryModelFactory.create({ name: 'Get Prompt Category' });
         const fixturePrompt = promptModelFactory.create({

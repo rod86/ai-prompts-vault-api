@@ -1,14 +1,17 @@
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DrizzlePromptCategoryRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
-import { databaseClient, promptCategoryModelFactory } from '@tests/lib/config.js';
+import {
+    databaseClient,
+    promptCategoryModelFactory,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
 
 describe('DrizzlePromptCategoryRepository', () => {
-    let db: NodePgDatabase<Record<string, unknown>>;
+    let db: TestDatabaseConnection;
     let repository: DrizzlePromptCategoryRepository;
 
     beforeAll(() => {

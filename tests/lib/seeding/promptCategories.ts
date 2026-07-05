@@ -1,12 +1,10 @@
 import { inArray } from 'drizzle-orm';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { type PromptCategory } from '@logic/prompt/domain/PromptCategory.js';
 import { promptCategories } from '@logic/prompt/infrastructure/database/schema.js';
-
-type Database = NodePgDatabase<Record<string, unknown>>;
+import { type TestDatabaseConnection } from '@tests/lib/config.js';
 
 export async function insertPromptCategories(
-    db: Database,
+    db: TestDatabaseConnection,
     categories: PromptCategory[],
 ): Promise<void> {
     if (categories.length === 0) {
@@ -16,7 +14,10 @@ export async function insertPromptCategories(
     await db.insert(promptCategories).values(categories);
 }
 
-export async function deletePromptCategoriesByIds(db: Database, ids: string[]): Promise<void> {
+export async function deletePromptCategoriesByIds(
+    db: TestDatabaseConnection,
+    ids: string[],
+): Promise<void> {
     if (ids.length === 0) {
         return;
     }
@@ -24,7 +25,9 @@ export async function deletePromptCategoriesByIds(db: Database, ids: string[]): 
     await db.delete(promptCategories).where(inArray(promptCategories.id, ids));
 }
 
-export async function getAllPromptCategories(db: Database): Promise<PromptCategory[]> {
+export async function getAllPromptCategories(
+    db: TestDatabaseConnection,
+): Promise<PromptCategory[]> {
     return db
         .select({ id: promptCategories.id, name: promptCategories.name })
         .from(promptCategories);

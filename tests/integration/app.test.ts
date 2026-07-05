@@ -1,9 +1,13 @@
 import { faker } from '@faker-js/faker';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import { databaseClient, promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import {
+    databaseClient,
+    promptCategoryModelFactory,
+    promptModelFactory,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
@@ -12,7 +16,7 @@ import {
 } from '@tests/lib/seeding/promptCategories.js';
 import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
 
-let db: NodePgDatabase<Record<string, unknown>>;
+let db: TestDatabaseConnection;
 
 beforeAll(async () => {
     db = databaseClient.connect();
