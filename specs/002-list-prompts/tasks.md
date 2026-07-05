@@ -1,7 +1,6 @@
 # Tasks: List prompts
 
 Plan: specs/002-list-prompts/plan.md
-Status: READY FOR REVIEW
 
 - [x] T1. Use case returns every prompt provided by the repository, fully shaped
     - Red: `tests/unit/logic/prompt/application/ListPromptsUseCase.test.ts` —

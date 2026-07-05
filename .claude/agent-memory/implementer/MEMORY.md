@@ -11,16 +11,57 @@ is where things live and how they're built.
 - **Ports:** `domain/interfaces/<Entity>RepositoryInterface.ts` — plus
   `PromptFilter { categoryId?: string }` for the prompt port's `findAll(filter?)`.
 - **Use cases:** `application/List<X>UseCase.ts` (`invoke()` returns
-  `this.repository.findAll(...)`).
+  `this.repository.findAll(...)`); single-item fetch use cases are
+  `application/Get<X>UseCase.ts` (`invoke(id)` calls `repository.findById(id)`,
+  throws a domain `<X>NotFoundError` when it resolves `undefined`).
+- **Domain errors:** `domain/errors/<X>NotFoundError.ts` — `extends Error`,
+  sets `this.name`, message like `` `${X} not found: ${id}` ``. (No
+  `Object.setPrototypeOf` needed in this codebase's precedent — plain
+  `extends Error` is what's actually used, despite the hexagonal-architecture
+  skill's example showing it.)
 - **Adapters:** `infrastructure/database/Drizzle<Entity>Repository.ts` +
   `infrastructure/database/schema.ts` (tables `promptCategories`, `prompts`).
-- **Handlers:** `src/handlers/Get{Categories,Prompts}.ts` (default export) +
-  `src/handlers/schemas/GetPromptsQuerySchema.ts`.
+  A single-row `findById(id)` mirrors `findAll`'s join/mapping exactly, just
+  adds `.where(eq(sql\`${table.id}::text\`, id)).limit(1)` and returns
+  `rows[0] ? mapped : undefined`.
+- **Handlers:** `src/handlers/Get{Categories,Prompts,Prompt}.ts` (default
+  export) + `src/handlers/schemas/Get{Prompts,Prompt}{Query,Params}Schema.ts`.
+  As of `004-request-validation-middleware`, `GetPromptsHandler`/`GetPromptHandler`
+  no longer call `SomeSchema.parse(req.query/params)` themselves — they read
+  `req.validated?.query` / `req.validated?.params` (cast via
+  `z.infer<typeof SomeSchema>`), populated by `validateRequestMiddleware`
+  registered per-route in `app.ts`. `GetPromptHandler`'s `try/catch` around the
+  use-case call for `PromptNotFoundError` is untouched and still the only
+  error handling in that handler (no shared error middleware exists in this
+  project).
+- **Request validation middleware:** `src/middleware/validateRequest/{validation,validateRequestMiddleware}.ts`
+  — sibling to `src/handlers/`, NOT under `src/logic/**` (cross-cutting HTTP
+  infra with no business logic, so it's outside `eslint-plugin-boundaries`'
+  tracked element types, same as `src/handlers/`). `validation.ts` is pure
+  (no Express import): `validateRequestParts(schemas, request)` runs each
+  part's `schema.safeParse(...)`, accumulates every failing part's issues
+  (prefixed `part.fieldPath`) instead of stopping at the first, and returns
+  a discriminated `{valid:true,data} | {valid:false,issues}`.
+  `validateRequestMiddleware.ts` wraps it for Express, adding the
+  `Request.validated?: Partial<Record<RequestPart, unknown>>` declaration-merging
+  augmentation (`declare global { namespace Express { interface Request {...} } }`,
+  needs `// eslint-disable-next-line @typescript-eslint/no-namespace` — this
+  codebase has no prior precedent for augmenting Express's types, this is the
+  first). On failure it responds `res.status(400).json({ message, issues })`
+  directly and returns (no throw, no shared error middleware — deliberately
+  out of scope per that feature's spec).
 - **Wiring:** `src/logic/prompt/services.ts` (exports `listPromptCategoriesUseCase`,
-  `listPromptsUseCase`); `src/logic/shared/services.ts` (`databaseClient`);
-  `src/config.ts` (schema aggregation `* as promptSchema`).
+  `listPromptsUseCase`, `getPromptUseCase` — the latter reuses the same
+  `promptRepository` instance as `listPromptsUseCase`); `src/logic/shared/services.ts`
+  (`databaseClient`); `src/config.ts` (schema aggregation `* as promptSchema`).
 - **Routes:** registered in `src/app.ts` (`app.get('/categories', ...)`,
-  `app.get('/prompts', ...)`).
+  `app.get('/prompts', validateRequestMiddleware({query:...}), ...)`,
+  `app.get('/prompts/:id', validateRequestMiddleware({params:...}), ...)` —
+  the plural list route must be registered before or after the `:id` route
+  without conflict since Express only matches `:id` for `/prompts/<something>`,
+  not `/prompts` itself). Per-route middleware is passed as an extra arg
+  between the path and handler in the same `app.get(...)` call, not
+  registered separately via `app.use`.
 
 ## Drizzle patterns
 
@@ -47,6 +88,13 @@ is where things live and how they're built.
 - **Prompt fixtures must seed a category first** — the FK is NOT NULL, so a
   prompt row needs an existing `prompt_categories` row.
 - **Routes:** `supertest` against the real Express `app` in `tests/integration/app.test.ts`.
+- **Unit-test builder for a domain entity missing an optional field:** the
+  model factory's `create(data)` pattern (`data.field ?? faker...`) cannot
+  produce an explicitly-`undefined` optional field, since `undefined ?? x`
+  falls through to the faker default. To build a fixture with a field forced
+  absent, destructure it off an already-built object instead:
+  `const { description: _description, ...rest } = buildPrompt();` — never pass
+  `{ description: undefined }` into the factory expecting it to stick.
 
 ## Migrations
 
@@ -56,9 +104,19 @@ is where things live and how they're built.
 
 ## Gotchas
 
-- Repeated `?category=` yields an **array** in Express; the handler takes the
-  first value before handing it to Zod.
+- Repeated `?category=` yields an **array** in Express; as of the
+  `validateRequestMiddleware`, this now fails `z.string().optional()` (since
+  an array isn't a string) and surfaces as a 400 with `field: 'query.category'`
+  — this is the intended, spec'd behavior (a real E1 case), not a bug. Before
+  that middleware existed, handlers had to take the first array value manually.
 - `innerJoin` silently drops a prompt whose FK is orphaned — prevented by the
   NOT NULL + FK constraint, so it should never happen, but don't switch to a
   left join without a reason.
 - `zod` was installed by feature 002 as the first HTTP-input dependency.
+- Splitting a single cohesive Green implementation (given verbatim in plan.md)
+  across multiple granular Red/Green tasks (e.g. tasks.md T1+T2, or T3+T4)
+  means the second task's test can pass immediately once the first task's
+  Green step is written — not a defect, just an artifact of task granularity
+  vs. a plan that hands over one complete function/file at once. Note it as a
+  minor deviation in the completion report rather than treating it as a
+  blocking Red-step failure.

@@ -1,7 +1,6 @@
 # Tasks: List categories
 
 Plan: specs/001-list-categories/plan.md
-Status: READY FOR REVIEW
 
 - [x] T1. Use case returns the categories provided by the repository
     - Red: `tests/unit/logic/prompt/application/ListPromptCategoriesUseCase.test.ts` —

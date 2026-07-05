@@ -1,7 +1,6 @@
 # Plan: List categories
 
 Spec: specs/001-list-categories/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 

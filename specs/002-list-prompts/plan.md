@@ -1,7 +1,6 @@
 # Plan: List prompts
 
 Spec: specs/002-list-prompts/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 

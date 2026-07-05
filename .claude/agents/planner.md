@@ -81,8 +81,13 @@ contain open questions.
 
 Written to `specs/NNN-<slug>/` using the next free zero-padded NNN
 (e.g. `specs/003-prompt-tags/`), in this order: spec.md → plan.md →
-tasks.md, each derived from the previous. All carry
-`Status: READY FOR REVIEW`; artifacts must never contain open questions.
+tasks.md, each derived from the previous. Only `spec.md` carries a
+`Status` field (`DRAFT` → `READY TO IMPLEMENT` → `IMPLEMENTED`); `plan.md`
+and `tasks.md` never have one. Write `spec.md` as `Status: DRAFT` while
+authoring; as the last action of pass 2, once all three artifacts are
+complete (coverage table full, no open questions), rewrite `spec.md`'s
+`Status` line to `READY TO IMPLEMENT`. Artifacts must never contain open
+questions.
 
 ### Template 1: spec.md — WHAT, no tech
 
@@ -93,7 +98,7 @@ class names, file paths, or layer names. Errors in domain language
 
 ```
 # Spec: <feature name>
-Status: READY FOR REVIEW
+Status: DRAFT
 Story: As a <user>, I want <X> so that <Y>.
 
 ## 1. Behavior
@@ -129,7 +134,6 @@ traces back to a spec item.
 ```
 # Plan: <feature name>
 Spec: specs/NNN-<slug>/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 Owning context and why; cross-context interactions, if any.
@@ -189,7 +193,6 @@ come before the code that needs them.
 ```
 # Tasks: <feature name>
 Plan: specs/NNN-<slug>/plan.md
-Status: READY FOR REVIEW
 
 - [ ] T1. <short name>
   - Red: <exact test, what it asserts, expected failure>
@@ -198,7 +201,8 @@ Status: READY FOR REVIEW
 
 ## Coverage check
 | AC# | Criterion text (verbatim from spec §5) | Covered by task(s) |
-Every AC# maps to at least one task, or this file is not READY FOR REVIEW.
+Every AC# maps to at least one task, or spec.md must not be moved to
+READY TO IMPLEMENT.
 ```
 
 One test per task; if a task needs two tests, split it. Every AC#
@@ -247,6 +251,7 @@ Exactly one of two outcomes:
 - **Interview required (pass 1):** the `INTERVIEW REQUIRED` block described
   in the clarification protocol, and nothing written to disk.
 - **Complete (pass 2):** a short summary: the three file paths, the number
-  of decisions logged, dependency changes (or "none"), and a statement that
-  the artifacts await human approval per the gate in the `spec-planner` skill
-  before implementation begins.
+  of decisions logged, dependency changes (or "none"), a confirmation that
+  `spec.md`'s `Status` has been set to `READY TO IMPLEMENT`, and a statement
+  that the artifacts await human approval per the gate in the
+  `spec-planner` skill before implementation begins.

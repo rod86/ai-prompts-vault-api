@@ -1,58 +1,31 @@
 import { faker } from '@faker-js/faker';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { databaseClient } from '@logic/shared/services.js';
 import app from '@src/app.js';
-import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import {
+    databaseClient,
+    promptCategoryModelFactory,
+    promptModelFactory,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
-    getAllPromptCategories,
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
 import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
 
-let db: NodePgDatabase<Record<string, unknown>>;
-
-beforeAll(async () => {
-    db = databaseClient.connect();
-});
-
-afterAll(async () => {
-    await databaseClient.close();
-});
-
-describe('GET /categories', () => {
-    const fixtureCategories = [
-        promptCategoryModelFactory.create({ name: 'Zzz Topic' }),
-        promptCategoryModelFactory.create({ name: 'Aaa Topic' }),
-    ];
-
-    afterEach(async () => {
-        await deletePromptCategoriesByIds(
-            db,
-            fixtureCategories.map((category) => category.id),
-        );
-    });
-
-    it('returns all categories ordered alphabetically by name', async () => {
-        await insertPromptCategories(db, fixtureCategories);
-        const existingCategories = await getAllPromptCategories(db);
-        const expected = [...existingCategories].sort((a, b) =>
-            a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
-        );
-
-        const response = await request(app).get('/categories');
-
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual(
-            expected.map((category) => ({ id: category.id, name: category.name })),
-        );
-    });
-});
-
 describe('GET /prompts', () => {
+    let db: TestDatabaseConnection;
+
+    beforeAll(async () => {
+        db = databaseClient.connect();
+    });
+
+    afterAll(async () => {
+        await databaseClient.close();
+    });
+
     const promptsFixtureCategory = promptCategoryModelFactory.create({
         name: 'Prompts Fixture Category',
     });
@@ -200,5 +173,18 @@ describe('GET /prompts', () => {
         expect(match?.description).toBeUndefined();
 
         await deletePromptsByIds(db, [promptWithoutDescription.id]);
+    });
+
+    describe('Request Validation', () => {
+        it('returns a malformed-request response when the category query is repeated', async () => {
+            const response = await request(app).get('/prompts?category=a&category=b');
+
+            expect(response.status).toBe(400);
+            expect(response.body).toMatchObject({
+                errors: expect.arrayContaining([
+                    { field: 'query.category', error: 'Expected string, received array' },
+                ]),
+            });
+        });
     });
 });

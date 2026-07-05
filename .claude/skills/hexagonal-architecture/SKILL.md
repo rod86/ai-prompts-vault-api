@@ -92,11 +92,31 @@ export class CreatePromptUseCase {
 }
 ```
 
+Single-field case — `Query` is still mandatory even though there's only one
+field; only `Response` is omitted here because the use case returns the
+domain entity directly:
+
+```typescript
+export interface GetPromptQuery {
+    id: string;
+}
+
+export class GetPromptUseCase {
+    constructor(private readonly repository: PromptRepositoryInterface) {}
+    public async invoke(query: GetPromptQuery): Promise<Prompt> {
+        // ...
+    }
+}
+```
+
 Rules:
 
 - Class suffixed `UseCase`; filename equals class name.
-- Input interface suffixed `Query`, output interface suffixed `Response`. Omit
-  either if unneeded.
+- Input is always a single `Query` object, suffixed `Query` — never a raw/
+  primitive parameter (e.g. `invoke(query: GetPromptQuery)`, not
+  `invoke(id: string)`), even when the use case takes only one field. Output
+  interface suffixed `Response`; omit `Response` only when the use case
+  returns a domain entity or nothing (`void`) directly.
 - Query/Response use only native types (string, number, array, Date, ...). No
   custom logic types.
 - Orchestrates domain objects, reaches the outside world ONLY through ports.

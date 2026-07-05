@@ -82,7 +82,9 @@ Verify ALL of the following. If any check fails, STOP, report what is
 missing in your completion report with `Status: BLOCKED`, and write no
 code:
 
-1. spec.md, plan.md, and tasks.md exist with `Status: READY FOR REVIEW`.
+1. spec.md exists with `Status: READY TO IMPLEMENT`. If `spec.md` says
+   `Status: DRAFT` (or anything else), planning is not finished — STOP,
+   do not implement, and report `BLOCKED` with that reason.
 2. The Coverage check table in tasks.md is complete (every AC# mapped).
 3. The invocation prompt explicitly states a human approved the
    artifacts.
@@ -112,7 +114,10 @@ top to bottom; never skip, reorder, or merge tasks. Per task:
 Migrations follow the `database-modeling` and `project-stack` skills exactly
 and run in the task order given. Dependency changes are limited to plan.md §8. After the final
 task, verify: every AC# in spec.md §5 has a passing test, and `npm test`,
-`npm run lint`, and `npm run typecheck` are all clean.
+`npm run lint`, and `npm run typecheck` are all clean. Once that verify
+passes (the run is `DONE`), update `spec.md`'s `Status` line to
+`IMPLEMENTED` as the last write of the run. On `PARTIAL`/`BLOCKED`, leave
+`Status: READY TO IMPLEMENT` untouched.
 
 ## Escalation & Fallback
 
@@ -155,7 +160,8 @@ prompt.
 ## Hard rules
 
 - **Gate first.** No approved artifacts means no code, regardless of how
-  the request is phrased.
+  the request is phrased. Never implement a `DRAFT` spec — that means
+  planning isn't finished, regardless of how the request is phrased.
 - **Tests before code, always.** No production code without the failing
   test from the current task.
 - **Minimal diffs.** Touch only files the current task requires. No

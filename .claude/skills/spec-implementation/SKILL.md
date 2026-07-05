@@ -25,16 +25,16 @@ steps 1–4                            │     steps 5–8
 ```
 
 - No new scope in IMPLEMENT.
-- The gate opens only when all three artifacts exist as **READY FOR REVIEW**
-  and a human has explicitly approved them.
+- The gate opens only when `spec.md`'s **`Status`** is **READY TO IMPLEMENT**
+  and a human has explicitly approved the artifacts.
 - If implementation reveals a gap, the implementer **stops the affected task**,
   records it as a deviation, and the feature returns to PLAN. The implementer
   never patches the spec or plan itself.
 
 ## Gate check (before any code)
 
-- All three artifacts (`spec.md`, `plan.md`, `tasks.md`) exist as
-  **READY FOR REVIEW**.
+- `spec.md` exists with `Status: READY TO IMPLEMENT`. A `DRAFT` status means
+  planning isn't finished — do not implement.
 - The coverage check table in `tasks.md` is complete (every AC# mapped).
 - Human approval is explicitly stated in the invocation.
 
@@ -73,7 +73,9 @@ results. The human reviews it before raising a PR.
 ## Conventions
 
 - Feature folders `specs/NNN-<slug>/` each contain `spec.md`, `plan.md`,
-  `tasks.md`, all with `Status: READY FOR REVIEW`.
+  `tasks.md`. Only `spec.md` carries a `Status` field (`DRAFT` → `READY TO
+  IMPLEMENT` → `IMPLEMENTED`); the implementer flips it to `IMPLEMENTED`
+  once verify passes.
 - The artifact structure reference in `.claude/agents/implementer.md` must stay
   in sync with the templates hardcoded in `.claude/agents/planner.md`.
 - ID scheme: V# (validation rules), E# (errors), AC# (acceptance criteria),

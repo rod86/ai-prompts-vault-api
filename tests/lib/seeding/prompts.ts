@@ -1,11 +1,12 @@
 import { inArray } from 'drizzle-orm';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { prompts } from '@logic/prompt/infrastructure/database/schema.js';
+import { type TestDatabaseConnection } from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
-type Database = NodePgDatabase<Record<string, unknown>>;
-
-export async function insertPrompts(db: Database, fixtures: PromptModel[]): Promise<void> {
+export async function insertPrompts(
+    db: TestDatabaseConnection,
+    fixtures: PromptModel[],
+): Promise<void> {
     if (fixtures.length === 0) {
         return;
     }
@@ -23,7 +24,10 @@ export async function insertPrompts(db: Database, fixtures: PromptModel[]): Prom
     );
 }
 
-export async function deletePromptsByIds(db: Database, ids: string[]): Promise<void> {
+export async function deletePromptsByIds(
+    db: TestDatabaseConnection,
+    ids: string[],
+): Promise<void> {
     if (ids.length === 0) {
         return;
     }

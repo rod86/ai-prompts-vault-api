@@ -39,9 +39,55 @@ export function customMiddleware(req: Request, res: Response, next: NextFunction
 Handlers/middleware reach business logic only via a context's `services.ts`:
 `Handler/Middleware -> service (services.ts) -> Application UseCase`.
 
-## Input Data Validation
+### Validate-request middleware
 
-[WIP]
+`validateRequestMiddleware` (`src/middleware/validateRequest/validateRequestMiddleware.ts`)
+is a factory: it takes a `RequestSchema` (`{ params?, query?, body? }` Zod
+schemas) and returns Express middleware. It uses `validate()`
+(`src/middleware/validateRequest/validation.ts`, a thin wrapper around
+`z.object(schema).safeParse`) to parse `req.params`/`req.query`/`req.body`:
+
+- on failure: responds `400 { message, errors: { field, error }[] }` and does
+  **not** call `next()`.
+- on success: assigns the parsed, typed result to `req.parsedRequest` and calls
+  `next()`.
+
+**Schemas (`src/schemas/*Schema.ts`):** one file per handler, default-exporting
+a `RequestSchema`-shaped object via `satisfies RequestSchema` — not `as`, which
+would widen each field to the generic `ZodTypeAny` and lose the precise shape
+handlers need for `z.infer`:
+
+```typescript
+import { z } from 'zod';
+import { type RequestSchema } from '@src/middleware/validateRequest/validation.js';
+
+export default {
+    params: z.object({ id: z.string() }),
+} satisfies RequestSchema;
+```
+
+**Wiring (`app.ts`):** import the default and pass it straight through:
+
+```typescript
+import GetPromptSchema from '@src/schemas/GetPromptSchema.js';
+
+app.get('/prompts/:id', validateRequestMiddleware(GetPromptSchema), getPromptHandler);
+```
+
+**Handlers** never read raw `req.params`/`req.query`/`req.body` — they read
+the validated `req.parsedRequest`, casting via `z.infer<typeof Schema.field>`:
+
+```typescript
+import { type z } from 'zod';
+import GetPromptSchema from '@src/schemas/GetPromptSchema.js';
+
+const { id } = req.parsedRequest?.params as z.infer<typeof GetPromptSchema.params>;
+```
+
+The `parsedRequest` property on `Request` is an ambient type augmentation in
+`src/express.d.ts` (`declare global { namespace Express { interface Request } }`),
+kept out of the middleware file itself so the middleware only exports runtime
+logic.
 
 ## Persistence (Drizzle ORM + pg)
 
@@ -88,6 +134,27 @@ import { databaseClient } from '@logic/shared/services';
 const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 // databaseClient.connect() is NodePgDatabase<GlobalSchema>
+```
+
+**Test-side client (`tests/lib/config.ts`):** tests get their own
+`databaseClient` instance, built the same way against `src/config.ts`'s
+`database` config/schema — kept separate from the app's instance in
+`@logic/shared/services.ts` per the `testing` skill's rule that `lib`
+resources are restricted to `tests` scope. It also exports
+`TestDatabaseConnection = ReturnType<typeof databaseClient.connect>`, the
+shared type for any `db` parameter/variable in seeding helpers
+(`tests/lib/seeding/*.ts`) and integration tests, instead of hand-writing
+`NodePgDatabase<Record<string, unknown>>` in each file:
+
+```ts
+import { type TestDatabaseConnection } from '@tests/lib/config.js';
+
+export async function insertPromptCategories(
+    db: TestDatabaseConnection,
+    categories: PromptCategory[],
+): Promise<void> {
+    // ...
+}
 ```
 
 The `id` (uuid) is app-provided on insert — do not use `defaultRandom()` /

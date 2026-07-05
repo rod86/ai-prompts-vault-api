@@ -19,7 +19,7 @@ runner, mocking library, and code examples are in the `project-stack` skill.
 ```
 tests/
   lib/            # Shared test helpers (seeding, mocks, builders, sample responses,...)
-    config.ts     # Singleton instances of each model factory, imported by tests.
+    config.ts     # Test databaseClient + TestDatabaseConnection type, and singleton model factories, imported by tests.
     modelFactories # One factory per domain type, building fake instances of it.
     seeding       # Helpers to seed database, one file per table schema (e.g. `prompts.ts`)
   unit/           # Unit tests
@@ -31,6 +31,14 @@ tests/
 - Mirror the `src/` path under `tests/unit/` or `tests/integration`. Example:
   `src/logic/prompt/application/CreatePrompt.ts` ->
   `tests/unit/logic/prompt/application/CreatePrompt.test.ts`.
+- Routes mirror `src/handlers/` the same way: one test file per handler, named
+  after it, under `tests/integration/handlers/`. Example:
+  `src/handlers/GetPromptsHandler.ts` ->
+  `tests/integration/handlers/GetPromptsHandler.test.ts`. Don't collect
+  multiple routes' tests into one shared file (e.g. a single `app.test.ts`) —
+  it grows unbounded as routes are added and every file gets its own
+  self-contained `beforeAll`/`afterAll` connect/close pair anyway (see
+  Integration lifecycle below), so splitting has no extra setup cost.
 - File suffix is always `.test.ts`.
 - `describe` names the unit under test; `it` states the behavior as an
   expectation: `it('returns 404 when the prompt does not exist')`.
@@ -40,6 +48,14 @@ tests/
   regardless of the test outcome.
 - For large test files, group related cases with `describe` — but nest only one
   level below the top-level `describe`.
+- Mutable state assigned in a setup hook (a `let` for a `db` connection, a
+  mocked dependency, the unit under test, ...) is declared together with its
+  `beforeAll`/`beforeEach` hook, both nested inside the top-level `describe` —
+  never above it at file scope. See `db` inside
+  `DrizzlePromptCategoryRepository.test.ts`'s `describe`, or `repository` in
+  the mocking example in the `project-stack` skill. This is narrower than the
+  file-scope `const` fixtures and helper functions below, which are immutable
+  and fine to share across `describe` blocks in the same file.
 - When a unit under test holds internal state (e.g. a client wrapping a
   connection), construct a fresh instance in the setup hook rather than per-test,
   so setup isn't duplicated across cases.
@@ -154,10 +170,69 @@ expect(() => useCase.execute(input)).toThrow('Error creating the prompt');
 - Applies to _adapter_ implementations in the `infrastructure` layer and _routes_
   in `app.ts`.
 - When a test touches the database:
-    1. Open the connection once, before all tests.
+    1. Open the connection once, before all tests, in a `beforeAll` nested
+       inside the top-level `describe` (not at file scope).
     2. Insert the seed data the test needs.
     3. Run the test.
     4. Clean up only the data the test inserted — leave everything else untouched.
-    5. Close the connection once, after all tests.
+    5. Close the connection once, after all tests, in the matching `afterAll`.
+- Vitest runs separate test files in parallel, so any assertion that reads
+  the *entire* table (rather than filtering to the fixtures the test itself
+  inserted) is racy against sibling integration test files touching the same
+  table. Always filter the actual/expected data down to the test's own
+  fixture ids before asserting — see `fixturesInResponse` in
+  `GetPromptsHandler.test.ts` or `fixturesInResult` in
+  `DrizzlePromptCategoryRepository.test.ts`.
+
+#### Request validation
+
+For a handler test whose route is wired with `validateRequestMiddleware` (see
+the `project-stack` skill for the middleware's `400 { message, errors: {field,
+error}[] }` response shape), nest a `describe('Request Validation', ...)`
+inside the handler's top-level `describe`, containing:
+
+- One test sending an empty payload/query, asserting an error for every
+  required field.
+- One additional test per other meaningful validation case (e.g. a malformed
+  UUID).
+
+Assert the `errors` array with exact object literals (`{ field, error }`),
+including the literal message text — not `expect.objectContaining`, which
+would let an unrelated message change pass silently. Don't re-assert the
+top-level `message` string in each handler test — it's already covered once by
+the middleware's own unit test (`tests/unit/middleware/validateRequest/*.test.ts`).
+If a schema has no field that can actually fail validation (e.g. a route param
+that's always a non-empty string), omit the `Request Validation` block
+entirely rather than fabricating a failing case just to have one.
+
+```ts
+describe('Request Validation', () => {
+    it('returns missing required value errors for all required fields', async () => {
+        const response = await request(app).post('/prompts').send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+            errors: expect.arrayContaining([
+                { field: 'body.name', error: 'Required' },
+                { field: 'body.description', error: 'Required' },
+                { field: 'body.category_id', error: 'Required' },
+            ]),
+        });
+    });
+
+    it('returns an invalid value error for a non-uuid category_id', async () => {
+        const response = await request(app).post('/prompts').send({
+            name: 'name',
+            description: 'description',
+            category_id: '12345',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+            errors: expect.arrayContaining([{ field: 'body.category_id', error: 'Invalid uuid' }]),
+        });
+    });
+});
+```
 
 Concrete runner/mocking/HTTP-assertion examples: see the `project-stack` skill.
