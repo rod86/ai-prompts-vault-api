@@ -126,5 +126,5 @@
             }
         ]
     },
-    "ignorePatterns": ["dist", "node_modules", "coverage", "*.config.ts"]
+    "ignorePatterns": ["dist", "node_modules", "coverage", "*.config.ts", "specs"]
 }
