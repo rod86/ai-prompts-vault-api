@@ -175,13 +175,16 @@ describe('GET /prompts', () => {
         await deletePromptsByIds(db, [promptWithoutDescription.id]);
     });
 
-    it('returns a malformed-request response when the category query is repeated', async () => {
-        const response = await request(app).get('/prompts?category=a&category=b');
+    describe('Request Validation', () => {
+        it('returns a malformed-request response when the category query is repeated', async () => {
+            const response = await request(app).get('/prompts?category=a&category=b');
 
-        expect(response.status).toBe(400);
-        expect(response.body).toMatchObject({
-            message: expect.any(String),
-            errors: expect.arrayContaining([expect.objectContaining({ field: 'query.category' })]),
+            expect(response.status).toBe(400);
+            expect(response.body).toMatchObject({
+                errors: expect.arrayContaining([
+                    { field: 'query.category', error: 'Expected string, received array' },
+                ]),
+            });
         });
     });
 });

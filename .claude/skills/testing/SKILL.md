@@ -184,4 +184,55 @@ expect(() => useCase.execute(input)).toThrow('Error creating the prompt');
   `GetPromptsHandler.test.ts` or `fixturesInResult` in
   `DrizzlePromptCategoryRepository.test.ts`.
 
+#### Request validation
+
+For a handler test whose route is wired with `validateRequestMiddleware` (see
+the `project-stack` skill for the middleware's `400 { message, errors: {field,
+error}[] }` response shape), nest a `describe('Request Validation', ...)`
+inside the handler's top-level `describe`, containing:
+
+- One test sending an empty payload/query, asserting an error for every
+  required field.
+- One additional test per other meaningful validation case (e.g. a malformed
+  UUID).
+
+Assert the `errors` array with exact object literals (`{ field, error }`),
+including the literal message text — not `expect.objectContaining`, which
+would let an unrelated message change pass silently. Don't re-assert the
+top-level `message` string in each handler test — it's already covered once by
+the middleware's own unit test (`tests/unit/middleware/validateRequest/*.test.ts`).
+If a schema has no field that can actually fail validation (e.g. a route param
+that's always a non-empty string), omit the `Request Validation` block
+entirely rather than fabricating a failing case just to have one.
+
+```ts
+describe('Request Validation', () => {
+    it('returns missing required value errors for all required fields', async () => {
+        const response = await request(app).post('/prompts').send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+            errors: expect.arrayContaining([
+                { field: 'body.name', error: 'Required' },
+                { field: 'body.description', error: 'Required' },
+                { field: 'body.category_id', error: 'Required' },
+            ]),
+        });
+    });
+
+    it('returns an invalid value error for a non-uuid category_id', async () => {
+        const response = await request(app).post('/prompts').send({
+            name: 'name',
+            description: 'description',
+            category_id: '12345',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+            errors: expect.arrayContaining([{ field: 'body.category_id', error: 'Invalid uuid' }]),
+        });
+    });
+});
+```
+
 Concrete runner/mocking/HTTP-assertion examples: see the `project-stack` skill.
