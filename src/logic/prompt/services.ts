@@ -1,3 +1,4 @@
+import { CreatePromptUseCase } from '@logic/prompt/application/CreatePromptUseCase.js';
 import { GetPromptUseCase } from '@logic/prompt/application/GetPromptUseCase.js';
 import { ListPromptCategoriesUseCase } from '@logic/prompt/application/ListPromptCategoriesUseCase.js';
 import { ListPromptsUseCase } from '@logic/prompt/application/ListPromptsUseCase.js';
@@ -13,3 +14,7 @@ export const listPromptCategoriesUseCase = new ListPromptCategoriesUseCase(
 );
 export const listPromptsUseCase = new ListPromptsUseCase(promptRepository);
 export const getPromptUseCase = new GetPromptUseCase(promptRepository);
+export const createPromptUseCase = new CreatePromptUseCase(
+    promptRepository,
+    promptCategoryRepository,
+);

@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { DrizzlePromptCategoryRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
 import {
@@ -45,6 +46,34 @@ describe('DrizzlePromptCategoryRepository', () => {
             const fixturesInResult = result.filter((category) => fixtureIds.has(category.id));
 
             expect(fixturesInResult).toEqual([categories[1], categories[2], categories[0]]);
+        });
+    });
+
+    describe('findById', () => {
+        const category = promptCategoryModelFactory.create();
+
+        afterEach(async () => {
+            await deletePromptCategoriesByIds(db, [category.id]);
+        });
+
+        it('returns the matching category by id', async () => {
+            await insertPromptCategories(db, [category]);
+
+            const result = await repository.findById(category.id);
+
+            expect(result).toEqual({ id: category.id, name: category.name });
+        });
+
+        it('returns undefined when no category matches the id', async () => {
+            const result = await repository.findById(faker.string.uuid());
+
+            expect(result).toBeUndefined();
+        });
+
+        it('returns undefined when the id is not UUID-shaped', async () => {
+            const result = await repository.findById('not-a-uuid');
+
+            expect(result).toBeUndefined();
         });
     });
 });

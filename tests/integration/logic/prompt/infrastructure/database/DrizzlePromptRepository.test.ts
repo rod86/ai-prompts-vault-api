@@ -220,4 +220,68 @@ describe('DrizzlePromptRepository', () => {
             await deletePromptsByIds(db, [promptWithoutDescription.id]);
         });
     });
+
+    describe('create', () => {
+        let db: TestDatabaseConnection;
+        let repository: DrizzlePromptRepository;
+        const fixtureCategory = promptCategoryModelFactory.create({ name: 'Create Prompt Category' });
+
+        beforeAll(async () => {
+            db = databaseClient.connect();
+            repository = new DrizzlePromptRepository(db);
+            await insertPromptCategories(db, [fixtureCategory]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
+            await databaseClient.close();
+        });
+
+        it('persists a new prompt row', async () => {
+            const fixture = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            const fixturePrompt = {
+                id: fixture.id,
+                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                title: fixture.title,
+                prompt: fixture.prompt,
+                description: fixture.description,
+                createdAt: fixture.createdAt,
+                updatedAt: fixture.updatedAt,
+            };
+
+            await repository.create(fixturePrompt);
+            const result = await repository.findById(fixture.id);
+
+            expect(result).toEqual(fixturePrompt);
+
+            await deletePromptsByIds(db, [fixture.id]);
+        });
+
+        it('persists a prompt with no description as an absent value', async () => {
+            const fixture: PromptModel = {
+                id: faker.string.uuid(),
+                categoryId: fixtureCategory.id,
+                title: 'Prompt without description',
+                prompt: faker.lorem.paragraph(),
+                createdAt: faker.date.recent(),
+                updatedAt: faker.date.recent(),
+            };
+            const fixturePrompt = {
+                id: fixture.id,
+                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                title: fixture.title,
+                prompt: fixture.prompt,
+                description: undefined,
+                createdAt: fixture.createdAt,
+                updatedAt: fixture.updatedAt,
+            };
+
+            await repository.create(fixturePrompt);
+            const result = await repository.findById(fixture.id);
+
+            expect(result?.description).toBeUndefined();
+
+            await deletePromptsByIds(db, [fixture.id]);
+        });
+    });
 });

@@ -7,4 +7,5 @@ export interface PromptFilter {
 export default interface PromptRepositoryInterface {
     findAll(filter?: PromptFilter): Promise<Prompt[]>;
     findById(id: string): Promise<Prompt | undefined>;
+    create(prompt: Prompt): Promise<void>;
 }

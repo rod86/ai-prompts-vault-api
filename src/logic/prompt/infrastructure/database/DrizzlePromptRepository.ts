@@ -75,4 +75,16 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
             updatedAt: row.updatedAt,
         };
     }
+
+    public async create(prompt: Prompt): Promise<void> {
+        await this.db.insert(prompts).values({
+            id: prompt.id,
+            promptCategoryId: prompt.category.id,
+            title: prompt.title,
+            prompt: prompt.prompt,
+            description: prompt.description ?? null,
+            createdAt: prompt.createdAt,
+            updatedAt: prompt.updatedAt,
+        });
+    }
 }

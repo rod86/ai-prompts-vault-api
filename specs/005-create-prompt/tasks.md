@@ -2,7 +2,7 @@
 
 Plan: specs/005-create-prompt/plan.md
 
-- [ ] T1. Use case creates and returns the assembled prompt when the category exists
+- [x] T1. Use case creates and returns the assembled prompt when the category exists
     - Red: `tests/unit/logic/prompt/application/CreatePromptUseCase.test.ts` —
       construct `CreatePromptUseCase` with `mock<PromptRepositoryInterface>()`
       and `mock<PromptCategoryRepositoryInterface>()` (per `testing` skill);
@@ -28,7 +28,7 @@ Plan: specs/005-create-prompt/plan.md
       and the response includes its id, category (id and name), title,
       prompt text, description, createdAt, and updatedAt."
 
-- [ ] T2. Use case throws CategoryNotFoundError and does not persist when the category does not exist
+- [x] T2. Use case throws CategoryNotFoundError and does not persist when the category does not exist
     - Red: same file as T1 — new `it`;
       `categoryRepository.findById.mockResolvedValue(undefined)`; call
       `useCase.invoke(query)`; assert
@@ -46,7 +46,7 @@ Plan: specs/005-create-prompt/plan.md
       create a prompt, Then the user is told the category is invalid (E1),
       and no prompt is created."
 
-- [ ] T3. Use case creates a prompt with no description unchanged
+- [x] T3. Use case creates a prompt with no description unchanged
     - Red: same file as T1 — new `it`; build a `CreatePromptQuery` fixture
       with `description: undefined`; `categoryRepository.findById.mockResolvedValue(fixtureCategory)`;
       call `useCase.invoke(query)`; assert the result's `description` is
@@ -57,7 +57,7 @@ Plan: specs/005-create-prompt/plan.md
       prompt, Then the prompt is created and returned with no description
       value, rather than an error."
 
-- [ ] T4. Category repository returns the matching category by id
+- [x] T4. Category repository returns the matching category by id
     - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.test.ts` —
       new `describe('findById', ...)` block; per `testing` skill integration
       conventions, insert a fixture category via
@@ -71,7 +71,7 @@ Plan: specs/005-create-prompt/plan.md
       `.limit(1)`.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T5. Category repository returns undefined when no category matches the id
+- [x] T5. Category repository returns undefined when no category matches the id
     - Red: same file as T4 — new `it`; call
       `findById(faker.string.uuid())` with an id that matches no inserted
       category; assert the result is `undefined`.
@@ -79,14 +79,14 @@ Plan: specs/005-create-prompt/plan.md
       rows for a non-matching id. Run the test to confirm.
     - Covers: AC6 (see T2 text above).
 
-- [ ] T6. Category repository returns undefined when the id is not UUID-shaped
+- [x] T6. Category repository returns undefined when the id is not UUID-shaped
     - Red: same file as T4 — new `it`; call `findById('not-a-uuid')`; assert
       the result is `undefined` (not a thrown database error).
     - Green: no production change expected if T4's `::text` cast is already
       in place; run the test to confirm it doesn't throw.
     - Covers: AC6 (see T2 text above); plan.md §7 note (safe for any string).
 
-- [ ] T7. Prompt repository persists a new prompt row
+- [x] T7. Prompt repository persists a new prompt row
     - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` —
       new `describe('create', ...)` block; insert a fixture category via
       the seeding helper; build a full `Prompt` fixture (via
@@ -102,7 +102,7 @@ Plan: specs/005-create-prompt/plan.md
       `prompt.description ?? null` to `description`.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T8. Prompt repository persists a prompt with no description as an absent value
+- [x] T8. Prompt repository persists a prompt with no description as an absent value
     - Red: same file as T7 — new `it`; build a `Prompt` fixture with
       `description: undefined`; call `repository.create(fixture)`; call
       `repository.findById(fixture.id)`; assert the result's `description`
@@ -113,7 +113,7 @@ Plan: specs/005-create-prompt/plan.md
       read-side mapping).
     - Covers: AC2 (see T3 text above).
 
-- [ ] T9. `POST /prompts` creates and returns the new prompt
+- [x] T9. `POST /prompts` creates and returns the new prompt
     - Red: `tests/integration/handlers/CreatePromptHandler.test.ts` — new
       top-level `describe('POST /prompts', ...)`; seed a fixture category via
       the seeding helper; using `supertest` against the real Express `app`,
@@ -136,7 +136,7 @@ Plan: specs/005-create-prompt/plan.md
       in `src/app.ts`.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T10. `POST /prompts` creates a prompt without a description
+- [x] T10. `POST /prompts` creates a prompt without a description
     - Red: same file as T9 — new `it`; `POST /prompts` with
       `{ title, prompt, category_id: fixtureCategory.id }` (no
       `description`); assert status `201` and the response body has no
@@ -146,7 +146,7 @@ Plan: specs/005-create-prompt/plan.md
       reflects T3/T8's absent-description mapping end-to-end.
     - Covers: AC2 (see T3 text above).
 
-- [ ] T11. `POST /prompts` Request Validation — returns missing-field errors for an empty body
+- [x] T11. `POST /prompts` Request Validation — returns missing-field errors for an empty body
     - Red: same file as T9 — nested `describe('Request Validation', ...)`
       per `testing` skill's Request Validation convention; `POST /prompts`
       with `{}`; assert status `400` and the body's `errors` array contains
@@ -170,7 +170,7 @@ Plan: specs/005-create-prompt/plan.md
       told about every one of those problems together..., not only the
       first one found, and no prompt is created."
 
-- [ ] T12. `POST /prompts` Request Validation — returns an invalid-value error for a non-UUID category_id
+- [x] T12. `POST /prompts` Request Validation — returns an invalid-value error for a non-UUID category_id
     - Red: same file as T9, inside the `Request Validation` describe — new
       `it`; `POST /prompts` with
       `{ title: 'title', prompt: 'prompt', category_id: '12345' }`; assert
@@ -180,7 +180,7 @@ Plan: specs/005-create-prompt/plan.md
       already rejects a non-UUID-shaped value.
     - Covers: AC5 (see T11 text above).
 
-- [ ] T13. `POST /prompts` returns a category-invalid error when category_id matches no category
+- [x] T13. `POST /prompts` returns a category-invalid error when category_id matches no category
     - Red: same file as T9 — new `it` (outside `Request Validation`, since
       this is a business-rule failure, not a shape failure); `POST /prompts`
       with a UUID-shaped but non-existent `category_id`
