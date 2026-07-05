@@ -2,9 +2,8 @@ import { faker } from '@faker-js/faker';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { databaseClient } from '@logic/shared/services.js';
 import app from '@src/app.js';
-import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import { databaseClient , promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
