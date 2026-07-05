@@ -4,27 +4,14 @@ import { mock, type MockProxy } from 'vitest-mock-extended';
 import { ListPromptsUseCase } from '@logic/prompt/application/ListPromptsUseCase.js';
 import type PromptRepositoryInterface from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt } from '@logic/prompt/domain/Prompt.js';
+import { promptModelFactory, promptCategoryModelFactory } from '@tests/lib/config.js';
 
-const PROMPTS: Prompt[] = [
-    {
-        id: faker.string.uuid(),
-        category: { id: faker.string.uuid(), name: faker.commerce.department() },
-        title: faker.lorem.words(3),
-        prompt: faker.lorem.paragraph(),
-        description: faker.lorem.sentence(),
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-    },
-    {
-        id: faker.string.uuid(),
-        category: { id: faker.string.uuid(), name: faker.commerce.department() },
-        title: faker.lorem.words(3),
-        prompt: faker.lorem.paragraph(),
-        description: faker.lorem.sentence(),
-        createdAt: faker.date.past(),
-        updatedAt: faker.date.recent(),
-    },
-];
+const buildPrompt = (): Prompt => {
+  const { categoryId:_, ...prompt } = promptModelFactory.create();
+  return { ...prompt, category: promptCategoryModelFactory.create() };
+};
+
+const PROMPTS: Prompt[] = [buildPrompt(), buildPrompt()];
 
 describe('ListPromptsUseCase', () => {
     let repository: MockProxy<PromptRepositoryInterface>;
