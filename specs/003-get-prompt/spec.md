@@ -1,6 +1,6 @@
 # Spec: Get prompt by id
 
-Status: READY FOR REVIEW
+Status: IMPLEMENTED
 Story: As a user, I want to open a single prompt by its id so that I can read it in full or load it before editing.
 
 ## 1. Behavior

@@ -1,6 +1,6 @@
 # Spec: Request validation and consistent error responses
 
-Status: READY FOR REVIEW
+Status: IMPLEMENTED
 Story: As a developer maintaining this API, I want a reusable request-validation mechanism that rejects malformed requests with a clear error, so that handlers stop duplicating inline parsing logic and validation failures are reported consistently across the whole API.
 
 ## 1. Behavior

@@ -1,6 +1,6 @@
 # Spec: List prompts
 
-Status: READY FOR REVIEW
+Status: IMPLEMENTED
 Story: As a user, I want to retrieve all prompts, optionally filtered by category, so that I can find the ones I need.
 
 ## 1. Behavior

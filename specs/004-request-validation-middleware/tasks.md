@@ -1,7 +1,6 @@
 # Tasks: Request validation and consistent error responses
 
 Plan: specs/004-request-validation-middleware/plan.md
-Status: READY FOR REVIEW
 
 - [x] T1. validateRequestParts returns parsed data for every provided part when all are valid
     - Red: `tests/unit/middleware/validateRequest/validation.test.ts` —

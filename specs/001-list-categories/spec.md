@@ -1,6 +1,6 @@
 # Spec: List categories
 
-Status: READY FOR REVIEW
+Status: IMPLEMENTED
 Story: As a user, I want to see all categories so that I can browse and filter prompts by topic.
 
 ## 1. Behavior

@@ -1,7 +1,6 @@
 # Plan: Get prompt by id
 
 Spec: specs/003-get-prompt/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 

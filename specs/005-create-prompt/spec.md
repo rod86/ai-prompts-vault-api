@@ -1,6 +1,6 @@
 # Spec: Create prompt
 
-Status: READY FOR REVIEW
+Status: IMPLEMENTED
 Story: As a user, I want to add a new prompt under a category so that it becomes available for everyone.
 
 ## 1. Behavior

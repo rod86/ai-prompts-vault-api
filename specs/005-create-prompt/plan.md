@@ -1,7 +1,6 @@
 # Plan: Create prompt
 
 Spec: specs/005-create-prompt/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 

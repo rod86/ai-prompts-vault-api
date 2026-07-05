@@ -26,8 +26,8 @@ steps 1–4                            │     steps 5–8
 ```
 
 - No production code in PLAN.
-- The gate opens only when all three artifacts exist as **READY FOR REVIEW**
-  and a human has explicitly approved them.
+- The gate opens only when `spec.md`'s **`Status`** is **READY TO IMPLEMENT**
+  and a human has explicitly approved the artifacts.
 - If implementation later reveals a gap, the feature returns to PLAN; the
   implementer never patches the spec or plan itself.
 
@@ -49,9 +49,10 @@ Subagents cannot prompt the user directly, so the planner runs in two passes:
   logging every Q&A in the spec's Decisions log. New design-changing questions
   discovered mid-authoring send it back to pass 1.
 
-Artifacts therefore never contain open questions and are only ever written as
-READY FOR REVIEW. Trivial choices (internal naming, private helpers) are
-decided silently and logged as assumptions in plan.md.
+Artifacts therefore never contain open questions: `spec.md` is written as
+`Status: DRAFT` while authoring and only moves to `READY TO IMPLEMENT` once
+all three artifacts are complete. Trivial choices (internal naming, private
+helpers) are decided silently and logged as assumptions in plan.md.
 
 ## Steps
 
@@ -90,7 +91,10 @@ The planner never writes production code, tests, or migrations.
 ## Conventions
 
 - Feature folders `specs/NNN-<slug>/` each contain `spec.md`, `plan.md`,
-  `tasks.md`, all with `Status: READY FOR REVIEW` when the planner finishes.
+  `tasks.md`. Only `spec.md` carries a `Status` field, one of `DRAFT` →
+  `READY TO IMPLEMENT` → `IMPLEMENTED`; the planner sets it to
+  `READY TO IMPLEMENT` as its last step. `plan.md`/`tasks.md` never have a
+  `Status` field.
 - Artifact templates are hardcoded in `.claude/agents/planner.md`; the
   artifact structure reference in `.claude/agents/implementer.md` must stay in
   sync with it.

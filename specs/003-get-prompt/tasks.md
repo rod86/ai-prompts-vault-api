@@ -1,7 +1,6 @@
 # Tasks: Get prompt by id
 
 Plan: specs/003-get-prompt/plan.md
-Status: READY FOR REVIEW
 
 - [x] T1. Use case returns the prompt provided by the repository, fully shaped
     - Red: `tests/unit/logic/prompt/application/GetPromptUseCase.test.ts` —

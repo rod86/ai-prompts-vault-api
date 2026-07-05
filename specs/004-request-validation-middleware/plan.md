@@ -1,7 +1,6 @@
 # Plan: Request validation and consistent error responses
 
 Spec: specs/004-request-validation-middleware/spec.md
-Status: READY FOR REVIEW
 
 ## 1. Bounded context
 

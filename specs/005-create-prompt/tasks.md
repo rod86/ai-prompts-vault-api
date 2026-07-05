@@ -1,7 +1,6 @@
 # Tasks: Create prompt
 
 Plan: specs/005-create-prompt/plan.md
-Status: READY FOR REVIEW
 
 - [ ] T1. Use case creates and returns the assembled prompt when the category exists
     - Red: `tests/unit/logic/prompt/application/CreatePromptUseCase.test.ts` —
