@@ -24,11 +24,3 @@ export async function deletePromptCategoriesByIds(
 
     await db.delete(promptCategories).where(inArray(promptCategories.id, ids));
 }
-
-export async function getAllPromptCategories(
-    db: TestDatabaseConnection,
-): Promise<PromptCategory[]> {
-    return db
-        .select({ id: promptCategories.id, name: promptCategories.name })
-        .from(promptCategories);
-}
