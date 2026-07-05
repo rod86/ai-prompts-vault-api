@@ -90,6 +90,27 @@ export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 // databaseClient.connect() is NodePgDatabase<GlobalSchema>
 ```
 
+**Test-side client (`tests/lib/config.ts`):** tests get their own
+`databaseClient` instance, built the same way against `src/config.ts`'s
+`database` config/schema — kept separate from the app's instance in
+`@logic/shared/services.ts` per the `testing` skill's rule that `lib`
+resources are restricted to `tests` scope. It also exports
+`TestDatabaseConnection = ReturnType<typeof databaseClient.connect>`, the
+shared type for any `db` parameter/variable in seeding helpers
+(`tests/lib/seeding/*.ts`) and integration tests, instead of hand-writing
+`NodePgDatabase<Record<string, unknown>>` in each file:
+
+```ts
+import { type TestDatabaseConnection } from '@tests/lib/config.js';
+
+export async function insertPromptCategories(
+    db: TestDatabaseConnection,
+    categories: PromptCategory[],
+): Promise<void> {
+    // ...
+}
+```
+
 The `id` (uuid) is app-provided on insert — do not use `defaultRandom()` /
 `gen_random_uuid()` defaults.
 

@@ -19,7 +19,7 @@ runner, mocking library, and code examples are in the `project-stack` skill.
 ```
 tests/
   lib/            # Shared test helpers (seeding, mocks, builders, sample responses,...)
-    config.ts     # Singleton instances of each model factory, imported by tests.
+    config.ts     # Test databaseClient + TestDatabaseConnection type, and singleton model factories, imported by tests.
     modelFactories # One factory per domain type, building fake instances of it.
     seeding       # Helpers to seed database, one file per table schema (e.g. `prompts.ts`)
   unit/           # Unit tests
