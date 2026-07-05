@@ -29,7 +29,3 @@ export async function getAllPromptCategories(db: Database): Promise<PromptCatego
         .select({ id: promptCategories.id, name: promptCategories.name })
         .from(promptCategories);
 }
-
-export async function deleteAllPromptCategories(db: Database): Promise<void> {
-    await db.delete(promptCategories);
-}
