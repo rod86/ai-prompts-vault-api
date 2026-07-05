@@ -1,20 +1,13 @@
-import { faker } from '@faker-js/faker';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-
-import { type PromptCategory } from '@logic/prompt/domain/PromptCategory.js';
 import { DrizzlePromptCategoryRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
 import { databaseClient } from '@logic/shared/services.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
+import { promptCategoryModelFactory } from '@tests/lib/config.js';
 
-const FIXTURE_CATEGORIES: PromptCategory[] = [
-    { id: faker.string.uuid(), name: 'Writing & Content' },
-    { id: faker.string.uuid(), name: 'Business & Finance' },
-    { id: faker.string.uuid(), name: 'Coding & Development' },
-];
 
 describe('DrizzlePromptCategoryRepository', () => {
     let db: NodePgDatabase<Record<string, unknown>>;
@@ -30,25 +23,30 @@ describe('DrizzlePromptCategoryRepository', () => {
     });
 
     describe('findAll', () => {
+        const categories = [
+          promptCategoryModelFactory.create({ name: 'Writing & Content' }),
+          promptCategoryModelFactory.create({ name: 'Business & Finance' }),
+          promptCategoryModelFactory.create({ name: 'Coding & Development' }),
+        ];
         afterEach(async () => {
             await deletePromptCategoriesByIds(
                 db,
-                FIXTURE_CATEGORIES.map((category) => category.id),
+                categories.map((category) => category.id),
             );
         });
 
         it('returns the inserted categories ordered alphabetically by name ascending', async () => {
-            await insertPromptCategories(db, FIXTURE_CATEGORIES);
+            await insertPromptCategories(db, categories);
 
             const result = await repository.findAll();
 
-            const fixtureIds = new Set(FIXTURE_CATEGORIES.map((category) => category.id));
+            const fixtureIds = new Set(categories.map((category) => category.id));
             const fixturesInResult = result.filter((category) => fixtureIds.has(category.id));
 
             expect(fixturesInResult).toEqual([
-                { id: FIXTURE_CATEGORIES[1]?.id, name: 'Business & Finance' },
-                { id: FIXTURE_CATEGORIES[2]?.id, name: 'Coding & Development' },
-                { id: FIXTURE_CATEGORIES[0]?.id, name: 'Writing & Content' },
+                categories[1],
+                categories[2],
+                categories[0],
             ]);
         });
     });
