@@ -11,11 +11,10 @@ const buildPrompt = (): Prompt => {
   return { ...prompt, category: promptCategoryModelFactory.create() };
 };
 
-const PROMPTS: Prompt[] = [buildPrompt(), buildPrompt()];
-
 describe('ListPromptsUseCase', () => {
     let repository: MockProxy<PromptRepositoryInterface>;
     let useCase: ListPromptsUseCase;
+    const prompts = [buildPrompt(), buildPrompt()];
 
     beforeEach(() => {
         repository = mock<PromptRepositoryInterface>();
@@ -23,11 +22,11 @@ describe('ListPromptsUseCase', () => {
     });
 
     it('returns every prompt provided by the repository', async () => {
-        repository.findAll.mockResolvedValue(PROMPTS);
+        repository.findAll.mockResolvedValue(prompts);
 
         const result = await useCase.invoke();
 
-        expect(result).toEqual(PROMPTS);
+        expect(result).toEqual(prompts);
     });
 
     it('returns an empty array when the repository has none', async () => {

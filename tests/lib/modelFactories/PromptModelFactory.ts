@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { type Prompt } from '@logic/prompt/domain/Prompt.js';
 import { AbstractModelFactory } from '@tests/lib/modelFactories/AbstractModelFactory.js';
 
-type PromptModel = Omit<Prompt, 'category'> & { categoryId: string };
+export type PromptModel = Omit<Prompt, 'category'> & { categoryId: string };
 
 export class PromptModelFactory extends AbstractModelFactory<PromptModel> {
     override create(data: Partial<PromptModel> = {}): PromptModel {

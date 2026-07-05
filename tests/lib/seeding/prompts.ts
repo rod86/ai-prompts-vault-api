@@ -1,20 +1,11 @@
 import { inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { prompts } from '@logic/prompt/infrastructure/database/schema.js';
+import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 type Database = NodePgDatabase<Record<string, unknown>>;
 
-export interface PromptFixture {
-    id: string;
-    categoryId: string;
-    title: string;
-    prompt: string;
-    description?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export async function insertPrompts(db: Database, fixtures: PromptFixture[]): Promise<void> {
+export async function insertPrompts(db: Database, fixtures: PromptModel[]): Promise<void> {
     if (fixtures.length === 0) {
         return;
     }

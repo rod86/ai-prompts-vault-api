@@ -2,83 +2,42 @@ import { faker } from '@faker-js/faker';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { type PromptCategory } from '@logic/prompt/domain/PromptCategory.js';
 import { databaseClient } from '@logic/shared/services.js';
 import app from '@src/app.js';
+import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
     getAllPromptCategories,
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
-import { deletePromptsByIds, insertPrompts, type PromptFixture } from '@tests/lib/seeding/prompts.js';
-
-const FIXTURE_CATEGORIES: PromptCategory[] = [
-    { id: faker.string.uuid(), name: 'Zzz Topic' },
-    { id: faker.string.uuid(), name: 'Aaa Topic' },
-];
-
-const PROMPTS_FIXTURE_CATEGORY: PromptCategory = {
-    id: faker.string.uuid(),
-    name: 'Prompts Fixture Category',
-};
-
-const OLDER_PROMPT: PromptFixture = {
-    id: faker.string.uuid(),
-    categoryId: PROMPTS_FIXTURE_CATEGORY.id,
-    title: 'Older prompt',
-    prompt: faker.lorem.paragraph(),
-    description: faker.lorem.sentence(),
-    createdAt: faker.date.past({ years: 2 }),
-    updatedAt: faker.date.recent(),
-};
-
-const NEWER_PROMPT: PromptFixture = {
-    id: faker.string.uuid(),
-    categoryId: PROMPTS_FIXTURE_CATEGORY.id,
-    title: 'Newer prompt',
-    prompt: faker.lorem.paragraph(),
-    description: faker.lorem.sentence(),
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-};
-
-const OTHER_PROMPTS_CATEGORY: PromptCategory = {
-    id: faker.string.uuid(),
-    name: 'Other Prompts Fixture Category',
-};
-
-const OTHER_CATEGORY_PROMPT: PromptFixture = {
-    id: faker.string.uuid(),
-    categoryId: OTHER_PROMPTS_CATEGORY.id,
-    title: 'Other category prompt',
-    prompt: faker.lorem.paragraph(),
-    description: faker.lorem.sentence(),
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-};
+import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
 
 let db: NodePgDatabase<Record<string, unknown>>;
 
 beforeAll(async () => {
     db = databaseClient.connect();
-    await insertPromptCategories(db, [PROMPTS_FIXTURE_CATEGORY, OTHER_PROMPTS_CATEGORY]);
 });
 
 afterAll(async () => {
-    await deletePromptCategoriesByIds(db, [PROMPTS_FIXTURE_CATEGORY.id, OTHER_PROMPTS_CATEGORY.id]);
     await databaseClient.close();
 });
 
 describe('GET /categories', () => {
+    const fixtureCategories = [
+        promptCategoryModelFactory.create({ name: 'Zzz Topic' }),
+        promptCategoryModelFactory.create({ name: 'Aaa Topic' }),
+    ];
+
     afterEach(async () => {
         await deletePromptCategoriesByIds(
             db,
-            FIXTURE_CATEGORIES.map((category) => category.id),
+            fixtureCategories.map((category) => category.id),
         );
     });
 
     it('returns all categories ordered alphabetically by name', async () => {
-        await insertPromptCategories(db, FIXTURE_CATEGORIES);
+        await insertPromptCategories(db, fixtureCategories);
         const existingCategories = await getAllPromptCategories(db);
         const expected = [...existingCategories].sort((a, b) =>
             a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
@@ -94,16 +53,46 @@ describe('GET /categories', () => {
 });
 
 describe('GET /prompts', () => {
+    const promptsFixtureCategory = promptCategoryModelFactory.create({
+        name: 'Prompts Fixture Category',
+    });
+    const otherPromptsCategory = promptCategoryModelFactory.create({
+        name: 'Other Prompts Fixture Category',
+    });
+    const olderPrompt = promptModelFactory.create({
+        categoryId: promptsFixtureCategory.id,
+        title: 'Older prompt',
+        createdAt: faker.date.past({ years: 2 }),
+    });
+    const newerPrompt = promptModelFactory.create({
+        categoryId: promptsFixtureCategory.id,
+        title: 'Newer prompt',
+        createdAt: faker.date.recent(),
+    });
+    const otherCategoryPrompt = promptModelFactory.create({
+        categoryId: otherPromptsCategory.id,
+        title: 'Other category prompt',
+        createdAt: faker.date.recent(),
+    });
+
+    beforeAll(async () => {
+        await insertPromptCategories(db, [promptsFixtureCategory, otherPromptsCategory]);
+    });
+
+    afterAll(async () => {
+        await deletePromptCategoriesByIds(db, [promptsFixtureCategory.id, otherPromptsCategory.id]);
+    });
+
     afterEach(async () => {
-        await deletePromptsByIds(db, [OLDER_PROMPT.id, NEWER_PROMPT.id, OTHER_CATEGORY_PROMPT.id]);
+        await deletePromptsByIds(db, [olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
     });
 
     it('returns all prompts ordered most-recently-created-first', async () => {
-        await insertPrompts(db, [OLDER_PROMPT, NEWER_PROMPT]);
+        await insertPrompts(db, [olderPrompt, newerPrompt]);
 
         const response = await request(app).get('/prompts');
 
-        const fixtureIds = new Set([OLDER_PROMPT.id, NEWER_PROMPT.id]);
+        const fixtureIds = new Set([olderPrompt.id, newerPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>
             fixtureIds.has(prompt.id),
         );
@@ -111,22 +100,22 @@ describe('GET /prompts', () => {
         expect(response.status).toBe(200);
         expect(fixturesInResponse).toEqual([
             {
-                id: NEWER_PROMPT.id,
-                category: { id: PROMPTS_FIXTURE_CATEGORY.id, name: PROMPTS_FIXTURE_CATEGORY.name },
-                title: NEWER_PROMPT.title,
-                prompt: NEWER_PROMPT.prompt,
-                description: NEWER_PROMPT.description,
-                createdAt: NEWER_PROMPT.createdAt.toISOString(),
-                updatedAt: NEWER_PROMPT.updatedAt.toISOString(),
+                id: newerPrompt.id,
+                category: { id: promptsFixtureCategory.id, name: promptsFixtureCategory.name },
+                title: newerPrompt.title,
+                prompt: newerPrompt.prompt,
+                description: newerPrompt.description,
+                createdAt: newerPrompt.createdAt.toISOString(),
+                updatedAt: newerPrompt.updatedAt.toISOString(),
             },
             {
-                id: OLDER_PROMPT.id,
-                category: { id: PROMPTS_FIXTURE_CATEGORY.id, name: PROMPTS_FIXTURE_CATEGORY.name },
-                title: OLDER_PROMPT.title,
-                prompt: OLDER_PROMPT.prompt,
-                description: OLDER_PROMPT.description,
-                createdAt: OLDER_PROMPT.createdAt.toISOString(),
-                updatedAt: OLDER_PROMPT.updatedAt.toISOString(),
+                id: olderPrompt.id,
+                category: { id: promptsFixtureCategory.id, name: promptsFixtureCategory.name },
+                title: olderPrompt.title,
+                prompt: olderPrompt.prompt,
+                description: olderPrompt.description,
+                createdAt: olderPrompt.createdAt.toISOString(),
+                updatedAt: olderPrompt.updatedAt.toISOString(),
             },
         ]);
     });
@@ -134,7 +123,7 @@ describe('GET /prompts', () => {
     it('returns an empty list when there are no prompts', async () => {
         const response = await request(app).get('/prompts');
 
-        const fixtureIds = new Set([OLDER_PROMPT.id, NEWER_PROMPT.id]);
+        const fixtureIds = new Set([olderPrompt.id, newerPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>
             fixtureIds.has(prompt.id),
         );
@@ -144,30 +133,30 @@ describe('GET /prompts', () => {
     });
 
     it('returns only prompts in the requested category when filtered', async () => {
-        await insertPrompts(db, [OLDER_PROMPT, NEWER_PROMPT, OTHER_CATEGORY_PROMPT]);
+        await insertPrompts(db, [olderPrompt, newerPrompt, otherCategoryPrompt]);
 
         const response = await request(app).get(
-            `/prompts?category=${PROMPTS_FIXTURE_CATEGORY.id}`,
+            `/prompts?category=${promptsFixtureCategory.id}`,
         );
 
-        const fixtureIds = new Set([OLDER_PROMPT.id, NEWER_PROMPT.id, OTHER_CATEGORY_PROMPT.id]);
+        const fixtureIds = new Set([olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>
             fixtureIds.has(prompt.id),
         );
 
         expect(response.status).toBe(200);
         expect(fixturesInResponse.map((prompt) => prompt.id)).toEqual([
-            NEWER_PROMPT.id,
-            OLDER_PROMPT.id,
+            newerPrompt.id,
+            olderPrompt.id,
         ]);
     });
 
     it('returns an empty list when the category filter matches nothing', async () => {
-        await insertPrompts(db, [OLDER_PROMPT, NEWER_PROMPT]);
+        await insertPrompts(db, [olderPrompt, newerPrompt]);
 
         const response = await request(app).get(`/prompts?category=${faker.string.uuid()}`);
 
-        const fixtureIds = new Set([OLDER_PROMPT.id, NEWER_PROMPT.id]);
+        const fixtureIds = new Set([olderPrompt.id, newerPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>
             fixtureIds.has(prompt.id),
         );
@@ -177,11 +166,11 @@ describe('GET /prompts', () => {
     });
 
     it('returns an empty list when the category filter is not UUID-shaped', async () => {
-        await insertPrompts(db, [OLDER_PROMPT, NEWER_PROMPT]);
+        await insertPrompts(db, [olderPrompt, newerPrompt]);
 
         const response = await request(app).get('/prompts?category=not-a-uuid');
 
-        const fixtureIds = new Set([OLDER_PROMPT.id, NEWER_PROMPT.id]);
+        const fixtureIds = new Set([olderPrompt.id, newerPrompt.id]);
         const fixturesInResponse = (response.body as Array<{ id: string }>).filter((prompt) =>
             fixtureIds.has(prompt.id),
         );
@@ -191,9 +180,11 @@ describe('GET /prompts', () => {
     });
 
     it('includes a prompt with no description, with no description value', async () => {
-        const promptWithoutDescription: PromptFixture = {
+        // Built by hand, not via promptModelFactory: the factory always fills in a
+        // fake description, but this test needs one explicitly absent.
+        const promptWithoutDescription: PromptModel = {
             id: faker.string.uuid(),
-            categoryId: PROMPTS_FIXTURE_CATEGORY.id,
+            categoryId: promptsFixtureCategory.id,
             title: 'Prompt without description',
             prompt: faker.lorem.paragraph(),
             createdAt: faker.date.recent(),
