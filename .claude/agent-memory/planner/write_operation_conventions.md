@@ -41,10 +41,37 @@ metadata:
   (e.g. `entity.category.id` for the FK column) at the point of the
   `db.insert(...).values({...})` call. Mirrors the existing read-side pattern
   where nested shape only exists at the domain layer, not in the DB row.
+- **Multi-error precedence for update/delete (006/007)**: when a write
+  operation both addresses a resource by path id AND validates something else
+  (e.g. a body field's referenced id), check the path resource's existence
+  **first** and short-circuit before any other check — "can't act on a
+  resource that isn't there, regardless of what else is wrong with the
+  request." Reused verbatim in 006 (`PromptNotFoundError` before
+  `CategoryNotFoundError`) and trivially in 007 (only one check exists).
+- **Not-found detection reuses `findById`-then-act, not affected-row-count**:
+  `Update`/`DeletePromptUseCase` both call `findById` first to confirm
+  existence (throwing the domain NotFound error if absent) and only then call
+  `update()`/`delete()` on the repository — kept identical in shape to
+  `GetPromptUseCase`'s existence check, rather than inspecting the mutating
+  call's own return value. `update()`/`delete()` port methods return `void`.
+- **`update()`/`delete()` skip the `::text` cast** that `findById` needs —
+  by the time either is called, the id has already been confirmed to exist
+  and is a genuine well-formed uuid, so a plain `eq(prompts.id, id)` suffices.
+- **204-no-body is a legitimate confirmation for a delete** (007, explicit
+  user decision overriding the story's "confirmation" wording in favor of the
+  status code alone) — don't assume "the user wants confirmation" implies a
+  response payload; ask (see [[interview-outcomes]] if it exists, otherwise
+  treat response-body shape for a mutating endpoint as a genuine
+  design-changing interview question every time, since no single default has
+  been established across 005/006/007 (005/006 echo the full entity, 007
+  echoes nothing).
 
 **Why:** these were explicit, deliberate decisions given for 005 (the first
-write feature) diverging from established read-side conventions; future
-writes should follow the same pattern rather than re-deriving it.
-**How to apply:** default to these for any new create/update feature; call
-out the divergence from [[list-read-conventions]] explicitly in the spec's
-Decisions log rather than silently.
+write feature) diverging from established read-side conventions, and refined
+across 006 (update) and 007 (delete); future writes should follow the same
+pattern rather than re-deriving it.
+**How to apply:** default to these for any new create/update/delete feature;
+call out any divergence from [[list-read-conventions]] explicitly in the
+spec's Decisions log rather than silently. Always still ask about the
+response-body shape on a new mutating endpoint — it has been answered three
+different ways so far.
