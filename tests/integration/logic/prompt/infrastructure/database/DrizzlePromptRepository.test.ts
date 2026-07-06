@@ -19,36 +19,42 @@ import {
 } from '@tests/lib/seeding/prompts.js';
 
 describe('DrizzlePromptRepository', () => {
+    let db: TestDatabaseConnection;
+    let repository: DrizzlePromptRepository;
+    const recipeCategory = promptCategoryModelFactory.create({ name: 'Recipes & Cooking' });
+    const travelCategory = promptCategoryModelFactory.create({ name: 'Travel & Adventure' });
+    const fitnessCategory = promptCategoryModelFactory.create({ name: 'Fitness & Wellness' });
+
+    beforeAll(async () => {
+        db = databaseClient.connect();
+        repository = new DrizzlePromptRepository(db);
+        await insertPromptCategories(db, [recipeCategory, travelCategory, fitnessCategory]);
+    });
+
+    afterAll(async () => {
+        await deletePromptCategoriesByIds(db, [
+            recipeCategory.id,
+            travelCategory.id,
+            fitnessCategory.id,
+        ]);
+        await databaseClient.close();
+    });
+
     describe('findAll', () => {
-        let db: TestDatabaseConnection;
-        let repository: DrizzlePromptRepository;
-        const fixtureCategory = promptCategoryModelFactory.create({ name: 'Coding & Development' });
-        const otherCategory = promptCategoryModelFactory.create({ name: 'Business & Finance' });
         const olderPrompt = promptModelFactory.create({
-            categoryId: fixtureCategory.id,
+            categoryId: recipeCategory.id,
             title: 'Older prompt',
             createdAt: faker.date.past({ years: 2 }),
         });
         const newerPrompt = promptModelFactory.create({
-            categoryId: fixtureCategory.id,
+            categoryId: recipeCategory.id,
             title: 'Newer prompt',
             createdAt: faker.date.recent(),
         });
         const otherCategoryPrompt = promptModelFactory.create({
-            categoryId: otherCategory.id,
+            categoryId: travelCategory.id,
             title: 'Other category prompt',
             createdAt: faker.date.recent(),
-        });
-
-        beforeAll(async () => {
-            db = databaseClient.connect();
-            repository = new DrizzlePromptRepository(db);
-            await insertPromptCategories(db, [fixtureCategory, otherCategory]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherCategory.id]);
-            await databaseClient.close();
         });
 
         afterEach(async () => {
@@ -66,7 +72,7 @@ describe('DrizzlePromptRepository', () => {
             expect(fixturesInResult).toEqual([
                 {
                     id: newerPrompt.id,
-                    category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                    category: { id: recipeCategory.id, name: recipeCategory.name },
                     title: newerPrompt.title,
                     prompt: newerPrompt.prompt,
                     description: newerPrompt.description,
@@ -75,7 +81,7 @@ describe('DrizzlePromptRepository', () => {
                 },
                 {
                     id: olderPrompt.id,
-                    category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                    category: { id: recipeCategory.id, name: recipeCategory.name },
                     title: olderPrompt.title,
                     prompt: olderPrompt.prompt,
                     description: olderPrompt.description,
@@ -88,7 +94,7 @@ describe('DrizzlePromptRepository', () => {
         it('returns only prompts belonging to a given category', async () => {
             await insertPrompts(db, [olderPrompt, newerPrompt, otherCategoryPrompt]);
 
-            const result = await repository.findAll({ categoryId: fixtureCategory.id });
+            const result = await repository.findAll({ categoryId: recipeCategory.id });
 
             const fixtureIds = new Set([olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
             const fixturesInResult = result.filter((prompt) => fixtureIds.has(prompt.id));
@@ -129,7 +135,7 @@ describe('DrizzlePromptRepository', () => {
             // fake description, but this test needs one explicitly absent.
             const promptWithoutDescription: PromptModel = {
                 id: faker.string.uuid(),
-                categoryId: fixtureCategory.id,
+                categoryId: recipeCategory.id,
                 title: 'Prompt without description',
                 prompt: faker.lorem.paragraph(),
                 createdAt: faker.date.recent(),
@@ -148,23 +154,9 @@ describe('DrizzlePromptRepository', () => {
     });
 
     describe('findById', () => {
-        let db: TestDatabaseConnection;
-        let repository: DrizzlePromptRepository;
-        const fixtureCategory = promptCategoryModelFactory.create({ name: 'Get Prompt Category' });
         const fixturePrompt = promptModelFactory.create({
-            categoryId: fixtureCategory.id,
+            categoryId: fitnessCategory.id,
             title: 'Fixture prompt',
-        });
-
-        beforeAll(async () => {
-            db = databaseClient.connect();
-            repository = new DrizzlePromptRepository(db);
-            await insertPromptCategories(db, [fixtureCategory]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
-            await databaseClient.close();
         });
 
         afterEach(async () => {
@@ -178,7 +170,7 @@ describe('DrizzlePromptRepository', () => {
 
             expect(result).toEqual({
                 id: fixturePrompt.id,
-                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                category: { id: fitnessCategory.id, name: fitnessCategory.name },
                 title: fixturePrompt.title,
                 prompt: fixturePrompt.prompt,
                 description: fixturePrompt.description,
@@ -208,7 +200,7 @@ describe('DrizzlePromptRepository', () => {
             // fake description, but this test needs one explicitly absent.
             const promptWithoutDescription: PromptModel = {
                 id: faker.string.uuid(),
-                categoryId: fixtureCategory.id,
+                categoryId: fitnessCategory.id,
                 title: 'Prompt without description',
                 prompt: faker.lorem.paragraph(),
                 createdAt: faker.date.recent(),
@@ -226,26 +218,11 @@ describe('DrizzlePromptRepository', () => {
     });
 
     describe('create', () => {
-        let db: TestDatabaseConnection;
-        let repository: DrizzlePromptRepository;
-        const fixtureCategory = promptCategoryModelFactory.create({ name: 'Create Prompt Category' });
-
-        beforeAll(async () => {
-            db = databaseClient.connect();
-            repository = new DrizzlePromptRepository(db);
-            await insertPromptCategories(db, [fixtureCategory]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
-            await databaseClient.close();
-        });
-
         it('persists a new prompt row', async () => {
-            const fixture = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            const fixture = promptModelFactory.create({ categoryId: recipeCategory.id });
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                category: { id: recipeCategory.id, name: recipeCategory.name },
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: fixture.description,
@@ -258,7 +235,7 @@ describe('DrizzlePromptRepository', () => {
 
             expect(result).toEqual({
                 id: fixture.id,
-                promptCategoryId: fixtureCategory.id,
+                promptCategoryId: recipeCategory.id,
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: fixture.description,
@@ -272,7 +249,7 @@ describe('DrizzlePromptRepository', () => {
         it('persists a prompt with no description as an absent value', async () => {
             const fixture: PromptModel = {
                 id: faker.string.uuid(),
-                categoryId: fixtureCategory.id,
+                categoryId: recipeCategory.id,
                 title: 'Prompt without description',
                 prompt: faker.lorem.paragraph(),
                 createdAt: faker.date.recent(),
@@ -280,7 +257,7 @@ describe('DrizzlePromptRepository', () => {
             };
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: fixtureCategory.id, name: fixtureCategory.name },
+                category: { id: recipeCategory.id, name: recipeCategory.name },
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: undefined,
@@ -298,32 +275,12 @@ describe('DrizzlePromptRepository', () => {
     });
 
     describe('update', () => {
-        let db: TestDatabaseConnection;
-        let repository: DrizzlePromptRepository;
-        const fixtureCategory = promptCategoryModelFactory.create({
-            name: 'Update Prompt Category',
-        });
-        const otherCategory = promptCategoryModelFactory.create({
-            name: 'Update Prompt Other Category',
-        });
-
-        beforeAll(async () => {
-            db = databaseClient.connect();
-            repository = new DrizzlePromptRepository(db);
-            await insertPromptCategories(db, [fixtureCategory, otherCategory]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherCategory.id]);
-            await databaseClient.close();
-        });
-
         it('persists updated fields for an existing prompt row', async () => {
-            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            const existingPrompt = promptModelFactory.create({ categoryId: travelCategory.id });
             await insertPrompts(db, [existingPrompt]);
 
             const updatePrompt = {
-                categoryId: otherCategory.id,
+                categoryId: fitnessCategory.id,
                 title: 'Updated title',
                 prompt: 'Updated prompt text',
                 description: 'Updated description',
@@ -335,7 +292,7 @@ describe('DrizzlePromptRepository', () => {
 
             expect(result).toEqual({
                 id: existingPrompt.id,
-                promptCategoryId: otherCategory.id,
+                promptCategoryId: fitnessCategory.id,
                 title: updatePrompt.title,
                 prompt: updatePrompt.prompt,
                 description: updatePrompt.description,
@@ -347,11 +304,11 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('persists an updated prompt with no description as an absent value', async () => {
-            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            const existingPrompt = promptModelFactory.create({ categoryId: travelCategory.id });
             await insertPrompts(db, [existingPrompt]);
 
             const updatePrompt = {
-                categoryId: fixtureCategory.id,
+                categoryId: travelCategory.id,
                 title: existingPrompt.title,
                 prompt: existingPrompt.prompt,
                 description: null,
@@ -368,25 +325,8 @@ describe('DrizzlePromptRepository', () => {
     });
 
     describe('delete', () => {
-        let db: TestDatabaseConnection;
-        let repository: DrizzlePromptRepository;
-        const fixtureCategory = promptCategoryModelFactory.create({
-            name: 'Delete Prompt Category',
-        });
-
-        beforeAll(async () => {
-            db = databaseClient.connect();
-            repository = new DrizzlePromptRepository(db);
-            await insertPromptCategories(db, [fixtureCategory]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
-            await databaseClient.close();
-        });
-
         it('removes an existing prompt row', async () => {
-            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            const existingPrompt = promptModelFactory.create({ categoryId: recipeCategory.id });
             await insertPrompts(db, [existingPrompt]);
 
             await repository.delete(existingPrompt.id);
