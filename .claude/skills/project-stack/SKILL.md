@@ -85,7 +85,8 @@ export default {
 } satisfies RequestSchema;
 ```
 
-**UUID fields:** use the top-level `z.uuid()`. `z.uuid()` combines the type check and the format
+**UUID fields:** use the top-level `z.uuid()`, not the deprecated
+`z.string().uuid()` chain. `z.uuid()` combines the type check and the format
 check into one schema, so a single string message would apply to *both* a
 missing value and a malformed one. To keep distinct messages for each case,
 pass an `error` callback that branches on the issue code:
