@@ -12,7 +12,11 @@ import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/seeding/promptCategories.js';
-import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
+import {
+    deletePromptsByIds,
+    insertPrompts,
+    selectPromptsByIds,
+} from '@tests/lib/seeding/prompts.js';
 
 describe('DrizzlePromptRepository', () => {
     describe('findAll', () => {
@@ -250,9 +254,17 @@ describe('DrizzlePromptRepository', () => {
             };
 
             await repository.create(fixturePrompt);
-            const result = await repository.findById(fixture.id);
+            const [result] = await selectPromptsByIds(db, [fixture.id]);
 
-            expect(result).toEqual(fixturePrompt);
+            expect(result).toEqual({
+                id: fixture.id,
+                promptCategoryId: fixtureCategory.id,
+                title: fixture.title,
+                prompt: fixture.prompt,
+                description: fixture.description,
+                createdAt: fixture.createdAt,
+                updatedAt: fixture.updatedAt,
+            });
 
             await deletePromptsByIds(db, [fixture.id]);
         });
@@ -277,9 +289,9 @@ describe('DrizzlePromptRepository', () => {
             };
 
             await repository.create(fixturePrompt);
-            const result = await repository.findById(fixture.id);
+            const [result] = await selectPromptsByIds(db, [fixture.id]);
 
-            expect(result?.description).toBeUndefined();
+            expect(result?.description).toBeNull();
 
             await deletePromptsByIds(db, [fixture.id]);
         });
@@ -319,11 +331,11 @@ describe('DrizzlePromptRepository', () => {
             };
 
             await repository.update(existingPrompt.id, updatePrompt);
-            const result = await repository.findById(existingPrompt.id);
+            const [result] = await selectPromptsByIds(db, [existingPrompt.id]);
 
             expect(result).toEqual({
                 id: existingPrompt.id,
-                category: { id: otherCategory.id, name: otherCategory.name },
+                promptCategoryId: otherCategory.id,
                 title: updatePrompt.title,
                 prompt: updatePrompt.prompt,
                 description: updatePrompt.description,
@@ -347,9 +359,9 @@ describe('DrizzlePromptRepository', () => {
             };
 
             await repository.update(existingPrompt.id, updatePrompt);
-            const result = await repository.findById(existingPrompt.id);
+            const [result] = await selectPromptsByIds(db, [existingPrompt.id]);
 
-            expect(result?.description).toBeUndefined();
+            expect(result?.description).toBeNull();
 
             await deletePromptsByIds(db, [existingPrompt.id]);
         });
@@ -378,9 +390,9 @@ describe('DrizzlePromptRepository', () => {
             await insertPrompts(db, [existingPrompt]);
 
             await repository.delete(existingPrompt.id);
-            const result = await repository.findById(existingPrompt.id);
+            const rows = await selectPromptsByIds(db, [existingPrompt.id]);
 
-            expect(result).toBeUndefined();
+            expect(rows).toEqual([]);
         });
     });
 });

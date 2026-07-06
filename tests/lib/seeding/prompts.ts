@@ -34,3 +34,14 @@ export async function deletePromptsByIds(
 
     await db.delete(prompts).where(inArray(prompts.id, ids));
 }
+
+export async function selectPromptsByIds(
+    db: TestDatabaseConnection,
+    ids: string[],
+): Promise<(typeof prompts.$inferSelect)[]> {
+    if (ids.length === 0) {
+        return [];
+    }
+
+    return db.select().from(prompts).where(inArray(prompts.id, ids));
+}
