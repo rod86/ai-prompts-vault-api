@@ -1,8 +1,7 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type PromptRepositoryInterface from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
-import { type PromptFilter } from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
-import { type Prompt, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
+import { type Prompt, type PromptFilter, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@logic/prompt/infrastructure/database/schema.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {

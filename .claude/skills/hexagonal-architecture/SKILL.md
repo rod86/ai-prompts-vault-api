@@ -143,14 +143,33 @@ export interface Prompt {
 ```
 
 **Interfaces (`<context>/domain/interfaces`):** ports the inner layers depend
-on. Name must NOT reference a source (no Database, AWS, etc.).
+on. Name must NOT reference a source (no Database, AWS, etc.). This folder
+holds ONLY port interfaces (repository/gateway contracts) — no plain data-shape
+types (filters, DTOs, etc.), even if a port method uses one. Those belong in
+the entity file alongside the entity they describe, and get imported into the
+interface file from there.
+
+```typescript
+// src/logic/prompt/domain/Prompt.ts
+export interface Prompt {
+    id: string;
+    title: string;
+    prompt: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface PromptFilter {
+    categoryId?: string;
+}
+```
 
 ```typescript
 // src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
-import { Prompt } from '@logic/prompt/domain/Prompt';
+import { type Prompt, type PromptFilter } from '@logic/prompt/domain/Prompt.js';
 export default interface PromptRepositoryInterface {
     create(prompt: Prompt): Promise<void>;
-    findAll(): Promise<Prompt[]>;
+    findAll(filter?: PromptFilter): Promise<Prompt[]>;
     findById(id: string): Promise<Prompt>;
 }
 ```

@@ -15,3 +15,7 @@ export interface UpdatePrompt {
     description?: string | null;
     updatedAt: Date;
 }
+
+export interface PromptFilter {
+    categoryId?: string;
+}

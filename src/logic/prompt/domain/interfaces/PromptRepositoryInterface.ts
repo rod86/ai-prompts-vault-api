@@ -1,8 +1,4 @@
-import { type Prompt, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
-
-export interface PromptFilter {
-    categoryId?: string;
-}
+import { type Prompt, type PromptFilter, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
 
 export default interface PromptRepositoryInterface {
     findAll(filter?: PromptFilter): Promise<Prompt[]>;
