@@ -69,8 +69,8 @@ export default {
 **Zod v4 custom error messages:** this project is on Zod v4. Give required
 fields a clean message instead of v4's default (`"Invalid input: expected
 string, received undefined"`) via the unified `error` param — replaces v3's
-separate `required_error`/`invalid_type_error`. For a check like `.uuid()`,
-pass the message directly as its argument:
+separate `required_error`/`invalid_type_error`. For a plain string field, pass
+the message directly as the `error` param:
 
 ```typescript
 import { z } from 'zod';
@@ -80,10 +80,20 @@ export default {
     body: z.object({
         title: z.string({ error: 'Missing required value' }).min(1),
         prompt: z.string({ error: 'Missing required value' }).min(1),
-        category_id: z.string({ error: 'Missing required value' }).uuid('Invalid UUID value'),
         description: z.string().optional(),
     }),
 } satisfies RequestSchema;
+```
+
+**UUID fields:** use the top-level `z.uuid()`. `z.uuid()` combines the type check and the format
+check into one schema, so a single string message would apply to *both* a
+missing value and a malformed one. To keep distinct messages for each case,
+pass an `error` callback that branches on the issue code:
+
+```typescript
+category_id: z.uuid({
+    error: (iss) => (iss.code === 'invalid_type' ? 'Missing required value' : 'Invalid UUID value'),
+}),
 ```
 
 **Wiring (`app.ts`):** import the default and pass it straight through:
