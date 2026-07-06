@@ -1,11 +1,11 @@
 import { desc, eq, sql } from 'drizzle-orm';
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type PromptRepositoryInterface from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt, type PromptFilter, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@logic/prompt/infrastructure/database/schema.js';
+import { type DatabaseConnection } from '@logic/shared/database/DatabaseClient.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
-    constructor(private readonly db: NodePgDatabase<Record<string, unknown>>) {}
+    constructor(private readonly db: DatabaseConnection) {}
 
     public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
         // Compared as text (not uuid) so a filter value that isn't UUID-shaped

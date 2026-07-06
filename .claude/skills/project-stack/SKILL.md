@@ -116,18 +116,23 @@ logic.
 
 **Generic client (`src/logic/shared/database/DatabaseClient.ts`):**
 `DatabaseClient<DatabaseSchema>` wraps a lazily-created `pg` `Pool` and returns a
-Drizzle connection typed against the schema it was constructed with.
+Drizzle connection typed against the schema it was constructed with. The same
+file also exports `DatabaseConnection<DatabaseSchema>`, a type alias for
+`NodePgDatabase<DatabaseSchema>` — use it for any `db` param/return type
+instead of importing `NodePgDatabase` from `drizzle-orm/node-postgres`
+directly.
 
 ```ts
 const client = new DatabaseClient(config, schema); // DatabaseSchema inferred from `schema`
-const db = client.connect(); // NodePgDatabase<typeof schema> — typed db.query.<table>
+const db = client.connect(); // DatabaseConnection<typeof schema> — typed db.query.<table>
 await client.close(); // ends the Pool (idempotent)
 ```
 
 - `config: DatabaseConfig` — `{ host, port, user, password, database }`.
 - `schema: DatabaseSchema` — `Record<string, unknown>` of table definitions.
-- `connect()` returns `NodePgDatabase<DatabaseSchema>`; reuses the existing Pool,
-  safe to call repeatedly.
+- `connect()` returns `DatabaseConnection<DatabaseSchema>` (alias for
+  `NodePgDatabase<DatabaseSchema>`); reuses the existing Pool, safe to call
+  repeatedly.
 - `close()` no-ops if never connected.
 
 **Schema aggregation (composition root, `config.ts`):**
@@ -153,7 +158,19 @@ import { databaseClient } from '@logic/shared/services';
 
 const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
-// databaseClient.connect() is NodePgDatabase<GlobalSchema>
+// databaseClient.connect() is DatabaseConnection<GlobalSchema>
+```
+
+Repository classes type their `db` constructor param as `DatabaseConnection`
+(imported from `@logic/shared/database/DatabaseClient.js`) rather than
+hand-writing `NodePgDatabase<Record<string, unknown>>`:
+
+```ts
+import { type DatabaseConnection } from '@logic/shared/database/DatabaseClient.js';
+
+export class DrizzlePromptRepository implements PromptRepositoryInterface {
+    constructor(private readonly db: DatabaseConnection) {}
+}
 ```
 
 **Test-side client (`tests/lib/config.ts`):** tests get their own
@@ -163,8 +180,9 @@ export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 resources are restricted to `tests` scope. It also exports
 `TestDatabaseConnection = ReturnType<typeof databaseClient.connect>`, the
 shared type for any `db` parameter/variable in seeding helpers
-(`tests/lib/seeding/*.ts`) and integration tests, instead of hand-writing
-`NodePgDatabase<Record<string, unknown>>` in each file:
+(`tests/lib/seeding/*.ts`) and integration tests — the test-side counterpart
+to the production `DatabaseConnection` alias, so neither side hand-writes
+`NodePgDatabase<Record<string, unknown>>`:
 
 ```ts
 import { type TestDatabaseConnection } from '@tests/lib/config.js';

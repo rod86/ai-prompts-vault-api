@@ -9,6 +9,9 @@ export type DatabaseConfig = {
     database: string;
 };
 
+export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
+    NodePgDatabase<DatabaseSchema>;
+
 export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>> {
     private pool: Pool | undefined;
 
@@ -17,7 +20,7 @@ export default class DatabaseClient<DatabaseSchema extends Record<string, unknow
         private readonly schema: DatabaseSchema,
     ) {}
 
-    public connect(): NodePgDatabase<DatabaseSchema> {
+    public connect(): DatabaseConnection<DatabaseSchema> {
         if (this.pool === undefined) {
             this.pool = new Pool(this.config);
         }
