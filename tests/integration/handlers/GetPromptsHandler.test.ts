@@ -8,12 +8,12 @@ import {
     promptModelFactory,
     type TestDatabaseConnection,
 } from '@tests/lib/config.js';
-import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
-} from '@tests/lib/seeding/promptCategories.js';
-import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
+} from '@tests/lib/database/promptCategories.js';
+import { deletePromptsByIds, insertPrompts } from '@tests/lib/database/prompts.js';
+import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 describe('GET /prompts', () => {
     let db: TestDatabaseConnection;

@@ -11,8 +11,8 @@ import {
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
-} from '@tests/lib/seeding/promptCategories.js';
-import { deletePromptsByIds, insertPrompts } from '@tests/lib/seeding/prompts.js';
+} from '@tests/lib/database/promptCategories.js';
+import { deletePromptsByIds, insertPrompts } from '@tests/lib/database/prompts.js';
 
 describe('PUT /prompts/:id', () => {
     let db: TestDatabaseConnection;

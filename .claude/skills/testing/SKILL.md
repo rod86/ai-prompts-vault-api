@@ -18,10 +18,10 @@ runner, mocking library, and code examples are in the `project-stack` skill.
 
 ```
 tests/
-  lib/            # Shared test helpers (seeding, mocks, builders, sample responses,...)
+  lib/            # Shared test helpers (database, mocks, builders, sample responses,...)
     config.ts     # Test databaseClient + TestDatabaseConnection type, and singleton model factories, imported by tests.
     modelFactories # One factory per domain type, building fake instances of it.
-    seeding       # Helpers to seed database, one file per table schema (e.g. `prompts.ts`)
+    database      # Helpers to insert/select/delete rows directly, one file per table schema (e.g. `prompts.ts`)
   unit/           # Unit tests
   integration/    # Integration tests
 ```
@@ -66,6 +66,12 @@ tests/
   it can't clash with, or be reused by mistake in, another `describe` in the
   same file later. See `prompts` inside `ListPromptsUseCase.test.ts`'s
   `describe`.
+- Read-only reference data reused by *multiple* `describe` blocks in the same
+  file (e.g. category fixtures that several repository-method blocks all
+  need, but never mutate) is declared once in the top-level `describe`'s own
+  setup — not duplicated per nested block. See
+  `recipeCategory`/`travelCategory`/`fitnessCategory` in
+  `DrizzlePromptRepository.test.ts`.
 - Local helper functions used only within one test file (e.g. a builder wrapping
   a model factory) go at the top of the file, above the `describe` block — never
   nested inside it. See `buildPrompt` in
@@ -176,6 +182,13 @@ expect(() => useCase.execute(input)).toThrow('Error creating the prompt');
     3. Run the test.
     4. Clean up only the data the test inserted — leave everything else untouched.
     5. Close the connection once, after all tests, in the matching `afterAll`.
+- When a repository test asserts the result of `create`/`update`/`delete`,
+  verify it via a direct table query (e.g. `selectPromptsByIds` in
+  `tests/lib/database/*.ts`), not by calling the repository's own read method
+  (`findById`/`findAll`). This keeps a write test's correctness from
+  depending on a different method under test. `findAll`/`findById` describe
+  blocks are the exception — they exist specifically to test those methods,
+  so asserting on their own return value there is correct.
 - Vitest runs separate test files in parallel, so any assertion that reads
   the *entire* table (rather than filtering to the fixtures the test itself
   inserted) is racy against sibling integration test files touching the same

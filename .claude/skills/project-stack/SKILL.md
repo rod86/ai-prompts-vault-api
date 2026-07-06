@@ -190,8 +190,8 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
 `@logic/shared/services.ts` per the `testing` skill's rule that `lib`
 resources are restricted to `tests` scope. It also exports
 `TestDatabaseConnection = ReturnType<typeof databaseClient.connect>`, the
-shared type for any `db` parameter/variable in seeding helpers
-(`tests/lib/seeding/*.ts`) and integration tests — the test-side counterpart
+shared type for any `db` parameter/variable in database helpers
+(`tests/lib/database/*.ts`) and integration tests — the test-side counterpart
 to the production `DatabaseConnection` alias, so neither side hand-writes
 `NodePgDatabase<Record<string, unknown>>`:
 

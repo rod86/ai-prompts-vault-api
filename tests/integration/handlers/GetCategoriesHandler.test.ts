@@ -9,7 +9,7 @@ import {
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
-} from '@tests/lib/seeding/promptCategories.js';
+} from '@tests/lib/database/promptCategories.js';
 
 describe('GET /categories', () => {
     let db: TestDatabaseConnection;

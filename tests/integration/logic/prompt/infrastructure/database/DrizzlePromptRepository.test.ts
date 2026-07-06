@@ -7,16 +7,16 @@ import {
     promptModelFactory,
     type TestDatabaseConnection,
 } from '@tests/lib/config.js';
-import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
-} from '@tests/lib/seeding/promptCategories.js';
+} from '@tests/lib/database/promptCategories.js';
 import {
     deletePromptsByIds,
     insertPrompts,
     selectPromptsByIds,
-} from '@tests/lib/seeding/prompts.js';
+} from '@tests/lib/database/prompts.js';
+import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 describe('DrizzlePromptRepository', () => {
     let db: TestDatabaseConnection;
