@@ -12,7 +12,7 @@ import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
-import { insertPrompts } from '@tests/lib/database/prompts.js';
+import { insertPrompts, selectPromptsByIds } from '@tests/lib/database/prompts.js';
 
 describe('DELETE /prompts/:id', () => {
     let db: TestDatabaseConnection;
@@ -40,19 +40,8 @@ describe('DELETE /prompts/:id', () => {
         expect(response.body).toEqual({});
         expect(response.text).toBe('');
 
-        const followUp = await request(app).get(`/prompts/${fixturePrompt.id}`);
-        expect(followUp.status).toBe(404);
-    });
-
-    it('removes the prompt from prompt listings', async () => {
-        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
-        await insertPrompts(db, [fixturePrompt]);
-
-        await request(app).delete(`/prompts/${fixturePrompt.id}`);
-
-        const response = await request(app).get('/prompts');
-        const ids = (response.body as { id: string }[]).map((prompt) => prompt.id);
-        expect(ids).not.toContain(fixturePrompt.id);
+        const remaining = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(remaining).toEqual([]);
     });
 
     it('returns a not-found error when the id matches no prompt', async () => {

@@ -189,6 +189,14 @@ expect(() => useCase.execute(input)).toThrow('Error creating the prompt');
   depending on a different method under test. `findAll`/`findById` describe
   blocks are the exception — they exist specifically to test those methods,
   so asserting on their own return value there is correct.
+- Same rule for handler tests: when a handler that writes (`create`/`update`/
+  `delete`) needs to confirm the change actually happened, query the database
+  directly with the `tests/lib/database/*.ts` helpers (e.g. `selectPromptsByIds`)
+  rather than calling a different route (`GET /prompts/:id`, `GET /prompts`) to
+  check. Calling another endpoint couples the write handler's test to that other
+  handler's correctness and doubles up on coverage `GetPromptHandler.test.ts` /
+  `GetPromptsHandler.test.ts` already provide. See
+  `DeletePromptHandler.test.ts`.
 - Vitest runs separate test files in parallel, so any assertion that reads
   the *entire* table (rather than filtering to the fixtures the test itself
   inserted) is racy against sibling integration test files touching the same

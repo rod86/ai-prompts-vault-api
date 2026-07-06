@@ -12,7 +12,11 @@ import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
-import { deletePromptsByIds, insertPrompts } from '@tests/lib/database/prompts.js';
+import {
+    deletePromptsByIds,
+    insertPrompts,
+    selectPromptsByIds,
+} from '@tests/lib/database/prompts.js';
 
 describe('PUT /prompts/:id', () => {
     let db: TestDatabaseConnection;
@@ -126,12 +130,14 @@ describe('PUT /prompts/:id', () => {
         expect(response.status).toBe(400);
         expect(response.body).toEqual({ error: `Category not found: ${missingCategoryId}` });
 
-        const unchanged = await request(app).get(`/prompts/${fixturePrompt.id}`);
-        expect(unchanged.body).toMatchObject({
-            title: fixturePrompt.title,
-            prompt: fixturePrompt.prompt,
-            category: { id: fixtureCategory.id, name: fixtureCategory.name },
-        });
+        const unchanged = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(unchanged).toMatchObject([
+            {
+                title: fixturePrompt.title,
+                prompt: fixturePrompt.prompt,
+                promptCategoryId: fixtureCategory.id,
+            },
+        ]);
 
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
