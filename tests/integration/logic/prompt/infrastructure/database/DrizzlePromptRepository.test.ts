@@ -354,4 +354,33 @@ describe('DrizzlePromptRepository', () => {
             await deletePromptsByIds(db, [existingPrompt.id]);
         });
     });
+
+    describe('delete', () => {
+        let db: TestDatabaseConnection;
+        let repository: DrizzlePromptRepository;
+        const fixtureCategory = promptCategoryModelFactory.create({
+            name: 'Delete Prompt Category',
+        });
+
+        beforeAll(async () => {
+            db = databaseClient.connect();
+            repository = new DrizzlePromptRepository(db);
+            await insertPromptCategories(db, [fixtureCategory]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
+            await databaseClient.close();
+        });
+
+        it('removes an existing prompt row', async () => {
+            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            await insertPrompts(db, [existingPrompt]);
+
+            await repository.delete(existingPrompt.id);
+            const result = await repository.findById(existingPrompt.id);
+
+            expect(result).toBeUndefined();
+        });
+    });
 });

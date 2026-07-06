@@ -1,6 +1,6 @@
 # Spec: Delete prompt
 
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a user, I want to delete a prompt so that it no longer shows up anywhere.
 
 ## 1. Behavior

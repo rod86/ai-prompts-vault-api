@@ -194,5 +194,21 @@ describe('PUT /prompts/:id', () => {
 
             await deletePromptsByIds(db, [fixturePrompt.id]);
         });
+
+        it('returns an invalid value error for a non-uuid path id', async () => {
+            const response = await request(app).put('/prompts/not-a-uuid').send({
+                title: 'title',
+                prompt: 'prompt',
+                category_id: fixtureCategory.id,
+                description: 'description',
+            });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toMatchObject({
+                errors: expect.arrayContaining([
+                    { field: 'params.id', error: 'Invalid UUID value' },
+                ]),
+            });
+        });
     });
 });

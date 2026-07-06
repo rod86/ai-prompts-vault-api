@@ -99,4 +99,8 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
             })
             .where(eq(prompts.id, id));
     }
+
+    public async delete(id: string): Promise<void> {
+        await this.db.delete(prompts).where(eq(prompts.id, id));
+    }
 }

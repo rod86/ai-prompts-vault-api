@@ -79,6 +79,23 @@ is where things live and how they're built.
   thrown) before `CategoryNotFoundError` when both existence checks are
   needed, so "resource doesn't exist" always wins over "referenced value
   invalid".
+- **Delete pattern (`007-delete-prompt`):** simplest of the mutation use cases —
+  port gets `delete(id: string): Promise<void>` (mirrors `findById`'s raw-id
+  param); `Delete<X>UseCase.invoke()` looks up via `findById`, throws
+  `<X>NotFoundError` if missing, else calls `repository.delete(id)`, returns
+  `void` (no `Response` type). Adapter: `this.db.delete(table).where(eq(table.id,
+  id))` (no `::text` cast — same "already confirmed to exist via findById"
+  rationale as `update()`). Handler: 204 + `res.status(204).send()` on success
+  (no body), 404 `{ error: message }` on the not-found error, mirroring
+  `GetPromptHandler`/`UpdatePromptHandler`'s try/catch shape exactly.
+- **Tightening an existing schema's path id to `z.uuid()` under a new spec's
+  tasks.md:** a small maintenance task riding along with an unrelated feature
+  (e.g. T9 of `007-delete-prompt` upgrading `UpdatePromptSchema`'s `params.id`
+  from `z.string()` to `z.uuid()`) is legitimate when plan.md explicitly calls
+  it out — just add the one new `it` to the existing handler's `Request
+  Validation` describe block, run full suite to confirm no regression (all
+  existing fixture ids/`faker.string.uuid()` values stay uuid-shaped so no
+  passing test is affected).
 
 ## Drizzle patterns
 

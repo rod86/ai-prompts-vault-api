@@ -5,4 +5,5 @@ export default interface PromptRepositoryInterface {
     findById(id: string): Promise<Prompt | undefined>;
     create(prompt: Prompt): Promise<void>;
     update(id: string, prompt: UpdatePrompt): Promise<void>;
+    delete(id: string): Promise<void>;
 }

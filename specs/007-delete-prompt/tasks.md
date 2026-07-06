@@ -2,7 +2,7 @@
 
 Plan: specs/007-delete-prompt/plan.md
 
-- [ ] T1. Use case removes the prompt when it exists
+- [x] T1. Use case removes the prompt when it exists
     - Red: `tests/unit/logic/prompt/application/DeletePromptUseCase.test.ts` —
       construct `DeletePromptUseCase` with `mock<PromptRepositoryInterface>()`
       (per `testing` skill); build an existing `Prompt` fixture via a local
@@ -24,7 +24,7 @@ Plan: specs/007-delete-prompt/plan.md
       id, Then the prompt is permanently removed and the user is told the
       removal succeeded."
 
-- [ ] T2. Use case throws PromptNotFoundError and does not delete when the prompt does not exist
+- [x] T2. Use case throws PromptNotFoundError and does not delete when the prompt does not exist
     - Red: same file as T1 — new `it`;
       `promptRepository.findById.mockResolvedValue(undefined)`; call
       `useCase.invoke({ id })`; assert
@@ -40,7 +40,7 @@ Plan: specs/007-delete-prompt/plan.md
       attempts to delete it, Then the user is told the prompt was not found
       (E1), and no prompt is removed."
 
-- [ ] T3. Prompt repository removes an existing prompt row
+- [x] T3. Prompt repository removes an existing prompt row
     - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` —
       new `describe('delete', ...)` block; insert a fixture category and an
       existing fixture prompt (via `insertPromptCategories`/`insertPrompts`);
@@ -56,7 +56,7 @@ Plan: specs/007-delete-prompt/plan.md
       prompt is not found, as if it never existed." (via the repository's
       own `findById` after `delete`).
 
-- [ ] T4. `DELETE /prompts/:id` removes the prompt and responds with no content
+- [x] T4. `DELETE /prompts/:id` removes the prompt and responds with no content
     - Red: `tests/integration/handlers/DeletePromptHandler.test.ts` — new
       top-level `describe('DELETE /prompts/:id', ...)`; seed a fixture
       category and a fixture prompt via the seeding helpers; using
@@ -81,7 +81,7 @@ Plan: specs/007-delete-prompt/plan.md
       in `src/app.ts`.
     - Covers: AC1 (see T1 text above); AC2 (see T3 text above).
 
-- [ ] T5. `DELETE /prompts/:id` removes the prompt from prompt listings
+- [x] T5. `DELETE /prompts/:id` removes the prompt from prompt listings
     - Red: same file as T4 — new `it`; seed a fixture category and a fixture
       prompt; `DELETE /prompts/:id` for the fixture prompt's id; then
       `GET /prompts` and assert the fixture prompt's id is not present among
@@ -97,7 +97,7 @@ Plan: specs/007-delete-prompt/plan.md
       otherwise have matched it), Then the deleted prompt does not appear in
       the results."
 
-- [ ] T6. `DELETE /prompts/:id` returns a not-found error when the id matches no prompt
+- [x] T6. `DELETE /prompts/:id` returns a not-found error when the id matches no prompt
     - Red: same file as T4 — new `it`; `DELETE /prompts/:id` with a random
       `id` (`faker.string.uuid()`) that matches no seeded prompt; assert
       status `404` and the JSON body equals
@@ -107,7 +107,7 @@ Plan: specs/007-delete-prompt/plan.md
       `res.status(404).json({ error: err.message })` (plan.md §5).
     - Covers: AC4 (see T2 text above).
 
-- [ ] T7. `DELETE /prompts/:id` returns a not-found error when deleting an already-deleted id
+- [x] T7. `DELETE /prompts/:id` returns a not-found error when deleting an already-deleted id
     - Red: same file as T4 — new `it`; seed a fixture category and a fixture
       prompt; `DELETE /prompts/:id` once (asserting `204`, as in T4); then
       `DELETE /prompts/:id` again for the same id; assert the second call's
@@ -122,7 +122,7 @@ Plan: specs/007-delete-prompt/plan.md
       told the prompt was not found (E1), identical to attempting to delete
       any other unmatched id."
 
-- [ ] T8. `DELETE /prompts/:id` rejects a non-uuid id with a validation error
+- [x] T8. `DELETE /prompts/:id` rejects a non-uuid id with a validation error
     - Red: same file as T4 — new `describe('Request Validation', ...)` block
       with one `it`; `DELETE /prompts/not-a-uuid` (a clearly malformed,
       non-uuid path segment), no seeding needed; assert status `400` and body
@@ -138,7 +138,7 @@ Plan: specs/007-delete-prompt/plan.md
     - Covers: boundary validation of the path id (plan.md §6); no new AC — a
       malformed id is now a `400` shape error rather than reaching the E1 `404`.
 
-- [ ] T9. `UpdatePromptSchema` path id is validated as a uuid
+- [x] T9. `UpdatePromptSchema` path id is validated as a uuid
     - Red: `tests/integration/handlers/UpdatePromptHandler.test.ts` — inside the
       existing `describe('Request Validation', ...)` block, new `it`;
       `PUT /prompts/not-a-uuid` with an otherwise-valid body (valid `title`,
