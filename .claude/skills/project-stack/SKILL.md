@@ -26,7 +26,7 @@ export default (_req: Request, res: Response) => {
 ```
 
 **Middleware (`src/middleware`):** one function per file. Suffix with `Middleware`,
-e.g. `ValidationMidleware`.
+e.g. `ValidationMiddleware`.
 
 ```typescript
 import { type Request, type Response, type NextFunction } from 'express';
@@ -36,8 +36,10 @@ export function customMiddleware(req: Request, res: Response, next: NextFunction
 }
 ```
 
-Handlers/middleware reach business logic only via a context's `services.ts`:
-`Handler/Middleware -> service (services.ts) -> Application UseCase`.
+Handlers/middleware reach business logic only via a context's `services.ts` —
+the `Handler/Middleware -> services.ts -> Application UseCase` chain owned by the
+`hexagonal-architecture` skill (this skill covers only the concrete Express
+wiring of it).
 
 ### Validate-request middleware
 
@@ -165,10 +167,13 @@ follows automatically:
 ```ts
 import { CreatePromptUseCase } from '@logic/prompt/application/CreatePromptUseCase';
 import { DrizzlePromptCategoryRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository';
+import { DrizzlePromptRepository } from '@logic/prompt/infrastructure/database/DrizzlePromptRepository';
 import { databaseClient } from '@logic/shared/services';
 
-const promptRepository = new DrizzlePromptCategoryRepository(databaseClient);
-export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
+// Repositories take a DatabaseConnection, so pass databaseClient.connect(), not the client itself.
+const promptRepository = new DrizzlePromptRepository(databaseClient.connect());
+const promptCategoryRepository = new DrizzlePromptCategoryRepository(databaseClient.connect());
+export const createPromptUseCase = new CreatePromptUseCase(promptRepository, promptCategoryRepository);
 // databaseClient.connect() is DatabaseConnection<GlobalSchema>
 ```
 

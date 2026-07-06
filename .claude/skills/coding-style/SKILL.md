@@ -29,7 +29,8 @@ maintainable option.
 
 - `PascalCase`: types, classes, entities (`Prompt`, `PromptId`).
 - `camelCase`: variables, functions (`createPrompt`, `promptRepository`).
-- Use-case files are verbs: `CreatePrompt.ts`, `ListPrompts.ts`.
+- Use-case files are named after their class (a verb + `UseCase`):
+  `CreatePromptUseCase.ts`, `ListPromptsUseCase.ts`.
 - `Interface` suffix on ports/interfaces, prefixed by the entity they serve:
   `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`.
 - Names reveal intent. A good name removes the need for a comment.
