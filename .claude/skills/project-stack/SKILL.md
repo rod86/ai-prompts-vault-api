@@ -66,6 +66,26 @@ export default {
 } satisfies RequestSchema;
 ```
 
+**Zod v4 custom error messages:** this project is on Zod v4. Give required
+fields a clean message instead of v4's default (`"Invalid input: expected
+string, received undefined"`) via the unified `error` param — replaces v3's
+separate `required_error`/`invalid_type_error`. For a check like `.uuid()`,
+pass the message directly as its argument:
+
+```typescript
+import { z } from 'zod';
+import { type RequestSchema } from '@src/middleware/validateRequest/validation.js';
+
+export default {
+    body: z.object({
+        title: z.string({ error: 'Missing required value' }).min(1),
+        prompt: z.string({ error: 'Missing required value' }).min(1),
+        category_id: z.string({ error: 'Missing required value' }).uuid('Invalid UUID value'),
+        description: z.string().optional(),
+    }),
+} satisfies RequestSchema;
+```
+
 **Wiring (`app.ts`):** import the default and pass it straight through:
 
 ```typescript

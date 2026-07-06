@@ -19,6 +19,25 @@ Durable planning knowledge for ai-prompts-vault-api. Design/decision level only
   middleware exists in this codebase. See "Cross-cutting / non-domain
   features" below before planning another middleware, cross-context utility,
   or anything living outside `src/logic/**`.
+- `specs/005-create-prompt/` — `POST /prompts`, full body required (title,
+  prompt, category_id), optional description, strict category validation
+  (shape via V + existence via E), unlike the opaque list-time filter.
+- `specs/006-update-prompt/` — `PUT /prompts/:id`, full-replace semantics
+  (every field required every call, no partial patch). `description` is
+  required-as-a-key but nullable-in-value (`z.string().nullable()`, no
+  `.optional()`, distinct from create's plain `.optional()`): the request
+  must always include `description`, but its value may be `null` (clears
+  it) or any text including `""` (a valid, distinct-from-null value). Two
+  not-found-shaped errors coexist (`PromptNotFoundError` on the path id →
+  404, reused unchanged from 003; `CategoryNotFoundError` on the body's
+  category → 400, reused unchanged from 005) with an explicit precedence
+  rule: prompt-existence is checked strictly before category-existence in
+  the use case, so when both are invalid only the 404 is raised — "can't
+  act on a resource that isn't there, regardless of what else is wrong
+  with the request" is a reusable default for future multi-error write
+  operations. `createdAt` is preserved from the pre-existing row (fetched
+  via the same `findById` used for the existence check) and never
+  regenerated; only `updatedAt` is refreshed by the caller/handler.
 
 ## Bounded context
 
@@ -124,8 +143,9 @@ updatedAt }` — the category is a **nested reference** (id + name together), no
 
 ## Open threads
 
-- No create/update/delete features yet — write shapes (flat `categoryId`, input
-  validation V#) are deliberately deferred until a write feature needs them.
+- No delete feature yet — write shapes for create (005) and update (006) are
+  established (flat `categoryId` on the query, full-body-required semantics
+  for update); a delete feature is still a fresh design question.
 - 004 has **no** shared/global error-handling middleware and no scaffolding
   toward one (a user correction removed that entirely — see "Cross-cutting /
   non-domain features" above). Centralizing domain-error-to-status mapping
