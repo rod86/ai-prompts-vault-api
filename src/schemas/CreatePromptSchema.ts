@@ -5,7 +5,7 @@ export default {
     body: z.object({
         title: z.string().min(1),
         prompt: z.string().min(1),
-        category_id: z.string().uuid(),
+        category_id: z.uuid(),
         description: z.string().optional(),
     }),
 } satisfies RequestSchema;

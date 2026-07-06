@@ -182,7 +182,7 @@ describe('GET /prompts', () => {
             expect(response.status).toBe(400);
             expect(response.body).toMatchObject({
                 errors: expect.arrayContaining([
-                    { field: 'query.category', error: 'Expected string, received array' },
+                    { field: 'query.category', error: 'Invalid input: expected string, received array' },
                 ]),
             });
         });

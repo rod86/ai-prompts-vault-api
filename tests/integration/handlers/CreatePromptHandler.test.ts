@@ -94,9 +94,9 @@ describe('POST /prompts', () => {
             expect(response.status).toBe(400);
             expect(response.body).toMatchObject({
                 errors: expect.arrayContaining([
-                    { field: 'body.title', error: 'Required' },
-                    { field: 'body.prompt', error: 'Required' },
-                    { field: 'body.category_id', error: 'Required' },
+                    { field: 'body.title', error: 'Invalid input: expected string, received undefined' },
+                    { field: 'body.prompt', error: 'Invalid input: expected string, received undefined' },
+                    { field: 'body.category_id', error: 'Invalid input: expected string, received undefined' },
                 ]),
             });
         });
@@ -111,7 +111,7 @@ describe('POST /prompts', () => {
             expect(response.status).toBe(400);
             expect(response.body).toMatchObject({
                 errors: expect.arrayContaining([
-                    { field: 'body.category_id', error: 'Invalid uuid' },
+                    { field: 'body.category_id', error: 'Invalid UUID' },
                 ]),
             });
         });
