@@ -2,7 +2,7 @@
 
 Plan: specs/006-update-prompt/plan.md
 
-- [ ] T1. Use case updates and returns the assembled prompt when the prompt and category both exist
+- [x] T1. Use case updates and returns the assembled prompt when the prompt and category both exist
     - Red: `tests/unit/logic/prompt/application/UpdatePromptUseCase.test.ts` —
       construct `UpdatePromptUseCase` with `mock<PromptRepositoryInterface>()`
       and `mock<PromptCategoryRepositoryInterface>()` (per `testing` skill);
@@ -39,7 +39,7 @@ Plan: specs/006-update-prompt/plan.md
       and the response includes the updated id, category (id and name),
       title, prompt text, description, createdAt, and updatedAt."
 
-- [ ] T2. Use case throws PromptNotFoundError and does not look up the category or persist when the prompt does not exist
+- [x] T2. Use case throws PromptNotFoundError and does not look up the category or persist when the prompt does not exist
     - Red: same file as T1 — new `it`;
       `promptRepository.findById.mockResolvedValue(undefined)`; call
       `useCase.invoke(query)`; assert
@@ -60,7 +60,7 @@ Plan: specs/006-update-prompt/plan.md
       prompt, Then the user is told only that the prompt was not found (E1),
       not that the category is invalid."
 
-- [ ] T3. Use case throws CategoryNotFoundError and does not persist when the prompt exists but the category does not
+- [x] T3. Use case throws CategoryNotFoundError and does not persist when the prompt exists but the category does not
     - Red: same file as T1 — new `it`;
       `promptRepository.findById.mockResolvedValue(existingPrompt)`;
       `categoryRepository.findById.mockResolvedValue(undefined)`; call
@@ -77,7 +77,7 @@ Plan: specs/006-update-prompt/plan.md
       update the prompt, Then the user is told the category is invalid
       (E2), and no changes are made to the prompt."
 
-- [ ] T4. Use case updates a prompt to have no description when the supplied description is absent
+- [x] T4. Use case updates a prompt to have no description when the supplied description is absent
     - Red: same file as T1 — new `it`; build an `UpdatePromptQuery` fixture
       with `description: undefined`;
       `promptRepository.findById.mockResolvedValue(existingPrompt)` (with a
@@ -90,7 +90,7 @@ Plan: specs/006-update-prompt/plan.md
       user updates the prompt, Then the prompt is updated to have no
       description, rather than an error."
 
-- [ ] T5. Use case updates a prompt to have an empty-text description, distinct from no description
+- [x] T5. Use case updates a prompt to have an empty-text description, distinct from no description
     - Red: same file as T1 — new `it`; build an `UpdatePromptQuery` fixture
       with `description: ''`; set up mocks as in T1; call
       `useCase.invoke(query)`; assert the result's `description` is `''`
@@ -102,7 +102,7 @@ Plan: specs/006-update-prompt/plan.md
       empty text as its description, distinct from having no description at
       all."
 
-- [ ] T6. Prompt repository persists updated fields for an existing prompt row
+- [x] T6. Prompt repository persists updated fields for an existing prompt row
     - Red: `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` —
       new `describe('update', ...)` block; insert two fixture categories and
       an existing fixture prompt (via
@@ -126,7 +126,7 @@ Plan: specs/006-update-prompt/plan.md
       either).
     - Covers: AC1 (see T1 text above).
 
-- [ ] T7. Prompt repository persists an updated prompt with no description as an absent value
+- [x] T7. Prompt repository persists an updated prompt with no description as an absent value
     - Red: same file as T6 — new `it`; insert an existing fixture prompt
       with a defined `description`; build an `UpdatePrompt` fixture with
       `description: null`; call
@@ -138,7 +138,7 @@ Plan: specs/006-update-prompt/plan.md
       existing `description ?? undefined` read-side mapping).
     - Covers: AC2 (see T4 text above).
 
-- [ ] T8. `PUT /prompts/:id` updates and returns the prompt
+- [x] T8. `PUT /prompts/:id` updates and returns the prompt
     - Red: `tests/integration/handlers/UpdatePromptHandler.test.ts` — new
       top-level `describe('PUT /prompts/:id', ...)`; seed two fixture
       categories and one fixture prompt (referencing the first category) via
@@ -162,7 +162,7 @@ Plan: specs/006-update-prompt/plan.md
       in `src/app.ts`.
     - Covers: AC1 (see T1 text above).
 
-- [ ] T9. `PUT /prompts/:id` clears the description when its value is supplied as null
+- [x] T9. `PUT /prompts/:id` clears the description when its value is supplied as null
     - Red: same file as T8 — new `it`; seed a fixture prompt with a defined
       `description`; `PUT /prompts/:id` with
       `{ title, prompt, category_id: fixtureCategory.id, description: null }`;
@@ -172,7 +172,7 @@ Plan: specs/006-update-prompt/plan.md
       mapping end-to-end through `UpdatePromptSchema.body.description: z.string().nullable()`.
     - Covers: AC2 (see T4 text above).
 
-- [ ] T10. `PUT /prompts/:id` sets the description to empty text, distinct from clearing it
+- [x] T10. `PUT /prompts/:id` sets the description to empty text, distinct from clearing it
     - Red: same file as T8 — new `it`; `PUT /prompts/:id` with
       `{ title, prompt, category_id: fixtureCategory.id, description: '' }`;
       assert status `200` and the response body's `description` is `''`
@@ -181,7 +181,7 @@ Plan: specs/006-update-prompt/plan.md
       end-to-end.
     - Covers: AC3 (see T5 text above).
 
-- [ ] T11. `PUT /prompts/:id` Request Validation — returns missing-field errors for an empty body
+- [x] T11. `PUT /prompts/:id` Request Validation — returns missing-field errors for an empty body
     - Red: same file as T8 — nested `describe('Request Validation', ...)`
       per `testing` skill's Request Validation convention; `PUT /prompts/:id`
       (with a fixture prompt's id) sending `{}`; assert status `400` and the
@@ -215,7 +215,7 @@ Plan: specs/006-update-prompt/plan.md
       of those problems together (V1/V2/V3/V4), not only the first one
       found, and no changes are made to the prompt."
 
-- [ ] T12. `PUT /prompts/:id` Request Validation — returns an invalid-value error for a non-UUID category_id
+- [x] T12. `PUT /prompts/:id` Request Validation — returns an invalid-value error for a non-UUID category_id
     - Red: same file as T8, inside the `Request Validation` describe — new
       `it`; `PUT /prompts/:id` with
       `{ title: 'title', prompt: 'prompt', category_id: '12345', description: null }`;
@@ -225,7 +225,7 @@ Plan: specs/006-update-prompt/plan.md
       already rejects a non-UUID-shaped value.
     - Covers: AC7 (see T11 text above).
 
-- [ ] T13. `PUT /prompts/:id` returns a not-found error when the path id matches no prompt
+- [x] T13. `PUT /prompts/:id` returns a not-found error when the path id matches no prompt
     - Red: same file as T8 — new `it` (outside `Request Validation`, since
       this is a resource-existence failure, not a shape failure); `PUT
       /prompts/:id` with a random `id` (`faker.string.uuid()`) that matches
@@ -237,7 +237,7 @@ Plan: specs/006-update-prompt/plan.md
       `res.status(404).json({ error: err.message })` (plan.md §5).
     - Covers: AC10 (see T2 text above).
 
-- [ ] T14. `PUT /prompts/:id` returns a category-invalid error when category_id matches no category
+- [x] T14. `PUT /prompts/:id` returns a category-invalid error when category_id matches no category
     - Red: same file as T8 — new `it`; seed an existing fixture prompt; `PUT
       /prompts/:id` (with the fixture prompt's id) sending a body with a
       UUID-shaped but non-existent `category_id` (`faker.string.uuid()`);
@@ -251,7 +251,7 @@ Plan: specs/006-update-prompt/plan.md
       re-thrown, not swallowed (plan.md §5).
     - Covers: AC9 (see T3 text above).
 
-- [ ] T15. `PUT /prompts/:id` returns only the not-found error when both the path id and the category_id are invalid
+- [x] T15. `PUT /prompts/:id` returns only the not-found error when both the path id and the category_id are invalid
     - Red: same file as T8 — new `it`; `PUT /prompts/:id` with a random `id`
       that matches no seeded prompt (`faker.string.uuid()`) AND a body whose
       `category_id` is also a random, non-existent UUID; assert status

@@ -7,3 +7,11 @@ export interface Prompt {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface UpdatePrompt {
+    categoryId?: string;
+    title?: string;
+    prompt?: string;
+    description?: string | null;
+    updatedAt: Date;
+}

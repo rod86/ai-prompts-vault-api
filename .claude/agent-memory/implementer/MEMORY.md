@@ -24,16 +24,16 @@ is where things live and how they're built.
   A single-row `findById(id)` mirrors `findAll`'s join/mapping exactly, just
   adds `.where(eq(sql\`${table.id}::text\`, id)).limit(1)` and returns
   `rows[0] ? mapped : undefined`.
-- **Handlers:** `src/handlers/Get{Categories,Prompts,Prompt}.ts` (default
-  export) + `src/handlers/schemas/Get{Prompts,Prompt}{Query,Params}Schema.ts`.
-  As of `004-request-validation-middleware`, `GetPromptsHandler`/`GetPromptHandler`
-  no longer call `SomeSchema.parse(req.query/params)` themselves — they read
-  `req.validated?.query` / `req.validated?.params` (cast via
-  `z.infer<typeof SomeSchema>`), populated by `validateRequestMiddleware`
-  registered per-route in `app.ts`. `GetPromptHandler`'s `try/catch` around the
-  use-case call for `PromptNotFoundError` is untouched and still the only
-  error handling in that handler (no shared error middleware exists in this
-  project).
+- **Handlers:** `src/handlers/{Get,Create,Update}Prompt{s,}Handler.ts` (default
+  export) + `src/schemas/{Get,Create,Update}Prompt{s,}Schema.ts` (current
+  location is `src/schemas/`, not `src/handlers/schemas/` — the latter is
+  stale). Handlers read `req.parsedRequest?.params` / `?.body` (cast via
+  `z.infer<typeof SomeSchema.params/body>`), populated by
+  `validateRequestMiddleware` registered per-route in `app.ts` — never call
+  `.parse()` themselves. Each write/lookup handler wraps its use-case call in
+  a local `try/catch` mapping specific domain errors to status codes
+  (`PromptNotFoundError` → 404, `CategoryNotFoundError` → 400), re-throwing
+  anything else (no shared error middleware exists in this project).
 - **Request validation middleware:** `src/middleware/validateRequest/{validation,validateRequestMiddleware}.ts`
   — sibling to `src/handlers/`, NOT under `src/logic/**` (cross-cutting HTTP
   infra with no business logic, so it's outside `eslint-plugin-boundaries`'
@@ -51,17 +51,34 @@ is where things live and how they're built.
   directly and returns (no throw, no shared error middleware — deliberately
   out of scope per that feature's spec).
 - **Wiring:** `src/logic/prompt/services.ts` (exports `listPromptCategoriesUseCase`,
-  `listPromptsUseCase`, `getPromptUseCase` — the latter reuses the same
-  `promptRepository` instance as `listPromptsUseCase`); `src/logic/shared/services.ts`
+  `listPromptsUseCase`, `getPromptUseCase`, `createPromptUseCase`,
+  `updatePromptUseCase` — all reuse the same single `promptRepository`/
+  `promptCategoryRepository` instances); `src/logic/shared/services.ts`
   (`databaseClient`); `src/config.ts` (schema aggregation `* as promptSchema`).
 - **Routes:** registered in `src/app.ts` (`app.get('/categories', ...)`,
-  `app.get('/prompts', validateRequestMiddleware({query:...}), ...)`,
-  `app.get('/prompts/:id', validateRequestMiddleware({params:...}), ...)` —
-  the plural list route must be registered before or after the `:id` route
-  without conflict since Express only matches `:id` for `/prompts/<something>`,
-  not `/prompts` itself). Per-route middleware is passed as an extra arg
-  between the path and handler in the same `app.get(...)` call, not
-  registered separately via `app.use`.
+  `app.get('/prompts', validateRequestMiddleware(GetPromptsSchema), ...)`,
+  `app.get('/prompts/:id', ...)`, `app.post('/prompts', ...)`,
+  `app.put('/prompts/:id', ...)` — the plural list/create route and the
+  `:id` routes coexist without conflict since Express only matches `:id` for
+  `/prompts/<something>`, not `/prompts` itself). Per-route middleware is
+  passed as an extra arg between the path and handler in the same
+  `app.<verb>(...)` call, not registered separately via `app.use`.
+- **Update pattern (full-replace, `006-update-prompt`):** a full-replacement
+  update splits into: (1) a domain `Update<X>` type with every field
+  optional except a system-assigned one like `updatedAt` (in the same file
+  as the entity, e.g. `Prompt.ts`); (2) `<Repo>Interface.update(id, update)`
+  taking the id separately (mirrors `findById(id)`, unlike `create(entity)`
+  which has no separate lookup key); (3) the use case's `invoke()` still
+  looks up and returns the **full** entity (preserving fields like
+  `createdAt` from the pre-existing row), but only passes the narrower
+  `Update<X>` — mapping `description ?? null` — to `repository.update()`;
+  (4) the Drizzle adapter's `.set({...})` conditionally spreads each column
+  (`...(update.field !== undefined && { column: update.field })`) so
+  `undefined` fields are never written, while always-required fields like
+  `updatedAt` are unconditional. `PromptNotFoundError` is checked (and
+  thrown) before `CategoryNotFoundError` when both existence checks are
+  needed, so "resource doesn't exist" always wins over "referenced value
+  invalid".
 
 ## Drizzle patterns
 

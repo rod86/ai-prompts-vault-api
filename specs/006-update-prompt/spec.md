@@ -1,6 +1,6 @@
 # Spec: Update prompt
 
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a user, I want to update an existing prompt so that I can correct or improve it after it was created.
 
 ## 1. Behavior

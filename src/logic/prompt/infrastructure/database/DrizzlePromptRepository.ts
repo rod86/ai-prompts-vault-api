@@ -2,7 +2,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type PromptRepositoryInterface from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type PromptFilter } from '@logic/prompt/domain/interfaces/PromptRepositoryInterface.js';
-import { type Prompt } from '@logic/prompt/domain/Prompt.js';
+import { type Prompt, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@logic/prompt/infrastructure/database/schema.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
@@ -86,5 +86,18 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
             createdAt: prompt.createdAt,
             updatedAt: prompt.updatedAt,
         });
+    }
+
+    public async update(id: string, prompt: UpdatePrompt): Promise<void> {
+        await this.db
+            .update(prompts)
+            .set({
+                ...(prompt.categoryId !== undefined && { promptCategoryId: prompt.categoryId }),
+                ...(prompt.title !== undefined && { title: prompt.title }),
+                ...(prompt.prompt !== undefined && { prompt: prompt.prompt }),
+                ...(prompt.description !== undefined && { description: prompt.description }),
+                updatedAt: prompt.updatedAt,
+            })
+            .where(eq(prompts.id, id));
     }
 }

@@ -284,4 +284,74 @@ describe('DrizzlePromptRepository', () => {
             await deletePromptsByIds(db, [fixture.id]);
         });
     });
+
+    describe('update', () => {
+        let db: TestDatabaseConnection;
+        let repository: DrizzlePromptRepository;
+        const fixtureCategory = promptCategoryModelFactory.create({
+            name: 'Update Prompt Category',
+        });
+        const otherCategory = promptCategoryModelFactory.create({
+            name: 'Update Prompt Other Category',
+        });
+
+        beforeAll(async () => {
+            db = databaseClient.connect();
+            repository = new DrizzlePromptRepository(db);
+            await insertPromptCategories(db, [fixtureCategory, otherCategory]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherCategory.id]);
+            await databaseClient.close();
+        });
+
+        it('persists updated fields for an existing prompt row', async () => {
+            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            await insertPrompts(db, [existingPrompt]);
+
+            const updatePrompt = {
+                categoryId: otherCategory.id,
+                title: 'Updated title',
+                prompt: 'Updated prompt text',
+                description: 'Updated description',
+                updatedAt: faker.date.recent(),
+            };
+
+            await repository.update(existingPrompt.id, updatePrompt);
+            const result = await repository.findById(existingPrompt.id);
+
+            expect(result).toEqual({
+                id: existingPrompt.id,
+                category: { id: otherCategory.id, name: otherCategory.name },
+                title: updatePrompt.title,
+                prompt: updatePrompt.prompt,
+                description: updatePrompt.description,
+                createdAt: existingPrompt.createdAt,
+                updatedAt: updatePrompt.updatedAt,
+            });
+
+            await deletePromptsByIds(db, [existingPrompt.id]);
+        });
+
+        it('persists an updated prompt with no description as an absent value', async () => {
+            const existingPrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+            await insertPrompts(db, [existingPrompt]);
+
+            const updatePrompt = {
+                categoryId: fixtureCategory.id,
+                title: existingPrompt.title,
+                prompt: existingPrompt.prompt,
+                description: null,
+                updatedAt: faker.date.recent(),
+            };
+
+            await repository.update(existingPrompt.id, updatePrompt);
+            const result = await repository.findById(existingPrompt.id);
+
+            expect(result?.description).toBeUndefined();
+
+            await deletePromptsByIds(db, [existingPrompt.id]);
+        });
+    });
 });
