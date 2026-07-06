@@ -13,8 +13,9 @@ metadata:
   design question, not a "continue a deferred plan," if a future feature
   raises it. Getting more likely to matter now that two different domain
   errors map to two different status codes by convention alone.
-- No update/delete features yet for `Prompt`/`PromptCategory` — 005
-  (`specs/005-create-prompt/`) is the first write, create-only.
+- No delete feature yet for `Prompt`/`PromptCategory` — writes so far are
+  create (`specs/005-create-prompt/`) and update (`specs/006-update-prompt/`);
+  a delete feature is still a fresh design question.
 
 **Why:** flags decisions intentionally deferred rather than forgotten, so a
 future planning pass treats them as live open questions instead of assuming

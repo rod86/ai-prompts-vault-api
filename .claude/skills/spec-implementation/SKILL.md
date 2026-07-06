@@ -75,7 +75,8 @@ results. The human reviews it before raising a PR.
 - Feature folders `specs/NNN-<slug>/` each contain `spec.md`, `plan.md`,
   `tasks.md`. Only `spec.md` carries a `Status` field (`DRAFT` → `READY TO
   IMPLEMENT` → `IMPLEMENTED`); the implementer flips it to `IMPLEMENTED`
-  once verify passes.
+  once verify passes. `IMPLEMENTED` is terminal and the spec is immutable
+  thereafter — never re-implement or edit it; new work opens a new spec.
 - The artifact structure reference in `.claude/agents/implementer.md` must stay
   in sync with the templates hardcoded in `.claude/agents/planner.md`.
 - ID scheme: V# (validation rules), E# (errors), AC# (acceptance criteria),

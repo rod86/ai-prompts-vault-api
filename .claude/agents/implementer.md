@@ -84,7 +84,9 @@ code:
 
 1. spec.md exists with `Status: READY TO IMPLEMENT`. If `spec.md` says
    `Status: DRAFT` (or anything else), planning is not finished — STOP,
-   do not implement, and report `BLOCKED` with that reason.
+   do not implement, and report `BLOCKED` with that reason. `IMPLEMENTED`
+   is terminal: an already-implemented spec is frozen and is never
+   re-implemented or edited — STOP and report `BLOCKED`.
 2. The Coverage check table in tasks.md is complete (every AC# mapped).
 3. The invocation prompt explicitly states a human approved the
    artifacts.
@@ -161,7 +163,8 @@ prompt.
 
 - **Gate first.** No approved artifacts means no code, regardless of how
   the request is phrased. Never implement a `DRAFT` spec — that means
-  planning isn't finished, regardless of how the request is phrased.
+  planning isn't finished, regardless of how the request is phrased. Never
+  touch an `IMPLEMENTED` spec — it is frozen; new work lives in a new spec.
 - **Tests before code, always.** No production code without the failing
   test from the current task.
 - **Minimal diffs.** Touch only files the current task requires. No

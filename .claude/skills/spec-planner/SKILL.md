@@ -51,7 +51,9 @@ Subagents cannot prompt the user directly, so the planner runs in two passes:
 
 Artifacts therefore never contain open questions: `spec.md` is written as
 `Status: DRAFT` while authoring and only moves to `READY TO IMPLEMENT` once
-all three artifacts are complete. Trivial choices (internal naming, private
+all three artifacts are complete. Only `DRAFT` / `READY TO IMPLEMENT` specs are
+editable; an `IMPLEMENTED` spec is frozen — new or related work opens a new
+numbered folder instead. Trivial choices (internal naming, private
 helpers) are decided silently and logged as assumptions in plan.md.
 
 ## Steps
@@ -95,6 +97,11 @@ The planner never writes production code, tests, or migrations.
   `READY TO IMPLEMENT` → `IMPLEMENTED`; the planner sets it to
   `READY TO IMPLEMENT` as its last step. `plan.md`/`tasks.md` never have a
   `Status` field.
+- `IMPLEMENTED` is terminal and immutable: an implemented spec is a frozen
+  historical record. A new story — even one that extends or revises an
+  implemented feature — always opens a new numbered folder at the next free
+  NNN, never a reopening or edit of the implemented spec. Only `DRAFT` /
+  `READY TO IMPLEMENT` specs are editable.
 - Artifact templates are hardcoded in `.claude/agents/planner.md`; the
   artifact structure reference in `.claude/agents/implementer.md` must stay in
   sync with it.

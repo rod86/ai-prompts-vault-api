@@ -116,11 +116,14 @@ updatedAt }` — the category is a **nested reference** (id + name together), no
   response inline, in the same middleware" is an equally valid, simpler
   default when nothing else forces a shared catch-all to exist yet.
 - **A user can override their own already-answered interview decisions in a
-  later message, without a new interview round** — when they do, treat it as
-  a direct instruction (not ambiguous), apply it, and update the spec's
-  Decisions log to explicitly mark the old entries as "superseded by #N"
-  rather than deleting them, so the log stays an honest history of how the
-  design evolved.
+  later message, without a new interview round** — *only while the spec is still
+  `DRAFT` / `READY TO IMPLEMENT`.* When they do, treat it as a direct
+  instruction (not ambiguous), apply it, and update the spec's Decisions log to
+  explicitly mark the old entries as "superseded by #N" rather than deleting
+  them, so the log stays an honest history of how the design evolved. Once a
+  spec is `IMPLEMENTED` it is frozen: decisions can no longer be edited, and a
+  changed or extended requirement becomes a **new** spec at the next free NNN
+  (see the "never modify an `IMPLEMENTED` spec" hard rule in planner.md).
 - When designing a "reject malformed input" feature, remember `req.params`
   values are always plain strings (can never be made malformed shape-wise
   through real HTTP) and Express's default query parser mode affects whether

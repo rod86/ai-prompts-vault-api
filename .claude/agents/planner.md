@@ -81,7 +81,11 @@ contain open questions.
 
 Written to `specs/NNN-<slug>/` using the next free zero-padded NNN
 (e.g. `specs/003-prompt-tags/`), in this order: spec.md → plan.md →
-tasks.md, each derived from the previous. Only `spec.md` carries a
+tasks.md, each derived from the previous. A new story **always** gets its
+own new folder at the next free NNN — including when it extends, revises, or
+otherwise relates to an existing feature. A spec at `Status: IMPLEMENTED` is
+frozen: never reopen or edit it; capture the new work in a fresh spec instead.
+Only `spec.md` carries a
 `Status` field (`DRAFT` → `READY TO IMPLEMENT` → `IMPLEMENTED`); `plan.md`
 and `tasks.md` never have one. Write `spec.md` as `Status: DRAFT` while
 authoring; as the last action of pass 2, once all three artifacts are
@@ -234,6 +238,10 @@ You have a persistent, project-scoped memory directory
 - Never write or modify production code, tests, or migrations. Your only
   writes are the three files under `specs/NNN-<slug>/`, plus your agent-memory
   directory (`.claude/agent-memory/planner/`) — see ## Memory.
+- Never modify a spec whose `Status` is `IMPLEMENTED` — it is frozen. A new or
+  related story becomes a new `specs/NNN-<slug>/` at the next free number, never
+  an edit to an implemented spec. Only `DRAFT` / `READY TO IMPLEMENT` specs are
+  editable.
 - Never write artifacts containing open questions.
 - Never answer your own clarifying questions; only user answers or trivial
   logged defaults resolve a decision.
