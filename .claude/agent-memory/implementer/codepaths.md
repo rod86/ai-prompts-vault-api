@@ -87,6 +87,19 @@ metadata:
   rationale as `update()`). Handler: 204 + `res.status(204).send()` on success
   (no body), 404 `{ error: message }` on the not-found error, mirroring
   `GetPromptHandler`/`UpdatePromptHandler`'s try/catch shape exactly.
+- **Second bounded context (`user`, `008-user-registration`):** mirrors
+  `prompt`'s tree exactly (`domain/{User.ts,interfaces/,errors/}`,
+  `application/RegisterUserUseCase.ts`, `infrastructure/{BcryptPasswordHasher.ts,
+  database/{schema.ts,DrizzleUserRepository.ts}}`, `services.ts`). New
+  precedents it sets: (1) a "resource already exists" domain error
+  (`EmailAlreadyInUseError`) maps to `409`, not `400` — the reverse of
+  `CategoryNotFoundError`'s `400` ("referenced value doesn't exist"); (2) a
+  case-insensitive uniqueness/lookup port (`findByEmail`) implemented via a
+  Postgres functional unique index (`uniqueIndex(...).on(sql\`lower(${col})\`)`)
+  plus a matching `sql\`lower(${col}) = lower(${value})\`` where-clause in the
+  repository — the column itself stays case-preserved; (3) a
+  `PasswordHasherInterface` port (`hash()` only) with a `BcryptPasswordHasher`
+  adapter — the only file allowed to import `bcrypt`, per hexagonal rules.
 - **Tightening an existing schema's path id to `z.uuid()` under a new spec's
   tasks.md:** a small maintenance task riding along with an unrelated feature
   (e.g. T9 of `007-delete-prompt` upgrading `UpdatePromptSchema`'s `params.id`

@@ -127,16 +127,26 @@ Rules:
 
 Entities, interfaces, errors. Framework-agnostic.
 
-**Entities** (domain root folder, simple TypeScript interfaces):
+**Entities** (domain root folder, simple TypeScript interfaces). One entity per
+file; an owned entity (e.g. a category a prompt belongs to) is its own entity in
+its own file, not an inlined enum:
+
+```typescript
+// src/logic/prompt/domain/PromptCategory.ts
+export interface PromptCategory {
+    id: string;
+    name: string;
+}
+```
 
 ```typescript
 // src/logic/prompt/domain/Prompt.ts
-export type PromptCategory = 'backend' | 'frontend' | 'devops';
 export interface Prompt {
     id: string;
-    category: PromptCategory;
+    category: { id: string; name: string };
     title: string;
     prompt: string;
+    description?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -150,11 +160,13 @@ the entity file alongside the entity they describe, and get imported into the
 interface file from there.
 
 ```typescript
-// src/logic/prompt/domain/Prompt.ts
+// src/logic/prompt/domain/Prompt.ts — the entity plus its data-shape types
 export interface Prompt {
     id: string;
+    category: { id: string; name: string };
     title: string;
     prompt: string;
+    description?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -162,15 +174,25 @@ export interface Prompt {
 export interface PromptFilter {
     categoryId?: string;
 }
+
+export interface UpdatePrompt {
+    categoryId?: string;
+    title?: string;
+    prompt?: string;
+    description?: string | null;
+    updatedAt: Date;
+}
 ```
 
 ```typescript
 // src/logic/prompt/domain/interfaces/PromptRepositoryInterface.ts
-import { type Prompt, type PromptFilter } from '@logic/prompt/domain/Prompt.js';
+import { type Prompt, type PromptFilter, type UpdatePrompt } from '@logic/prompt/domain/Prompt.js';
 export default interface PromptRepositoryInterface {
-    create(prompt: Prompt): Promise<void>;
     findAll(filter?: PromptFilter): Promise<Prompt[]>;
-    findById(id: string): Promise<Prompt>;
+    findById(id: string): Promise<Prompt | undefined>; // absence modeled as undefined, never faked
+    create(prompt: Prompt): Promise<void>;
+    update(id: string, prompt: UpdatePrompt): Promise<void>;
+    delete(id: string): Promise<void>;
 }
 ```
 
@@ -207,7 +229,7 @@ Wires infrastructure adapters and exposes the context's use cases for use
 outside `logic`. Same pattern for the shared context.
 
 ```typescript
-const promptRepository = new /* concrete adapter */ Repository(databaseClient);
+const promptRepository = new /* concrete adapter */ Repository(databaseClient.connect());
 export const createPromptUseCase = new CreatePromptUseCase(promptRepository);
 ```
 

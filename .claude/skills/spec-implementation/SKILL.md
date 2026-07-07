@@ -1,6 +1,6 @@
 ---
 name: spec-implementation
-description: The spec-driven IMPLEMENT workflow (steps 5–8) — gate check, the red→green→refactor loop, and verify. Use when implementing an approved specs/NNN-<slug>/ plan.
+description: The spec-driven IMPLEMENT workflow (steps 5–8) — gate check, the red→green→refactor loop, and verify. Use when turning an approved specs/NNN-<slug>/ plan into code, or whenever you're about to implement/build a planned feature test-first; do not start coding a spec'd feature without it.
 ---
 
 # Spec-Driven Development — IMPLEMENT workflow (steps 5–8)

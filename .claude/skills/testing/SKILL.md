@@ -29,8 +29,8 @@ tests/
 ## Conventions
 
 - Mirror the `src/` path under `tests/unit/` or `tests/integration`. Example:
-  `src/logic/prompt/application/CreatePrompt.ts` ->
-  `tests/unit/logic/prompt/application/CreatePrompt.test.ts`.
+  `src/logic/prompt/application/CreatePromptUseCase.ts` ->
+  `tests/unit/logic/prompt/application/CreatePromptUseCase.test.ts`.
 - Routes mirror `src/handlers/` the same way: one test file per handler, named
   after it, under `tests/integration/handlers/`. Example:
   `src/handlers/GetPromptsHandler.ts` ->
@@ -48,34 +48,28 @@ tests/
   regardless of the test outcome.
 - For large test files, group related cases with `describe` — but nest only one
   level below the top-level `describe`.
-- Mutable state assigned in a setup hook (a `let` for a `db` connection, a
-  mocked dependency, the unit under test, ...) is declared together with its
-  `beforeAll`/`beforeEach` hook, both nested inside the top-level `describe` —
-  never above it at file scope. See `db` inside
-  `DrizzlePromptCategoryRepository.test.ts`'s `describe`, or `repository` in
-  the mocking example in the `project-stack` skill. This is narrower than the
-  file-scope `const` fixtures and helper functions below, which are immutable
-  and fine to share across `describe` blocks in the same file.
-- When a unit under test holds internal state (e.g. a client wrapping a
-  connection), construct a fresh instance in the setup hook rather than per-test,
-  so setup isn't duplicated across cases.
-- Hardcoded values shared across tests (config objects, ids, fixtures) go in
-  `const` declarations at the top of the file, not inline in each test.
-- Sample data built for a `describe` block's own tests is declared as a `const`
-  inside that `describe`, not at the top of the file — this keeps it scoped so
-  it can't clash with, or be reused by mistake in, another `describe` in the
-  same file later. See `prompts` inside `ListPromptsUseCase.test.ts`'s
-  `describe`.
-- Read-only reference data reused by *multiple* `describe` blocks in the same
-  file (e.g. category fixtures that several repository-method blocks all
-  need, but never mutate) is declared once in the top-level `describe`'s own
-  setup — not duplicated per nested block. See
+Where each kind of value is declared — placement is what keeps scoped data from
+leaking or being reused by mistake across `describe` blocks:
+
+- Mutable state set in a hook (`let` for a `db` connection, a mock, the unit
+  under test) is declared with its `beforeAll`/`beforeEach`, both nested inside
+  the top-level `describe` — never at file scope. See `db` in
+  `DrizzlePromptCategoryRepository.test.ts`, or `repository` in the
+  `project-stack` mocking example.
+- A unit under test that holds internal state (e.g. a client wrapping a
+  connection) is constructed fresh in the setup hook, not per-test.
+- Immutable values shared across the file (config objects, ids, fixtures) are
+  `const`s at the top of the file.
+- Sample data for one `describe`'s own tests is a `const` inside that `describe`,
+  not at file scope — so it can't clash with, or be reused by mistake in, another
+  block. See `prompts` in `ListPromptsUseCase.test.ts`.
+- Read-only reference data reused by *several* `describe` blocks (never mutated)
+  is declared once in the top-level `describe`'s setup, not per block. See
   `recipeCategory`/`travelCategory`/`fitnessCategory` in
   `DrizzlePromptRepository.test.ts`.
-- Local helper functions used only within one test file (e.g. a builder wrapping
-  a model factory) go at the top of the file, above the `describe` block — never
-  nested inside it. See `buildPrompt` in
-  `tests/unit/logic/prompt/application/ListPromptsUseCase.test.ts`:
+- A local helper used only in this file (e.g. a builder wrapping a model factory)
+  goes at the top of the file, above the `describe` — never nested inside it.
+  See `buildPrompt` in `ListPromptsUseCase.test.ts`:
 
   ```ts
   const buildPrompt = (): Prompt => {
@@ -234,23 +228,23 @@ describe('Request Validation', () => {
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
             errors: expect.arrayContaining([
-                { field: 'body.name', error: 'Required' },
-                { field: 'body.description', error: 'Required' },
-                { field: 'body.category_id', error: 'Required' },
+                { field: 'body.title', error: 'Missing required value' },
+                { field: 'body.prompt', error: 'Missing required value' },
+                { field: 'body.category_id', error: 'Missing required value' },
             ]),
         });
     });
 
     it('returns an invalid value error for a non-uuid category_id', async () => {
         const response = await request(app).post('/prompts').send({
-            name: 'name',
-            description: 'description',
+            title: 'title',
+            prompt: 'prompt',
             category_id: '12345',
         });
 
         expect(response.status).toBe(400);
         expect(response.body).toMatchObject({
-            errors: expect.arrayContaining([{ field: 'body.category_id', error: 'Invalid uuid' }]),
+            errors: expect.arrayContaining([{ field: 'body.category_id', error: 'Invalid UUID value' }]),
         });
     });
 });

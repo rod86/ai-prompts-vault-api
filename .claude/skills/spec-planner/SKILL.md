@@ -1,6 +1,6 @@
 ---
 name: spec-planner
-description: The spec-driven PLAN workflow (steps 1–4) — the interview loop and how to author spec.md, plan.md, and tasks.md. Use when planning a feature before any code is written.
+description: The spec-driven PLAN workflow (steps 1–4) — the interview loop and how to author spec.md, plan.md, and tasks.md. Use before writing any code for a new feature, endpoint, or behavior change — even when the user just says "let's build/add X" without mentioning specs or planning; this project requires a spec before implementation.
 ---
 
 # Spec-Driven Development — PLAN workflow (steps 1–4)
