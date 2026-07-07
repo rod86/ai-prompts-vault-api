@@ -7,8 +7,8 @@ Plan: specs/008-user-registration/plan.md
       `spec-planner`'s "dependency-change tasks come before the code that
       needs them"). Confirm the gap first: `bcrypt`/`@types/bcrypt` are
       absent from `package.json`.
-    - Green: `npm install bcrypt@^5.1.1` and
-      `npm install -D @types/bcrypt@^5.0.2` per plan.md §8.
+    - Green: `npm install bcrypt@^6.0.0` and
+      `npm install -D @types/bcrypt@^6.0.0` per plan.md §8.
     - Covers: enables AC1/AC8 (password hashing is a precondition for every
       later task in this file).
 
