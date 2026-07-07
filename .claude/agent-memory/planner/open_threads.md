@@ -19,6 +19,19 @@ metadata:
   `specs/007-delete-prompt/`) — deleting a category that still has prompts
   referencing it would hit the `prompt_category_id` foreign key; this is a
   fresh design question (cascade? restrict? not yet decided anywhere).
+- Resolved: 008-user-registration picked bcrypt (10 salt rounds) as the
+  password-hashing library via an explicit interview question — see
+  [[auth_and_new_context_conventions]] for the settled convention (a
+  `PasswordHasherInterface` port, `hash()`-only for registration, `bcrypt`/
+  `@types/bcrypt` installed). No login feature exists yet, so `compare()`/
+  `verify()` on that port is still unwritten — a genuinely open question for
+  whichever feature adds login.
+- 008 also left the DB-level unique-index-violation-to-409 translation
+  unhandled (see [[auth_and_new_context_conventions]] Risk 1): a concurrent
+  double-registration race that slips past the use case's `findByEmail`
+  check would surface as an unmapped 500, not a 409. Revisit if this is
+  observed in practice, or proactively when a login/account feature next
+  touches `RegisterUserHandler`/`DrizzleUserRepository`.
 
 **Why:** flags decisions intentionally deferred rather than forgotten, so a
 future planning pass treats them as live open questions instead of assuming

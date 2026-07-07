@@ -10,3 +10,4 @@ only (codepaths and concrete code patterns live in the implementer's memory).
 - [Naming precedents](naming_precedents.md) — file/class/table naming to reuse verbatim
 - [Middleware infra](middleware_infra.md) — actual current shape of `src/middleware/validateRequest/` + design lessons
 - [Open threads](open_threads.md) — unresolved/deferred design questions for future features
+- [Auth & new-context conventions](auth_and_new_context_conventions.md) — new bounded context pattern, bcrypt port, case-insensitive-unique field pattern, 409 conflict precedent (from 008)
