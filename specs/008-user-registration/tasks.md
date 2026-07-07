@@ -2,7 +2,7 @@
 
 Plan: specs/008-user-registration/plan.md
 
-- [ ] T1. Install bcrypt dependency
+- [x] T1. Install bcrypt dependency
     - Red: none — this is a dependency-change task, not a code test (per
       `spec-planner`'s "dependency-change tasks come before the code that
       needs them"). Confirm the gap first: `bcrypt`/`@types/bcrypt` are
@@ -12,7 +12,7 @@ Plan: specs/008-user-registration/plan.md
     - Covers: enables AC1/AC8 (password hashing is a precondition for every
       later task in this file).
 
-- [ ] T2. Use case registers and returns the assembled account when the email is not in use
+- [x] T2. Use case registers and returns the assembled account when the email is not in use
     - Red: `tests/unit/logic/user/application/RegisterUserUseCase.test.ts` —
       construct `RegisterUserUseCase` with `mock<UserRepositoryInterface>()`
       and `mock<PasswordHasherInterface>()` (per `testing` skill); set
@@ -41,7 +41,7 @@ Plan: specs/008-user-registration/plan.md
       the response includes its id, name, email, createdAt, and updatedAt,
       and never includes the password."
 
-- [ ] T3. Use case throws EmailAlreadyInUseError and does not persist when the email is already in use
+- [x] T3. Use case throws EmailAlreadyInUseError and does not persist when the email is already in use
     - Red: same file as T2 — new `it`;
       `userRepository.findByEmail.mockResolvedValue(existingUserFixture)`
       (any `User`-shaped object); build a `RegisterUserQuery` fixture; call
@@ -60,7 +60,7 @@ Plan: specs/008-user-registration/plan.md
       attempts to create an account, Then the visitor is told the email is
       already in use (E1), and no new account is created."
 
-- [ ] T4. BcryptPasswordHasher produces a verifiable hash, never the plaintext password
+- [x] T4. BcryptPasswordHasher produces a verifiable hash, never the plaintext password
     - Red: `tests/integration/logic/user/infrastructure/BcryptPasswordHasher.test.ts` —
       construct `new BcryptPasswordHasher()`; call `hash('Sup3r$ecret!')`;
       assert the result is a defined string not equal to `'Sup3r$ecret!'`;
@@ -71,7 +71,7 @@ Plan: specs/008-user-registration/plan.md
     - Covers: AC1 (see T2 text above) — the password-hashing mechanism the
       use case depends on.
 
-- [ ] T5. User repository persists a new account row
+- [x] T5. User repository persists a new account row
     - Red: `tests/integration/logic/user/infrastructure/database/DrizzleUserRepository.test.ts` —
       per `testing` skill integration conventions, open the connection once
       in `beforeAll`; build a full `User` fixture via a
@@ -96,7 +96,7 @@ Plan: specs/008-user-registration/plan.md
       `selectUsersByIds`, mirroring `tests/lib/database/prompts.ts`).
     - Covers: AC1 (see T2 text above).
 
-- [ ] T6. User repository finds an account by email, case-insensitively
+- [x] T6. User repository finds an account by email, case-insensitively
     - Red: same file as T5 — new `describe('findByEmail', ...)`; insert a
       fixture user via `insertUsers` with a mixed-case email (e.g.
       `'Ada.Fixture@Example.com'`); call
@@ -108,7 +108,7 @@ Plan: specs/008-user-registration/plan.md
       comparing via `sql`lower(...) = lower(...)``.
     - Covers: AC8, AC9 (see T3/T9 texts).
 
-- [ ] T7. User repository returns undefined when no account matches the email
+- [x] T7. User repository returns undefined when no account matches the email
     - Red: same file as T5 — new `it` inside `findByEmail`; call
       `repository.findByEmail(faker.internet.email())` with no matching
       inserted row; assert the result is `undefined`.
@@ -117,7 +117,7 @@ Plan: specs/008-user-registration/plan.md
     - Covers: AC1 (see T2 text above) — confirms the "not already used"
       precondition path returns cleanly with no false positive.
 
-- [ ] T8. `POST /users` creates and returns the new account
+- [x] T8. `POST /users` creates and returns the new account
     - Red: `tests/integration/handlers/RegisterUserHandler.test.ts` — new
       top-level `describe('POST /users', ...)`; using `supertest` against the
       real Express `app`, `POST /users` with
@@ -140,7 +140,7 @@ Plan: specs/008-user-registration/plan.md
       in `src/app.ts`.
     - Covers: AC1 (see T2 text above).
 
-- [ ] T9. `POST /users` creates an account for a mixed-case email with no existing match, preserving its case
+- [x] T9. `POST /users` creates an account for a mixed-case email with no existing match, preserving its case
     - Red: same file as T8 — new `it`; `POST /users` with
       `{ name: 'Fixture Name', email: 'Fixture.Mixed.Case@Example.com', password: 'Sup3r$ecret!' }`
       (an email guaranteed not to already exist); assert status `201` and the
@@ -155,7 +155,7 @@ Plan: specs/008-user-registration/plan.md
       is created and the response's email is exactly what was supplied, not
       changed in letter case."
 
-- [ ] T10. `POST /users` returns an email-already-in-use error when the email already exists, case-insensitively
+- [x] T10. `POST /users` returns an email-already-in-use error when the email already exists, case-insensitively
     - Red: same file as T8 — new `it`; seed an existing user directly via
       `insertUsers` with email `'Existing.Fixture@Example.com'`; `POST /users`
       with `{ name: 'Another Name', email: 'existing.fixture@example.com', password: 'Sup3r$ecret!' }`
@@ -169,7 +169,7 @@ Plan: specs/008-user-registration/plan.md
       re-thrown, not swallowed (plan.md §5).
     - Covers: AC8 (see T3 text above).
 
-- [ ] T11. `POST /users` Request Validation — returns missing-field errors for an empty body
+- [x] T11. `POST /users` Request Validation — returns missing-field errors for an empty body
     - Red: same file as T8 — nested `describe('Request Validation', ...)`
       per `testing` skill's Request Validation convention; `POST /users`
       with `{}`; assert status `400` and the body's `errors` array contains
@@ -189,7 +189,7 @@ Plan: specs/008-user-registration/plan.md
       the visitor is told about every one of those problems together
       (V1/V2/V3), not only the first one found, and no account is created."
 
-- [ ] T12. `POST /users` Request Validation — returns a missing-value error for a blank name
+- [x] T12. `POST /users` Request Validation — returns a missing-value error for a blank name
     - Red: same file as T8, inside the `Request Validation` describe — new
       `it`; `POST /users` with
       `{ name: '   ', email: 'blank.name.fixture@example.com', password: 'Sup3r$ecret!' }`;
@@ -200,7 +200,7 @@ Plan: specs/008-user-registration/plan.md
       whitespace-only value.
     - Covers: AC2 (see T11 text above).
 
-- [ ] T13. `POST /users` Request Validation — returns an invalid-value error for a malformed email
+- [x] T13. `POST /users` Request Validation — returns an invalid-value error for a malformed email
     - Red: same file as T8, inside the `Request Validation` describe — new
       `it`; `POST /users` with
       `{ name: 'Fixture Name', email: 'not-an-email', password: 'Sup3r$ecret!' }`;
@@ -211,7 +211,7 @@ Plan: specs/008-user-registration/plan.md
     - Covers: AC4 "Given the email is supplied but is not shaped like a valid
       email address... the visitor is told the email is invalid (V2)..."
 
-- [ ] T14. `POST /users` Request Validation — returns a requirement error for a weak password
+- [x] T14. `POST /users` Request Validation — returns a requirement error for a weak password
     - Red: same file as T8, inside the `Request Validation` describe — new
       `it`; `POST /users` with
       `{ name: 'Fixture Name', email: 'weak.password.fixture@example.com', password: 'short' }`;

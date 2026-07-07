@@ -1,6 +1,6 @@
 # Spec: User registration
 
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a visitor, I want to create an account so that I can save and manage my own prompts.
 
 ## 1. Behavior

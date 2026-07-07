@@ -20,4 +20,13 @@ metadata:
   Green step is written — not a defect, just an artifact of task granularity
   vs. a plan that hands over one complete function/file at once. Note it as a
   minor deviation in the completion report rather than treating it as a
-  blocking Red-step failure.
+  blocking Red-step failure. Seen repeatedly across features (e.g. 008's
+  T3/T6/T7/T9/T10/T12-14 all passed immediately after an earlier task's Green
+  step already implemented the full class/schema from plan.md).
+- `npm install <pkg-with-native-binding>` (e.g. `bcrypt`) can silently skip its
+  install/build script under this project's npm config (`npm warn
+  allow-scripts ... have install scripts not yet covered by allowScripts`),
+  leaving the package unusable (`require('bcrypt')` throws, no `build/`
+  directory). Fix: `npm approve-scripts <pkg>` then `npm rebuild <pkg>`, and
+  smoke-test with a one-off `node -e` require before writing the adapter that
+  depends on it.
