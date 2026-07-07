@@ -81,7 +81,7 @@ export interface UserCredentials {
 ```ts
 export class InvalidCredentialsError extends Error {
     constructor() {
-        super('Invalid email or password');
+        super('Invalid authentication credentials');
         this.name = 'InvalidCredentialsError';
     }
 }
@@ -99,7 +99,7 @@ export class InvalidCredentialsError extends Error {
 ## 3. Ports
 
 **`shared` context — `PasswordHasherInterface`** (relocated from `user`,
-extended) — `src/logic/shared/security/PasswordHasherInterface.ts`
+extended) — `src/logic/shared/domain/interfaces/PasswordHasherInterface.ts`
 
 ```ts
 export default interface PasswordHasherInterface {
@@ -108,13 +108,21 @@ export default interface PasswordHasherInterface {
 }
 ```
 
-- Moved out of `user/domain/interfaces/` (its `008` location) into `shared`,
-  per the user's explicit directive: the bcrypt-wrapping logic is genuinely
-  identical whether it's hashing (registration) or comparing (login), so it
-  is the one case that earns a shared abstraction rather than duplication.
-  `hexagonal-architecture`'s `shared` rule ("used by a single context? It
-  belongs to that context, not here") no longer applies once a second
-  context (`auth`) needs the exact same capability.
+- Moved out of `user/domain/interfaces/` (its `008` location) into
+  `shared/domain/interfaces/`, per the user's explicit directive: the
+  bcrypt-wrapping logic is genuinely identical whether it's hashing
+  (registration) or comparing (login), so it is the one case that earns a
+  shared abstraction rather than duplication. `hexagonal-architecture`'s
+  `shared` rule ("used by a single context? It belongs to that context, not
+  here") no longer applies once a second context (`auth`) needs the exact
+  same capability.
+- The port lives under `shared`'s **own `domain/` layer**: the `shared`
+  context is structured like every other bounded context and may hold a
+  `domain/` with entities, errors, and interfaces of its own. This port is a
+  domain interface, so it belongs in `shared/domain/interfaces/`, exactly as
+  it did under `user/domain/interfaces/` in `008`. Its `BcryptPasswordHasher`
+  adapter (§7) is the infrastructure implementation and lives under
+  `shared/infrastructure/security/`, out of `domain/`.
 - `compare()` is added here (it did not exist in `008`, where only `hash()`
   was needed) — this is the one place `compare()` lives; it is **not**
   re-added to a `user`-owned interface, correcting the first pass of this
@@ -193,7 +201,7 @@ export default interface AuthCryptoInterface {
 `src/logic/user/application/RegisterUserUseCase.ts`
 
 - Only change: its `PasswordHasherInterface` type import now resolves to
-  `@logic/shared/security/PasswordHasherInterface.js` instead of
+  `@logic/shared/domain/interfaces/PasswordHasherInterface.js` instead of
   `@logic/user/domain/interfaces/PasswordHasherInterface.js` (§3). No change
   to its logic, `Query`/`Response` shapes, or the AC/E#/V# it satisfies
   (all owned by `008`, frozen). Not otherwise touched by this feature.
@@ -284,7 +292,7 @@ part of this route changed.
   `validateRequestMiddleware` — covers a missing `email` (V1) and/or a
   missing `password` (V2), including both at once (spec AC5).
 - Response `401` (E1 — invalid credentials): body
-  `{ error: "Invalid email or password" }`.
+  `{ error: "Invalid authentication credentials" }`.
 - Handler: `src/handlers/LoginHandler.ts` (default export, mirrors
   `RegisterUserHandler.ts`'s structure), reaching business logic only via
   `src/logic/auth/services.ts`.
@@ -296,8 +304,7 @@ part of this route changed.
 
 ## 6. Validation schemas
 
-**`LoginSchema`** — unchanged from the first pass of this plan (new, Zod) —
-`src/schemas/LoginSchema.ts`
+**`LoginSchema`** (new, Zod) — `src/schemas/LoginSchema.ts`
 
 ```ts
 import { z } from 'zod';
@@ -305,16 +312,21 @@ import { type RequestSchema } from '@src/middleware/validateRequest/validation.j
 
 export default {
     body: z.object({
-        email: z.string({ error: 'Missing required value' }),
+        email: z.email({ error: 'Missing required value' }),
         password: z.string({ error: 'Missing required value' }),
     }),
 } satisfies RequestSchema;
 ```
 
-- `email`/`password`: required (type presence only) — trace to V1/V2
-  respectively, deliberately with no shape/strength check, for the same
-  anti-enumeration reasoning as the first pass (unaffected by this
-  architecture correction).
+- `email`: required and validated as a well-formed email shape via `z.email`
+  (V1, AC3) — a correction from this plan's first pass, which used a bare
+  `z.string()` (type-presence only) for anti-enumeration reasons. The
+  anti-enumeration concern (not revealing whether an email is registered)
+  is about E1's *response*, not the request shape check: rejecting a
+  syntactically invalid email with `400` reveals nothing about which
+  accounts exist, so `z.email` is safe to use here.
+- `password`: required (type presence only) — trace to V2, deliberately with
+  no shape/strength check (unaffected by this correction).
 - Lives under `src/schemas/`, alongside `RegisterUserSchema.ts`.
 - Consumed by `validateRequestMiddleware(LoginSchema)` (§5); the handler
   reads the parsed value from `req.parsedRequest?.body`.
@@ -330,11 +342,11 @@ schema module, and issues a token that is never persisted.
 **Relocation — `PasswordHasherInterface` / `BcryptPasswordHasher`** (moved
 from `user` to `shared`, extended with `compare()`):
 
-`src/logic/shared/security/BcryptPasswordHasher.ts`
+`src/logic/shared/infrastructure/security/BcryptPasswordHasher.ts`
 
 ```ts
 import bcrypt from 'bcrypt';
-import type PasswordHasherInterface from '@logic/shared/security/PasswordHasherInterface.js';
+import type PasswordHasherInterface from '@logic/shared/domain/interfaces/PasswordHasherInterface.js';
 
 export class BcryptPasswordHasher implements PasswordHasherInterface {
     private static readonly SALT_ROUNDS = 10;
@@ -439,7 +451,7 @@ export class DrizzleUserCredentialsRepository implements UserCredentialsReposito
 ```ts
 import jwt from 'jsonwebtoken';
 import type AuthCryptoInterface from '@logic/auth/domain/interfaces/AuthCryptoInterface.js';
-import type PasswordHasherInterface from '@logic/shared/security/PasswordHasherInterface.js';
+import type PasswordHasherInterface from '@logic/shared/domain/interfaces/PasswordHasherInterface.js';
 
 export class JwtAuthCryptoAdapter implements AuthCryptoInterface {
     private static readonly ALGORITHM = 'HS256';
@@ -500,7 +512,7 @@ jwtExpirationSeconds: Number(process.env.JWT_EXPIRATION_SECONDS ?? 3600),
 
 ```ts
 import DatabaseClient from '@logic/shared/database/DatabaseClient.js';
-import { BcryptPasswordHasher } from '@logic/shared/security/BcryptPasswordHasher.js';
+import { BcryptPasswordHasher } from '@logic/shared/infrastructure/security/BcryptPasswordHasher.js';
 import { DateTimeService } from '@logic/shared/utils/DateTimeService.js';
 import config from '@src/config.js';
 
@@ -572,8 +584,10 @@ migrated artifact.
    `/authenticate` is an action/RPC-style endpoint rather than a resource
    being created, so `200` (a result returned) fits better than `201` (a
    resource created).
-2. `email`/`password` on `LoginSchema` (§6) get only type-presence
-   validation — unchanged from the first pass.
+2. `email` on `LoginSchema` (§6) is validated as a well-formed email via
+   `z.email` (a correction from the first pass, which used type-presence
+   only); `password` remains type-presence only. If wrong, reverting `email`
+   to `z.string()` is a one-line change with no other structural impact.
 3. File/class naming otherwise mirrors existing precedent: `LoginHandler`
    mirrors `RegisterUserHandler`; `LoginUseCase`/`LoginSchema`/`LoginQuery`/
    `LoginResponse` mirror the `RegisterUser*` family. If wrong, only renames
@@ -641,9 +655,11 @@ migrated artifact.
   value" (V2, AC4).
 - Both `email` and `password` missing → `LoginSchema`'s combined Zod object
   schema reports both fields together in one `errors` array (V1+V2, AC5).
-- `email` present but not shaped like an email at all, or blank (`""`) → no
-  `400`; `DrizzleUserCredentialsRepository.findByEmail` simply finds no row,
-  falling through to the generic `401` (E1).
+- `email` present but not shaped like an email at all, or blank (`""`) →
+  rejected as `400` by `LoginSchema`'s `z.email` check (V1) — a correction
+  from the first pass, where this fell through to the generic `401` (E1).
+  `email` well-formed but simply unregistered still falls through to `401`
+  (below).
 - `password` present but blank (`""`) → no `400`; `verifyPassword()` simply
   fails to match any real hash, falling through to the generic `401` (E1).
 - `email` well-formed but does not match any existing account →

@@ -8,6 +8,8 @@ process.loadEnvFile(path.join(import.meta.dirname, '..', '.env'));
 export default {
     port: process.env.PORT ?? 3000,
     environment: process.env.ENVIRONMENT ?? 'development',
+    jwtSecret: process.env.JWT_SECRET ?? '',
+    jwtExpirationSeconds: Number(process.env.JWT_EXPIRATION_SECONDS ?? 3600),
     database: {
         host: process.env.DATABASE_HOST ?? 'localhost',
         port: Number(process.env.DATABASE_PORT ?? 5432),

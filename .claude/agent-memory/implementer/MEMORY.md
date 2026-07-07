@@ -8,4 +8,4 @@ is where things live and how they're built.
 - [Drizzle patterns](drizzle_patterns.md) — concrete schema/query conventions used in every adapter
 - [Testing patterns](testing_patterns.md) — unit/integration fixture conventions, shared reference-data scoping, write-verification via raw select
 - [Migrations](migrations.md) — drizzle-kit CLI usage, hand-authored seed rows
-- [Gotchas](gotchas.md) — non-obvious pitfalls hit while implementing (Express array query params, innerJoin FK assumption, task-splitting artifacts)
+- [Gotchas](gotchas.md) — non-obvious pitfalls hit while implementing (Express array query params, innerJoin FK assumption, task-splitting artifacts, boundaries-lint gap for shared's internal layers, jwt.verify expiry, parallel-file fixture email collisions)

@@ -1,5 +1,5 @@
+import type PasswordHasherInterface from '@logic/shared/domain/interfaces/PasswordHasherInterface.js';
 import { EmailAlreadyInUseError } from '@logic/user/domain/errors/EmailAlreadyInUseError.js';
-import type PasswordHasherInterface from '@logic/user/domain/interfaces/PasswordHasherInterface.js';
 import type UserRepositoryInterface from '@logic/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@logic/user/domain/User.js';
 
