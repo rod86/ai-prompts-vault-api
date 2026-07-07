@@ -30,3 +30,44 @@ metadata:
   directory). Fix: `npm approve-scripts <pkg>` then `npm rebuild <pkg>`, and
   smoke-test with a one-off `node -e` require before writing the adapter that
   depends on it.
+- **`.eslintrc.json`'s boundaries config only ever tested a `shared` with no
+  internal layers** (`src/logic/shared/database/`, `src/logic/shared/services.ts`
+  — no `domain`/`application`/`infrastructure` subfolders). The moment a
+  feature puts files under `src/logic/shared/domain/**` or
+  `src/logic/shared/infrastructure/**` (`009-login`, relocating
+  `PasswordHasherInterface`/`BcryptPasswordHasher` into `shared`), those
+  files get classified by the generic `src/logic/*/domain` /
+  `src/logic/*/infrastructure` patterns (captured context `"shared"`) —
+  which are declared *before* the folder-mode `shared` element in
+  `boundaries/elements` — instead of the universal `shared` type, so the
+  existing `boundaries/dependencies` rules (which only special-case `{ "to":
+  { "type": "shared" } }`, not "type domain/infrastructure with context
+  shared") reject every cross-context import of them, even though
+  `hexagonal-architecture`'s rule ("shared usable by any layer/context") says
+  they should be allowed. Fix applied: add `{ "to": { "type": ["domain",
+  "application", "infrastructure"], "captured": { "context": "shared" } } }`
+  as an extra allowed target to every `from` rule (`domain`, `application`,
+  `infrastructure`, and `shared` itself) in `.eslintrc.json`'s
+  `boundaries/dependencies`. Treated as a mechanical lint-config fix
+  implementing an already-documented rule, not a scope-creep architecture
+  change — but flag it explicitly in the completion report since it edits a
+  config file plan.md didn't call out.
+- A tasks.md-literal hardcoded fixture email can collide with an identical
+  hardcoded email already used by an *existing* test file in another context
+  (`009-login`'s `DrizzleUserCredentialsRepository.test.ts` and `008`'s
+  `DrizzleUserRepository.test.ts` both hardcoded `'Ada.Fixture@Example.com'`)
+  — since Vitest runs files in parallel and both insert into the same
+  `users` table, this is an intermittent `23505 duplicate key` failure on the
+  case-insensitive unique email index, not a deterministic one, so it may
+  pass when the new test file is run alone and only fail under `npm test`'s
+  full parallel run. Fix: never hardcode a literal fixture email verbatim
+  from a plan/tasks example — always suffix it with `faker.string.uuid()` (as
+  every other test file in this codebase already does) even when tasks.md's
+  prose gives a literal example value.
+- `jwt.verify(token, secret)` throws `TokenExpiredError` for any token whose
+  `exp` claim is in the past relative to wall-clock "now" — a test built
+  around a literal fixed `expiresAt` date (e.g. `new Date('2026-01-01...')`)
+  goes stale once real time passes that date. Use `jwt.verify(token, secret,
+  { ignoreExpiration: true })` when the test only cares about the decoded
+  claim values (`sub`, `exp`), not about whether the token would currently be
+  accepted.

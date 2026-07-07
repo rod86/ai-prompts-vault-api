@@ -1,5 +1,5 @@
 # Spec: Login
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a visitor, I want to login with an email and password so that I receive a token proving my identity for subsequent requests.
 
 ## 1. Behavior

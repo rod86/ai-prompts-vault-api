@@ -2,7 +2,7 @@
 
 Plan: specs/009-login/plan.md
 
-- [ ] T1. Install jsonwebtoken dependency
+- [x] T1. Install jsonwebtoken dependency
     - Red: none — this is a dependency-change task, not a code test (per
       `spec-planner`'s "dependency-change tasks come before the code that
       needs them"). Confirm the gap first: `jsonwebtoken`/`@types/jsonwebtoken`
@@ -12,7 +12,7 @@ Plan: specs/009-login/plan.md
     - Covers: enables AC1 (token issuance is a precondition for every later
       task in this file).
 
-- [ ] T2. Relocate the password hasher to `shared` and add `compare()`
+- [x] T2. Relocate the password hasher to `shared` and add `compare()`
     - Red: move `tests/integration/logic/user/infrastructure/BcryptPasswordHasher.test.ts`
       to `tests/integration/logic/shared/infrastructure/security/BcryptPasswordHasher.test.ts`,
       updating its import to `@logic/shared/infrastructure/security/BcryptPasswordHasher.js`;
@@ -38,7 +38,7 @@ Plan: specs/009-login/plan.md
     - Covers: enables AC1, AC2, AC6, AC7 (the shared verification mechanism
       every later task in this file depends on).
 
-- [ ] T3. DateTimeService exposes the current time through an injectable port
+- [x] T3. DateTimeService exposes the current time through an injectable port
     - Red: `tests/unit/logic/shared/utils/DateTimeService.test.ts` — construct
       `const dateService = new DateTimeService()`; capture `const before = Date.now()`; call
       `const result = dateService.now()`; capture `const after = Date.now()`;
@@ -51,7 +51,7 @@ Plan: specs/009-login/plan.md
     - Covers: enables AC1, AC2 (the token-expiration mechanism a later task
       depends on).
 
-- [ ] T4. DrizzleUserCredentialsRepository resolves an account's credentials for a matching email, case-insensitively
+- [x] T4. DrizzleUserCredentialsRepository resolves an account's credentials for a matching email, case-insensitively
     - Red: `tests/integration/logic/auth/infrastructure/database/DrizzleUserCredentialsRepository.test.ts` —
       per `testing` skill integration conventions, open the connection once
       in `beforeAll`; build a `User` fixture via
@@ -84,7 +84,7 @@ Plan: specs/009-login/plan.md
       When the visitor logs in, Then a token is issued exactly as in AC1 —
       the email match does not depend on letter case."
 
-- [ ] T5. DrizzleUserCredentialsRepository resolves undefined for an email with no matching account
+- [x] T5. DrizzleUserCredentialsRepository resolves undefined for an email with no matching account
     - Red: same file as T4 — new `it`; call
       `repository.findByEmail(faker.internet.email())` with no matching
       inserted row; assert the result is `undefined`.
@@ -95,7 +95,7 @@ Plan: specs/009-login/plan.md
       the email or password is invalid (E1), and no token is issued." (the
       repository-level signal this response depends on).
 
-- [ ] T6. JwtAuthCryptoAdapter issues a token carrying the user id and an explicit, caller-supplied expiration
+- [x] T6. JwtAuthCryptoAdapter issues a token carrying the user id and an explicit, caller-supplied expiration
     - Red: `tests/integration/logic/auth/infrastructure/JwtAuthCryptoAdapter.test.ts` —
       construct `new JwtAuthCryptoAdapter('test-secret', mock<PasswordHasherInterface>())`;
       call `issueToken('fixture-user-id', new Date('2026-01-01T01:00:00.000Z'))`;
@@ -111,7 +111,7 @@ Plan: specs/009-login/plan.md
     - Covers: AC1 (see T4 text above) — the token-issuance mechanism the use
       case depends on.
 
-- [ ] T7. JwtAuthCryptoAdapter.verifyPassword resolves true for a matching password
+- [x] T7. JwtAuthCryptoAdapter.verifyPassword resolves true for a matching password
     - Red: same file as T6 — new `it`; construct with a
       `mock<PasswordHasherInterface>()` whose `compare` is set via
       `passwordHasher.compare.mockResolvedValue(true)`; call
@@ -124,7 +124,7 @@ Plan: specs/009-login/plan.md
     - Covers: AC1 (see T4 text above) — the password-verification mechanism
       the use case depends on.
 
-- [ ] T8. JwtAuthCryptoAdapter.verifyPassword resolves false for a non-matching password
+- [x] T8. JwtAuthCryptoAdapter.verifyPassword resolves false for a non-matching password
     - Red: same file as T6 — new `it`;
       `passwordHasher.compare.mockResolvedValue(false)`; call
       `adapter.verifyPassword('wrong-password', 'stored-hash')`; assert the
@@ -138,7 +138,7 @@ Plan: specs/009-login/plan.md
       AC6 — and no token is issued." (the mechanism this response depends
       on).
 
-- [ ] T9. LoginUseCase issues a token when the email and password both match
+- [x] T9. LoginUseCase issues a token when the email and password both match
     - Red: `tests/unit/logic/auth/application/LoginUseCase.test.ts` —
       construct `LoginUseCase` with `mock<UserCredentialsRepositoryInterface>()`,
       `mock<AuthCryptoInterface>()`, `mock<DateTimeInterface>()`, and a fixed
@@ -162,7 +162,7 @@ Plan: specs/009-login/plan.md
       test yet).
     - Covers: AC1 (see T4 text above).
 
-- [ ] T10. LoginUseCase throws InvalidCredentialsError when no account matches the email
+- [x] T10. LoginUseCase throws InvalidCredentialsError when no account matches the email
     - Red: same file as T9 — new `it`;
       `userCredentialsRepository.findByEmail.mockResolvedValue(undefined)`;
       call `useCase.invoke({ email: 'unknown@example.com', password: 'p' })`;
@@ -178,7 +178,7 @@ Plan: specs/009-login/plan.md
       `undefined`, before calling `verifyPassword`.
     - Covers: AC6 (see T5 text above).
 
-- [ ] T11. LoginUseCase throws InvalidCredentialsError when the password does not match
+- [x] T11. LoginUseCase throws InvalidCredentialsError when the password does not match
     - Red: same file as T9 — new `it`;
       `userCredentialsRepository.findByEmail.mockResolvedValue({ id: 'fixture-id', email: 'a@b.com', passwordHash: 'hash' })`
       and `authCrypto.verifyPassword.mockResolvedValue(false)`; call
@@ -190,7 +190,7 @@ Plan: specs/009-login/plan.md
       the test to confirm.
     - Covers: AC7 (see T8 text above).
 
-- [ ] T12. `POST /authenticate` issues a token for valid credentials, matching email case-insensitively
+- [x] T12. `POST /authenticate` issues a token for valid credentials, matching email case-insensitively
     - Red: `tests/integration/handlers/LoginHandler.test.ts` — new top-level
       `describe('POST /authenticate', ...)`; hash a known password via
       `new BcryptPasswordHasher().hash(...)` (from
@@ -218,7 +218,7 @@ Plan: specs/009-login/plan.md
       in `src/app.ts`.
     - Covers: AC1, AC2 (see T4 text above).
 
-- [ ] T13. `POST /authenticate` returns an invalid-credentials error for an unknown email
+- [x] T13. `POST /authenticate` returns an invalid-credentials error for an unknown email
     - Red: same file as T12 — new `it`; `POST /authenticate` with
       `{ email: faker.internet.email(), password: 'any-password' }` (no
       matching account); assert status `401` and the JSON body equals
@@ -228,7 +228,7 @@ Plan: specs/009-login/plan.md
       (plan.md §5).
     - Covers: AC6 (see T5 text above).
 
-- [ ] T14. `POST /authenticate` returns an invalid-credentials error for a wrong password on an existing account
+- [x] T14. `POST /authenticate` returns an invalid-credentials error for a wrong password on an existing account
     - Red: same file as T12 — new `it`; insert a fixture user (known hashed
       password, via `insertUsers`); `POST /authenticate` with
       `{ email: fixture.email, password: 'a-completely-wrong-password' }`;
@@ -238,7 +238,7 @@ Plan: specs/009-login/plan.md
     - Green: none beyond T12.
     - Covers: AC7 (see T8 text above).
 
-- [ ] T15. `POST /authenticate` Request Validation — returns missing-field errors for an empty body
+- [x] T15. `POST /authenticate` Request Validation — returns missing-field errors for an empty body
     - Red: same file as T12 — nested `describe('Request Validation', ...)`
       per `testing` skill's Request Validation convention; `POST /authenticate`
       with `{}`; assert status `400` and the body's `errors` array contains

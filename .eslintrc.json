@@ -69,6 +69,12 @@
                             { "to": { "type": "shared" } },
                             {
                                 "to": {
+                                    "type": ["domain", "application", "infrastructure"],
+                                    "captured": { "context": "shared" }
+                                }
+                            },
+                            {
+                                "to": {
                                     "type": "domain",
                                     "captured": { "context": "{{from.captured.context}}" }
                                 }
@@ -79,6 +85,12 @@
                         "from": { "type": "application" },
                         "allow": [
                             { "to": { "type": "shared" } },
+                            {
+                                "to": {
+                                    "type": ["domain", "application", "infrastructure"],
+                                    "captured": { "context": "shared" }
+                                }
+                            },
                             {
                                 "to": {
                                     "type": "domain",
@@ -98,6 +110,12 @@
                         "allow": [
                             { "to": { "type": "shared" } },
                             { "to": { "type": "config" } },
+                            {
+                                "to": {
+                                    "type": ["domain", "application", "infrastructure"],
+                                    "captured": { "context": "shared" }
+                                }
+                            },
                             {
                                 "to": {
                                     "type": "domain",
@@ -120,7 +138,15 @@
                     },
                     {
                         "from": { "type": "shared" },
-                        "allow": [{ "to": { "type": "shared" } }]
+                        "allow": [
+                            { "to": { "type": "shared" } },
+                            {
+                                "to": {
+                                    "type": ["domain", "application", "infrastructure"],
+                                    "captured": { "context": "shared" }
+                                }
+                            }
+                        ]
                     }
                 ]
             }

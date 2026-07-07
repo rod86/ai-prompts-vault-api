@@ -100,6 +100,42 @@ metadata:
   repository — the column itself stays case-preserved; (3) a
   `PasswordHasherInterface` port (`hash()` only) with a `BcryptPasswordHasher`
   adapter — the only file allowed to import `bcrypt`, per hexagonal rules.
+- **Third bounded context (`auth`, `009-login`):** same tree shape
+  (`domain/{errors/,interfaces/}`, `application/LoginUseCase.ts`,
+  `infrastructure/{database/,JwtAuthCryptoAdapter.ts}`, `services.ts`). New
+  precedents: (1) a context that needs another context's table (`auth`
+  reading `user`'s `users` table) does NOT import that context's schema
+  module or repository — it depends only on the shared, fully-typed
+  `databaseClient` connection (`DatabaseConnection<typeof
+  config.database.schema>`) and reads via Drizzle's relational query API,
+  `db.query.<table>.findFirst({ where: (table, { sql }) => sql\`...\` })` —
+  no `pgTable` object needed in the reading context at all, since the
+  connection is already typed against the full aggregated schema from
+  `config.database.schema`; (2) `auth` defines its own read-model entity
+  (`UserCredentials`) and port (`UserCredentialsRepositoryInterface`)
+  duplicating a subset of another context's entity shape, rather than
+  importing it — deliberate, to keep zero runtime dependency on `user`'s
+  code; (3) one port can bundle two distinct capabilities
+  (`AuthCryptoInterface.issueToken` + `.verifyPassword`) when the plan
+  explicitly asks for a minimal port count, implemented by one adapter that
+  itself delegates the password-comparison half to a `shared`-owned port
+  (`PasswordHasherInterface.compare`) rather than importing `bcrypt`
+  directly; (4) a `LoginUseCase` needing "now + a duration" takes both the
+  clock port (`DateTimeInterface`) and the plain duration value
+  (`tokenExpirationSeconds: number`, config-sourced) as separate
+  constructor args — arithmetic on the injected `now()` result inside
+  `invoke()` is not a "hidden clock call" violation, only an *uninjected*
+  read of current time is.
+- **Relocating a port from one context to `shared` (`009-login`,
+  `PasswordHasherInterface`/`BcryptPasswordHasher`, `user` -> `shared`):** a
+  straight move — delete the old context-owned files, create
+  `shared/domain/interfaces/<X>Interface.ts` +
+  `shared/infrastructure/<area>/<X>Adapter.ts`, export a singleton instance
+  from `shared/services.ts`, and update every existing consumer's import
+  path (both the source file and its unit test's mock import) to the new
+  `@logic/shared/...` path — no consumer logic changes. Confirm via the full
+  suite, not just the moved file's own tests, since the move touches other
+  contexts' import paths without touching their behavior.
 - **Tightening an existing schema's path id to `z.uuid()` under a new spec's
   tasks.md:** a small maintenance task riding along with an unrelated feature
   (e.g. T9 of `007-delete-prompt` upgrading `UpdatePromptSchema`'s `params.id`
