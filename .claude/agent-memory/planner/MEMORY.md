@@ -10,4 +10,5 @@ only (codepaths and concrete code patterns live in the implementer's memory).
 - [Naming precedents](naming_precedents.md) — file/class/table naming to reuse verbatim
 - [Middleware infra](middleware_infra.md) — actual current shape of `src/middleware/validateRequest/` + design lessons
 - [Open threads](open_threads.md) — unresolved/deferred design questions for future features
-- [Auth & new-context conventions](auth_and_new_context_conventions.md) — new bounded context pattern, bcrypt port, case-insensitive-unique field pattern, 409 conflict precedent (from 008)
+- [Auth & new-context conventions](auth_and_new_context_conventions.md) — new bounded context pattern, bcrypt port, case-insensitive-unique field pattern, 409 conflict precedent (from 008); 009 correction: duplicate cross-context reads instead of calling another context's services.ts, promote only genuinely-shared logic (bcrypt) to `shared`, inject a Clock port for token expiration
+- [Boundaries lint cross-context gap](boundaries_lint_cross_context.md) — exact eslint-plugin-boundaries config shape; no context-to-context allow rule exists; `services.ts` routing is lint-legal but was rejected by the user as the preferred shape for a cross-context read (see auth_and_new_context_conventions) — prefer duplication + `shared` for genuinely-identical logic

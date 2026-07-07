@@ -19,19 +19,31 @@ metadata:
   `specs/007-delete-prompt/`) — deleting a category that still has prompts
   referencing it would hit the `prompt_category_id` foreign key; this is a
   fresh design question (cascade? restrict? not yet decided anywhere).
-- Resolved: 008-user-registration picked bcrypt (10 salt rounds) as the
-  password-hashing library via an explicit interview question — see
-  [[auth_and_new_context_conventions]] for the settled convention (a
-  `PasswordHasherInterface` port, `hash()`-only for registration, `bcrypt`/
-  `@types/bcrypt` installed). No login feature exists yet, so `compare()`/
-  `verify()` on that port is still unwritten — a genuinely open question for
-  whichever feature adds login.
+- Resolved (corrected mid-flight): 009-login's first-drafted plan.md had
+  `auth` call into `user` via a `VerifyUserCredentialsUseCase` exposed from
+  `user/services.ts`, with `compare()` added to `user`'s own
+  `PasswordHasherInterface`. The user explicitly rejected this — see
+  [[auth_and_new_context_conventions]] for the corrected, final shape:
+  `user` reverts to its `008` shape except that `PasswordHasherInterface`/
+  `BcryptPasswordHasher` move to `shared` (the one genuinely-shared piece);
+  `auth` never calls `user` at all — it owns a duplicated direct read of the
+  `users` table and its own combined token-issue/password-verify port. Treat
+  "auth calls into user's services.ts" as a **rejected** pattern, not
+  precedent, for any future cross-context read.
 - 008 also left the DB-level unique-index-violation-to-409 translation
   unhandled (see [[auth_and_new_context_conventions]] Risk 1): a concurrent
   double-registration race that slips past the use case's `findByEmail`
-  check would surface as an unmapped 500, not a 409. Revisit if this is
-  observed in practice, or proactively when a login/account feature next
-  touches `RegisterUserHandler`/`DrizzleUserRepository`.
+  check would surface as an unmapped 500, not a 409. Still unresolved as of
+  009. Revisit if this is observed in practice.
+- New from 009-login: the generic invalid-credentials response has a known,
+  accepted timing-attack gap (unknown-email path skips `bcrypt.compare()`
+  entirely, wrong-password path calls it) — see
+  [[auth_and_new_context_conventions]] Risk. Still open; a future security
+  pass could add a dummy-hash compare on the unknown-email path.
+- New from 009-login: `JWT_SECRET` (and env vars generally) has no fail-fast
+  validation in `config.ts` — an unset secret silently signs tokens with an
+  empty string rather than crashing at startup. No "required env" mechanism
+  exists anywhere in this codebase yet; still open if ever prioritized.
 
 **Why:** flags decisions intentionally deferred rather than forgotten, so a
 future planning pass treats them as live open questions instead of assuming

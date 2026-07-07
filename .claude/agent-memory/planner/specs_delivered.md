@@ -36,6 +36,19 @@ metadata:
   (`EmailAlreadyInUseError`, distinct from the existing 400-for-referenced-id
   pattern). See [[auth_and_new_context_conventions]].
 
+- `specs/009-login/` — `POST /sessions`, first feature needing a genuine
+  cross-context dependency: new `auth` bounded context reads `user`
+  credentials read-only through `user/services.ts`'s exported
+  `verifyUserCredentialsUseCase` (no direct import of `user`'s domain/
+  infrastructure). Added `compare()` to `PasswordHasherInterface` (bcrypt).
+  `jsonwebtoken` HS256, 1h expiry, `{ sub: userId }` payload only. First
+  `401 Unauthorized` domain-error precedent (generic "Invalid email or
+  password" for both unknown-email and wrong-password, deliberately
+  indistinguishable). Login's request schema does type-presence-only
+  validation (no non-blank/shape/strength checks) so a malformed/blank input
+  falls through to the same generic 401 rather than a distinguishing 400.
+  See [[auth_and_new_context_conventions]].
+
 **Why this matters:** know what already exists before proposing a new
 context/entity/route; a "new" request is often an extension of 001-007.
 **How to apply:** skim this list first, then read the actual current source
