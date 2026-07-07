@@ -14,22 +14,22 @@ Plan: specs/009-login/plan.md
 
 - [ ] T2. Relocate the password hasher to `shared` and add `compare()`
     - Red: move `tests/integration/logic/user/infrastructure/BcryptPasswordHasher.test.ts`
-      to `tests/integration/logic/shared/security/BcryptPasswordHasher.test.ts`,
-      updating its import to `@logic/shared/security/BcryptPasswordHasher.js`;
+      to `tests/integration/logic/shared/infrastructure/security/BcryptPasswordHasher.test.ts`,
+      updating its import to `@logic/shared/infrastructure/security/BcryptPasswordHasher.js`;
       add a new `describe('compare', ...)` in that same file asserting
       `await hasher.compare('Sup3r$ecret!', hash)` resolves `true` for a hash
       produced by `hash('Sup3r$ecret!')`, and `await hasher.compare('wrong-password', hash)`
       resolves `false`. Fails: nothing exists yet at
-      `@logic/shared/security/BcryptPasswordHasher.js`.
-    - Green: create `src/logic/shared/security/PasswordHasherInterface.ts`
-      (`hash` + new `compare`) and `src/logic/shared/security/BcryptPasswordHasher.ts`
+      `@logic/shared/infrastructure/security/BcryptPasswordHasher.js`.
+    - Green: create `src/logic/shared/domain/interfaces/PasswordHasherInterface.ts`
+      (`hash` + new `compare`) and `src/logic/shared/infrastructure/security/BcryptPasswordHasher.ts`
       (moved body from `src/logic/user/infrastructure/BcryptPasswordHasher.ts`,
       plus `compare()` via `bcrypt.compare`); delete
       `src/logic/user/domain/interfaces/PasswordHasherInterface.ts` and
       `src/logic/user/infrastructure/BcryptPasswordHasher.ts`; update
       `RegisterUserUseCase.ts`'s `PasswordHasherInterface` import path (and
       `tests/unit/logic/user/application/RegisterUserUseCase.test.ts`'s mock
-      import path) to `@logic/shared/security/PasswordHasherInterface.js`;
+      import path) to `@logic/shared/domain/interfaces/PasswordHasherInterface.js`;
       export `passwordHasher` from `src/logic/shared/services.ts`; update
       `src/logic/user/services.ts` to import `passwordHasher` from
       `@logic/shared/services.js` instead of constructing its own
@@ -168,7 +168,7 @@ Plan: specs/009-login/plan.md
       call `useCase.invoke({ email: 'unknown@example.com', password: 'p' })`;
       assert
       `await expect(useCase.invoke(...)).rejects.toThrow(InvalidCredentialsError)`
-      and `.rejects.toThrow('Invalid email or password')` (per `testing`
+      and `.rejects.toThrow('Invalid authentication credentials')` (per `testing`
       skill — asserting both error type and message); assert
       `authCrypto.verifyPassword` and `authCrypto.issueToken` were never
       called. Fails: `InvalidCredentialsError` does not exist yet.
@@ -183,7 +183,7 @@ Plan: specs/009-login/plan.md
       `userCredentialsRepository.findByEmail.mockResolvedValue({ id: 'fixture-id', email: 'a@b.com', passwordHash: 'hash' })`
       and `authCrypto.verifyPassword.mockResolvedValue(false)`; call
       `useCase.invoke({ email: 'a@b.com', password: 'wrong-password' })`;
-      assert it rejects with `InvalidCredentialsError`/`'Invalid email or password'`;
+      assert it rejects with `InvalidCredentialsError`/`'Invalid authentication credentials'`;
       assert `authCrypto.issueToken` was never called.
     - Green: none beyond T9/T10 — `LoginUseCase.invoke()` already throws
       `InvalidCredentialsError` when `verifyPassword` resolves `false`. Run
@@ -194,7 +194,7 @@ Plan: specs/009-login/plan.md
     - Red: `tests/integration/handlers/LoginHandler.test.ts` — new top-level
       `describe('POST /authenticate', ...)`; hash a known password via
       `new BcryptPasswordHasher().hash(...)` (from
-      `@logic/shared/security/BcryptPasswordHasher.js`); insert a fixture
+      `@logic/shared/infrastructure/security/BcryptPasswordHasher.js`); insert a fixture
       user (via `insertUsers`) with a mixed-case email (e.g.
       `'Login.Fixture@Example.com'`) and that hash; using `supertest` against
       the real Express `app`, `POST /authenticate` with
@@ -222,7 +222,7 @@ Plan: specs/009-login/plan.md
     - Red: same file as T12 — new `it`; `POST /authenticate` with
       `{ email: faker.internet.email(), password: 'any-password' }` (no
       matching account); assert status `401` and the JSON body equals
-      `{ error: 'Invalid email or password' }`.
+      `{ error: 'Invalid authentication credentials' }`.
     - Green: none beyond T12 — `LoginHandler.ts`'s `catch` block already
       catches `InvalidCredentialsError` and responds `401` with its message
       (plan.md §5).
@@ -233,7 +233,7 @@ Plan: specs/009-login/plan.md
       password, via `insertUsers`); `POST /authenticate` with
       `{ email: fixture.email, password: 'a-completely-wrong-password' }`;
       assert status `401` and the JSON body equals
-      `{ error: 'Invalid email or password' }`; clean up the inserted row
+      `{ error: 'Invalid authentication credentials' }`; clean up the inserted row
       afterward.
     - Green: none beyond T12.
     - Covers: AC7 (see T8 text above).
