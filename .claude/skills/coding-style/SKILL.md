@@ -45,6 +45,11 @@ maintainable option.
 - **Early returns** over nested `if`/`else`.
 - No flag/boolean args. Split into two functions or pass a named-options object.
 - No magic numbers/strings. Name them as constants.
+- A constant used only within one class lives as a `private static readonly`
+  property on that class, not a module-level `const` — keep the `const`-style
+  `UPPER_SNAKE_CASE` naming, just scope it to the class (e.g.
+  `BcryptPasswordHasher.SALT_ROUNDS`). Module-level `const` is for values
+  shared across the file or module.
 - Domain functions are **pure**: no I/O, clock, or randomness. Inject those.
 - Do not write detailed code comments.
 
