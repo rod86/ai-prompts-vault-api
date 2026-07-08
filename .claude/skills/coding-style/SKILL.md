@@ -1,43 +1,41 @@
 ---
 name: coding-style
-description: Library-agnostic coding conventions — TypeScript strictness, naming, clean-code rules, domain-error handling, validate-at-the-boundary, and import discipline. Use when writing or reviewing any code. Concrete tool config (Zod, Prettier, ESLint, path aliases) lives in the project-stack skill and CLAUDE.md.
+description: TypeScript coding conventions — strictness, naming, clean-code, error handling, validation, and imports. Use when writing or reviewing any TypeScript code.
 ---
 
-# Coding Style
+# TypeScript Coding Style
 
-Conventions for a Node + TypeScript REST API. Enforced by the linter/formatter;
-`npm run lint` is the source of truth and must pass before any change is done.
-Concrete tool names and config (Zod, Prettier, ESLint plugin, path aliases) live
-in the `project-stack` skill and `CLAUDE.md`.
+Conventions for TypeScript projects. Enforced by the linter/formatter;
+the lint command must pass before any change is done.
 
-Principle: **strict, small, explicit.** When in doubt, pick the simplest, most
-maintainable option.
+Principle: **strict, explicit, maintainable.** When in doubt, pick the simplest,
+most maintainable option that follows TypeScript best practices.
 
 ## TypeScript
 
 - `strict` mode always on. Never weaken `tsconfig.json` to make code compile.
-- Banned (build fails): `any`, non-null assertions (`x!`), `@ts-ignore`,
-  `@ts-expect-error`.
+- Banned (build fails): `any`, non-null assertions (`x!`), `@ts-ignore`.
+- **Allowed with explanation**: `@ts-expect-error` — requires a comment explaining why the error is expected and when it can be removed.
 - Use `unknown` + narrowing instead of `any`, or model the type properly.
-- Prefer `type` aliases and **discriminated unions** over loose objects.
-- Treat data as `readonly` by default. Copy, don't mutate.
-- Model missing values explicitly as `T | undefined`. Handle the null/undefined
-  case, never fake it with `!`.
-- No need to type when type inference is available (e.g. `const app = express()`).
+- Use **explicit return types** on all exported functions, classes, and public methods. This improves documentation, prevents accidental API changes, and catches errors early.
+- Use type inference for internal variables where the type is obvious (e.g., `const app = express()`).
+- Prefer `interface` for **public APIs, contracts, and object shapes** that may be extended or implemented.
+- Prefer `type` for **unions, intersections, mapped types, and utility types** that don't need declaration merging.
+- Use TypeScript utility types (`Pick`, `Omit`, `Partial`, `Required`, `Readonly`, `ReturnType`, etc.) to derive types from existing ones, avoiding duplication.
+- Treat data as immutable where it matters: use `readonly` on **public interfaces** and **entity/model classes** where modification shouldn't occur. Allow mutation in **private/internal state** where it simplifies code.
+- Model missing values explicitly as `T | undefined`. Handle the null/undefined case, never fake it with `!`.
+- Prefer `undefined` over `null`. Use `null` only when interacting with external APIs/libraries that require it.
+- Use **discriminated unions** for state machines and polymorphic types.
 
 ## Naming
 
-- `PascalCase`: types, classes, entities (`Prompt`, `PromptId`).
-- `camelCase`: variables, functions (`createPrompt`, `promptRepository`).
-- Use-case files are named after their class (a verb + `UseCase`):
-  `CreatePromptUseCase.ts`, `ListPromptsUseCase.ts`.
-- `Interface` suffix on ports/interfaces, prefixed by the entity they serve:
-  `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`.
+- `PascalCase`: types, interfaces, classes, enums (`User`, `UserId`, `UserRepository`).
+- `camelCase`: variables, functions, methods, properties (`createUser`, `userRepository`).
+- `UPPER_SNAKE_CASE`: constants (`MAX_RETRY_COUNT`, `DEFAULT_PAGE_SIZE`).
+- Use-case files are named after their class (a verb + `UseCase`): `CreateUserUseCase.ts`, `ListUsersUseCase.ts`.
+- **No suffix required for interfaces** — TypeScript distinguishes interfaces by syntax. Use plain names like `UserRepository` for the interface and `PostgresUserRepository` or `InMemoryUserRepository` for implementations.
 - Names reveal intent. A good name removes the need for a comment.
-- Unused variables/args must be prefixed with `_` (the linter's
-  `no-unused-vars` ignore pattern). When destructuring to discard a property,
-  rename it to `_` via colon syntax rather than binding it under its original
-  name: `const { categoryId: _, ...rest } = value;`.
+- Unused variables/args must be prefixed with `_` (the linter's `no-unused-vars` ignore pattern). When destructuring to discard a property, rename it to `_` via colon syntax rather than binding it under its original name: `const { categoryId: _, ...rest } = value;`.
 
 ## Functions & Clean Code
 
@@ -45,44 +43,36 @@ maintainable option.
 - **Early returns** over nested `if`/`else`.
 - No flag/boolean args. Split into two functions or pass a named-options object.
 - No magic numbers/strings. Name them as constants.
-- A constant used only within one class lives as a `private static readonly`
-  property on that class, not a module-level `const` — keep the `const`-style
-  `UPPER_SNAKE_CASE` naming, just scope it to the class (e.g.
-  `BcryptPasswordHasher.SALT_ROUNDS`). Module-level `const` is for values
-  shared across the file or module.
-- Domain functions are **pure**: no I/O, clock, or randomness. Inject those.
-- Do not write detailed code comments.
+- Keep constants scoped to the smallest reasonable context. Use `private static readonly` if the constant is an implementation detail of that class; otherwise, module-level `const` is acceptable.
+- Business logic should be **isolated from I/O, clock, and randomness**. Dependencies are injected via interfaces, making logic testable and pure in the sense of having no side effects.
+- Do not write comments that explain **what** the code does. Use comments to explain **why** — business rules, design trade-offs, performance considerations, and non-obvious behavior.
 
 ## Error Handling
 
-- Throw **domain-specific error classes** (e.g. `PromptNotFoundError`), never
-  raw strings or bare `Error`.
-- Map domain errors to HTTP status codes in **one** place (the error-handling
-  middleware), not in controllers.
+- Throw **named error classes** that extend `Error` (e.g., `NotFoundError`), never raw strings or bare `Error`.
+- Map error classes to HTTP status codes in **one** place (the error-handling middleware), not in controllers.
 - No swallowed catches. Handle or re-throw, never empty `catch {}`.
 
 ## Validation
 
-- Validate all external input at the **HTTP boundary** before it reaches
-  application logic.
-- Only the parsed (typed) value flows inward. Never pass raw request bodies past
-  the controller.
+- **Boundary validation**: Validate all external input at the system boundary (HTTP, CLI, message queue) before it reaches application logic. Only the parsed (typed) value flows inward.
+- **Invariant validation**: Entities/models should also validate their own invariants upon construction/mutation, independent of boundary validation. These may use different validation schemas tailored to those rules.
+- Use a validation library (e.g., Zod, Yup, Joi) for schema-based validation.
 
-(The validation library and a schema example are in the `project-stack` skill.)
+## Async Code
+
+- Prefer `async/await` for readability and error handling.
+- Use `.catch()` only in rare cases where error handling differs from the main flow or when dealing with promise-based callbacks.
+- Handle promise rejections explicitly — never let unhandled rejections reach production.
 
 ## Imports
 
-- Use the project path aliases (see `project-stack`), not long relative chains.
-- Order: builtin → external → internal → parent → sibling → index, with no
-  blank lines between groups, and alphabetized (case-insensitive) within each
-  group. Auto-fixed by the linter (`import/order`).
-- No deep cross-context reach-ins. Import a context's public surface, not its
-  inner files (enforced by boundary linting).
+- Use path aliases if configured in the project (see `tsconfig.json` paths), not long relative chains.
+- Order: builtin → external → internal → parent → sibling → index, with **one blank line between groups**, and alphabetized (case-insensitive) within each group. Auto-fixed by the linter (`import/order`).
+- No deep cross-module reach-ins. Import a module's public surface, not its inner files (enforced by boundary linting).
 
 ## Formatting & Commits
 
-- The **formatter owns formatting** — don't hand-format. Exact config in
-  `project-stack` / `CLAUDE.md`.
-- 4-space indentation.
-- **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`,
-  `chore:`.
+- The **formatter owns formatting** — don't hand-format. Use Prettier or an equivalent tool.
+- Indentation: 2 spaces (TypeScript community standard).
+- **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`.
