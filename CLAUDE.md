@@ -52,6 +52,17 @@ npx drizzle-kit generate   # emit SQL migrations from schema changes
 Migrations are run **manually** — the app does not migrate on startup. Requires
 a running Postgres (`docker compose up -d`) and DB env vars (see `.env.example`).
 
+## Git branches
+
+The repository uses three branch roles. Tooling and commands should refer to these
+**roles**, not the literal names, so the model resolves the current name here:
+
+| Role | Branch | Rules |
+| --- | --- | --- |
+| **Production** | `main` | Exact mirror of production. Never commit to it or branch feature work off it. |
+| **Integration** | `development` | Central branch. Feature branches are cut from it; all PRs target it. |
+| **Feature** | `spec/<slug>` | Where a spec's implementation changes are made. `<slug>` is the spec folder's slug (e.g. `spec/archive-prompt`). Cut from the integration branch. |
+
 ## Project structure
 
 ```
