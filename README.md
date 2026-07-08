@@ -74,6 +74,8 @@ drizzle/                # Drizzle kit migrations
 
 ## Claude Code
 
+*CLAUDE.md*: Detailed project info (structure, workflows, ...)
+
 ### Skills
 
 - *clean-code*:  SOLID and Clean Code principles
@@ -81,6 +83,7 @@ drizzle/                # Drizzle kit migrations
 - *database-schema-design*: Engine-agnostic relational schema-design conventions
 - *spec-driven-development*: Spec-driven (SDD) workflow (agnostic to project)
 - *domain-driven-design*:  Domain-Driven Design guidelines for TypeScript
+- *testing-practices*: Testing conventions for TypeScript
 
 ## Spec-Driven Development Flow
 

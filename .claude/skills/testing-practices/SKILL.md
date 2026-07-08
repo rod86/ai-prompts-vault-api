@@ -1,37 +1,31 @@
 ---
 name: testing-practices
-description: Testing conventions for this TypeScript backend — the TDD loop, test file structure and placement, unit vs integration tests, model factories, mocking strategy, error assertions, the database test lifecycle, and request-validation tests. Use when writing, reviewing, or structuring any test, adding a model factory, deciding unit vs integration, or mocking a dependency.
+description: Testing conventions for TypeScript apps — the TDD loop, test file structure and placement, unit vs integration tests, model factories, mocking strategy, error assertions, and the database test lifecycle. Use when writing, reviewing, or structuring any test, adding a model factory, deciding unit vs integration, or mocking a dependency.
 ---
 
 # Testing Practices
 
-All tests live under `tests/` (never inside `src/`). TDD is mandatory. The stack is
-Vitest as the runner, supertest for HTTP assertions, vitest-mock-extended for typed
-mocks, and `@faker-js/faker` for fake data.
+All tests live under `tests/` (never inside `src/`). TDD is mandatory. The assumed
+stack is Vitest as the runner, `vitest-mock-extended` for typed mocks, and
+`@faker-js/faker` for fake data; add an HTTP assertion library (e.g. supertest)
+when the app exposes HTTP. A project may pin or swap these — see its project docs.
 
 ## Quick rules
 
 - Tests live under `tests/`, never in `src/`; mirror the `src/` path; suffix `.test.ts`.
 - TDD every change: red → green → refactor.
-- **Use cases (application layer) → unit test, all dependencies mocked. Adapters
-  (infrastructure layer) + routes/handlers → integration test, against a real DB/HTTP.**
+- **A unit in isolation with every collaborator mocked → unit test. Two or more
+  real pieces working together (your code with a DB, with an HTTP API, or two of
+  your own modules) → integration test.** Which layers map to which is a
+  per-project decision (see project docs).
 - Mock the dependency **type** (`mock<T>()`), never a hand-rolled fake.
 - Structure every test as Arrange / Act / Assert; no `try/catch` in tests — use hooks.
 - Build fake domain objects with model factories, not object literals.
 - Filter DB assertions to the test's own fixture ids — parallel test files share tables.
 
-## Running tests
-
-```bash
-npm test                                   # full run (vitest run, single pass)
-npx vitest run tests/unit/.../X.test.ts    # one file
-npx vitest run -t 'returns 404'            # filter by test name
-npx vitest                                 # watch mode (TDD loop)
-```
-
 ## TDD loop
 
-1. Red — smallest failing test for the next item in `tasks.md`.
+1. Red — smallest failing test for the next piece of behavior.
 2. Green — minimum code to pass.
 3. Refactor — clean up, keep the bar green.
 
@@ -40,34 +34,25 @@ npx vitest                                 # watch mode (TDD loop)
 ```
 tests/
   lib/            # Shared test helpers (database, mocks, builders, sample responses,...)
-    config.ts     # Test databaseClient + TestDatabaseConnection type, and singleton model factories, imported by tests.
+    config.ts     # Test client/config + singleton model factories, imported by tests.
     modelFactories # One factory per domain type, building fake instances of it.
-    database      # Helpers to insert/select/delete rows directly, one file per table schema (e.g. `prompts.ts`)
+    database      # Helpers to insert/select/delete rows directly, one file per table (e.g. `users.ts`)
   unit/           # Unit tests
   integration/    # Integration tests
 ```
 
-The example test files cited throughout this skill live at their mirrored `src/` path
-under `tests/unit/` or `tests/integration/` — e.g.
-`tests/unit/logic/prompt/application/ListPromptsUseCase.test.ts` and
-`tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`.
-
 ## Conventions
 
-- Mirror the `src/` path under `tests/unit/` or `tests/integration`. Example:
-  `src/logic/prompt/application/CreatePromptUseCase.ts` ->
-  `tests/unit/logic/prompt/application/CreatePromptUseCase.test.ts`.
-- Routes mirror `src/handlers/` the same way: one test file per handler, named
-  after it, under `tests/integration/handlers/`. Example:
-  `src/handlers/GetPromptsHandler.ts` ->
-  `tests/integration/handlers/GetPromptsHandler.test.ts`. Don't collect
-  multiple routes' tests into one shared file (e.g. a single `app.test.ts`) —
-  it grows unbounded as routes are added and every file gets its own
-  self-contained `beforeAll`/`afterAll` connect/close pair anyway (see
-  Integration lifecycle below), so splitting has no extra setup cost.
+- Mirror the `src/` path under `tests/unit/` or `tests/integration/`. Example:
+  `src/<path>/CreateUser.ts` -> `tests/unit/<path>/CreateUser.test.ts`.
+- HTTP handler/route tests mirror their source the same way — one test file per
+  handler, named after it. Don't collect multiple routes' tests into one shared
+  file (e.g. a single `app.test.ts`): it grows unbounded as routes are added, and
+  every file gets its own self-contained `beforeAll`/`afterAll` connect/close pair
+  anyway (see Integration lifecycle below), so splitting has no extra setup cost.
 - File suffix is always `.test.ts`.
 - `describe` names the unit under test; `it` states the behavior as an
-  expectation: `it('returns 404 when the prompt does not exist')`.
+  expectation: `it('returns 404 when the entity does not exist')`.
 - Structure every test as Arrange / Act / Assert.
 - No `try/catch` (or `try/finally`) blocks inside tests. Use setup and cleanup
   hooks so setup, teardown, and any database changes (seeding, cleanup) run
@@ -88,32 +73,27 @@ Placement is what keeps scoped data from leaking or being reused by mistake acro
 
 - Mutable state set in a hook (`let` for a `db` connection, a mock, the unit
   under test) is declared with its `beforeAll`/`beforeEach`, both nested inside
-  the top-level `describe` — never at file scope. See `db` in
-  `DrizzlePromptCategoryRepository.test.ts`, or `repository` in the mocking
-  example below.
+  the top-level `describe` — never at file scope.
 - A unit under test that holds internal state (e.g. a client wrapping a
   connection) is constructed fresh in the setup hook, not per-test.
 - Immutable values shared across the file (config objects, ids, fixtures) are
   `const`s at the top of the file.
 - Sample data for one `describe`'s own tests is a `const` inside that `describe`,
   not at file scope — so it can't clash with, or be reused by mistake in, another
-  block. See `prompts` in `ListPromptsUseCase.test.ts`.
+  block.
 - Read-only reference data reused by *several* `describe` blocks (never mutated)
-  is declared once in the top-level `describe`'s setup, not per block. See
-  `recipeCategory`/`travelCategory`/`fitnessCategory` in
-  `DrizzlePromptRepository.test.ts`.
+  is declared once in the top-level `describe`'s setup, not per block.
 - A local helper used only in this file (e.g. a builder wrapping a model factory)
-  goes at the top of the file, above the `describe` — never nested inside it.
-  See `buildPrompt` in `ListPromptsUseCase.test.ts`:
+  goes at the top of the file, above the `describe` — never nested inside it:
 
   ```ts
-  const buildPrompt = (): Prompt => {
-      const { categoryId: _, ...prompt } = promptModelFactory.create();
-      return { ...prompt, category: promptCategoryModelFactory.create() };
+  const buildOrder = (): Order => {
+      const { customerId: _, ...order } = orderModelFactory.create();
+      return { ...order, customer: customerModelFactory.create() };
   };
 
-  describe('ListPromptsUseCase', () => {
-      const prompts = [buildPrompt(), buildPrompt()];
+  describe('ListOrdersUseCase', () => {
+      const orders = [buildOrder(), buildOrder()];
       // ...
   });
   ```
@@ -132,11 +112,11 @@ per domain type, and a singleton instance of each is exported from
   default, but letting `data` override individual fields:
 
   ```ts
-  export class PromptCategoryModelFactory extends AbstractModelFactory<PromptCategory> {
-      override create(data: Partial<PromptCategory> = {}): PromptCategory {
+  export class UserModelFactory extends AbstractModelFactory<User> {
+      override create(data: Partial<User> = {}): User {
           return {
               id: data.id ?? faker.string.uuid(),
-              name: data.name ?? faker.commerce.department(),
+              email: data.email ?? faker.internet.email(),
           };
       }
   }
@@ -144,22 +124,21 @@ per domain type, and a singleton instance of each is exported from
 
   `AbstractModelFactory` also provides `createMany(count = 5, data?)` for free.
 - **When to create a custom type instead of reusing the domain type:** when the
-  shape a factory needs to build differs from the domain entity — e.g.
-  `PromptModelFactory` builds `PromptModel`, which is `Prompt` with `category`
-  replaced by a `categoryId`, matching the persisted/row shape rather than the
-  assembled domain object. Define that type alongside the factory, not inside
-  the domain layer.
+  shape a factory needs to build differs from the domain entity — e.g. a factory
+  that builds the persisted/row shape (a foreign-key id in place of an assembled
+  nested object) rather than the assembled domain object. Define that type
+  alongside the factory, not inside the domain layer.
 - **How to use them:** import the singleton from `tests/lib/config.ts` and call
   `.create()` (optionally passing overrides) or `.createMany()`:
 
   ```ts
-  import { promptModelFactory, promptCategoryModelFactory } from '@tests/lib/config.js';
+  import { userModelFactory } from '@tests/lib/config.js';
 
-  const prompt = promptModelFactory.create({ title: 'Fixed title' });
+  const user = userModelFactory.create({ email: 'fixed@example.com' });
   ```
 
   When a test needs the full domain object built from a row-shaped factory,
-  wrap the composition in a local builder function (see `buildPrompt` above)
+  wrap the composition in a local builder function (see `buildOrder` above)
   rather than repeating it inline in every test.
 - After adding a new domain type, add its factory to `tests/lib/modelFactories/`
   and export a singleton instance from `tests/lib/config.ts`, following the
@@ -173,20 +152,20 @@ per domain type, and a singleton instance of each is exported from
 - **Functions:** use `vi.fn()` (from `vitest`).
 - Build the mocks and the unit under test **fresh in `beforeEach`** so no state leaks
   between tests; set each test's return values in its own Arrange step
-  (e.g. `categoryRepository.findById.mockResolvedValue(fixtureCategory)`).
+  (e.g. `userRepository.findById.mockResolvedValue(fixtureUser)`).
 
 ```ts
 import { mock, type MockProxy } from 'vitest-mock-extended';
 
-describe('CreatePromptUseCase', () => {
-    let promptRepository: MockProxy<PromptRepositoryInterface>;
-    let categoryRepository: MockProxy<PromptCategoryRepositoryInterface>;
-    let useCase: CreatePromptUseCase;
+describe('RegisterUserUseCase', () => {
+    let userRepository: MockProxy<UserRepositoryInterface>;
+    let passwordHasher: MockProxy<PasswordHasherInterface>;
+    let useCase: RegisterUserUseCase;
 
     beforeEach(() => {
-        promptRepository = mock<PromptRepositoryInterface>();
-        categoryRepository = mock<PromptCategoryRepositoryInterface>();
-        useCase = new CreatePromptUseCase(promptRepository, categoryRepository);
+        userRepository = mock<UserRepositoryInterface>();
+        passwordHasher = mock<PasswordHasherInterface>();
+        useCase = new RegisterUserUseCase(userRepository, passwordHasher);
     });
     // ...
 });
@@ -198,8 +177,8 @@ Use cases are async, so assert against the rejected promise with `rejects.toThro
 Assert both the error **type** and its **message** — one statement each:
 
 ```ts
-await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
-await expect(useCase.invoke(query)).rejects.toThrow(`Category not found: ${query.categoryId}`);
+await expect(useCase.invoke(query)).rejects.toThrow(UserNotFoundError);
+await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.userId}`);
 ```
 
 ## Test Types
@@ -208,15 +187,12 @@ await expect(useCase.invoke(query)).rejects.toThrow(`Category not found: ${query
 
 - One piece in isolation, all its dependencies mocked.
 - Mock the dependency **type**, not the real implementation. If a constructor
-  takes `PromptRepositoryInterface`, mock the interface, not its implementation.
-- Applies to _use cases_ in the `application` layer.
+  takes `UserRepositoryInterface`, mock the interface, not its implementation.
 
 ### Integration (`tests/integration`)
 
 - Two or more real pieces working together — your code with a database, with an
   HTTP API, or two of your own modules combined.
-- Applies to _adapter_ implementations in the `infrastructure` layer and _routes_
-  in `app.ts`.
 - When a test touches the database:
     1. Open the connection once, before all tests, in a `beforeAll` nested
        inside the top-level `describe` (not at file scope).
@@ -224,76 +200,16 @@ await expect(useCase.invoke(query)).rejects.toThrow(`Category not found: ${query
     3. Run the test.
     4. Clean up only the data the test inserted — leave everything else untouched.
     5. Close the connection once, after all tests, in the matching `afterAll`.
-- When a repository test asserts the result of `create`/`update`/`delete`,
-  verify it via a direct table query (e.g. `selectPromptsByIds` in
-  `tests/lib/database/*.ts`), not by calling the repository's own read method
-  (`findById`/`findAll`). This keeps a write test's correctness from
-  depending on a different method under test. `findAll`/`findById` describe
-  blocks are the exception — they exist specifically to test those methods,
-  so asserting on their own return value there is correct.
-- Same rule for handler tests: when a handler that writes (`create`/`update`/
-  `delete`) needs to confirm the change actually happened, query the database
-  directly with the `tests/lib/database/*.ts` helpers (e.g. `selectPromptsByIds`)
-  rather than calling a different route (`GET /prompts/:id`, `GET /prompts`) to
-  check. Calling another endpoint couples the write handler's test to that other
-  handler's correctness and doubles up on coverage `GetPromptHandler.test.ts` /
-  `GetPromptsHandler.test.ts` already provide. See
-  `DeletePromptHandler.test.ts`.
-- Vitest runs separate test files in parallel, so any assertion that reads
-  the *entire* table (rather than filtering to the fixtures the test itself
-  inserted) is racy against sibling integration test files touching the same
-  table. Always filter the actual/expected data down to the test's own
-  fixture ids before asserting — see `fixturesInResponse` in
-  `GetPromptsHandler.test.ts` or `fixturesInResult` in
-  `DrizzlePromptCategoryRepository.test.ts`.
-
-#### Request validation
-
-For a handler test whose route is wired with `validateRequestMiddleware` (which
-responds with `400 { message, errors: {field, error}[] }` on invalid input), nest
-a `describe('Request Validation', ...)` inside the handler's top-level `describe`,
-containing:
-
-- One test sending an empty payload/query, asserting an error for every
-  required field.
-- One additional test per other meaningful validation case (e.g. a malformed
-  UUID).
-
-Assert the `errors` array with exact object literals (`{ field, error }`),
-including the literal message text — not `expect.objectContaining`, which
-would let an unrelated message change pass silently. Don't re-assert the
-top-level `message` string in each handler test — it's already covered once by
-the middleware's own unit test (`tests/unit/middleware/validateRequest/*.test.ts`).
-If a schema has no field that can actually fail validation (e.g. a route param
-that's always a non-empty string), omit the `Request Validation` block
-entirely rather than fabricating a failing case just to have one.
-
-```ts
-describe('Request Validation', () => {
-    it('returns missing required value errors for all required fields', async () => {
-        const response = await request(app).post('/prompts').send({});
-
-        expect(response.status).toBe(400);
-        expect(response.body).toMatchObject({
-            errors: expect.arrayContaining([
-                { field: 'body.title', error: 'Missing required value' },
-                { field: 'body.prompt', error: 'Missing required value' },
-                { field: 'body.category_id', error: 'Missing required value' },
-            ]),
-        });
-    });
-
-    it('returns an invalid value error for a non-uuid category_id', async () => {
-        const response = await request(app).post('/prompts').send({
-            title: 'title',
-            prompt: 'prompt',
-            category_id: '12345',
-        });
-
-        expect(response.status).toBe(400);
-        expect(response.body).toMatchObject({
-            errors: expect.arrayContaining([{ field: 'body.category_id', error: 'Invalid UUID value' }]),
-        });
-    });
-});
-```
+- When a test asserts the result of a write (`create`/`update`/`delete`), verify
+  it with a direct table query (a helper in `tests/lib/database/*.ts`), **not** by
+  calling the unit's own read method (`findById`/`findAll`) or another read
+  endpoint. This keeps a write test's correctness from depending on a different
+  method/route under test, and avoids doubling up on coverage those read tests
+  already provide. `findAll`/`findById` describe blocks are the exception — they
+  exist specifically to test those methods, so asserting on their own return value
+  there is correct.
+- Vitest runs separate test files in parallel, so any assertion that reads the
+  *entire* table (rather than filtering to the fixtures the test itself inserted)
+  is racy against sibling integration test files touching the same table. Always
+  filter the actual/expected data down to the test's own fixture ids before
+  asserting.
