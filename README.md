@@ -72,8 +72,9 @@ user story → spec.md → plan.md → tasks.md ─┊─ red → green → refa
 ```
 src/                 # Project source code
 specs/               # spec plans created by the planner subagent
-.claude/skills/      # the project conventions, as agent skills (see below)
 tests/               # app tests
+drizzle/             # database migrations
+drizzle.config.ts    # database config for migrations
 ```
 
 ## Documentation
