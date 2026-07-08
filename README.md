@@ -1,24 +1,43 @@
 # AI Prompt Vault API
 
-A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**,
-**hexagonal architecture**, and strict **TDD**.
+A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, **Domain Driven Design**, and **TDD**.
 
 ## Tech stack
 
 - Node v24.16.0
 - TypeScript v5
 - Express v5
-- PostgreSQL + Drizzle ORM
+- PostgreSQL v18.4 + Drizzle ORM
 - Vitest + Supertest
 
-## Getting started
+## Requirements
 
-```bash
-nvm use                   # switch to the Node version in .nvmrc
-npm install               # Install dependencies
-docker compose up -d      # Start postgres
-npm db:migrate            # Run database migrations
-npm run dev               # start the API (http://localhost:3000)
+- Docker and Docker compose
+- [Node Version Manager](https://github.com/nvm-sh/nvm)
+
+## Installation
+
+- Download [https://github.com/rod86/ai-prompts-vault-api](https://github.com/rod86/ai-prompts-vault-api).
+- Install and switch to node version.
+```shell
+nvm install & nvm use
+```
+- Install dependencies.
+```shell
+npm i
+```
+- Start docker services.
+```shell
+docker compose up -d
+```
+- Run all database migrations.
+```shell
+npm db:migrate
+```
+
+- Start the API
+```shell
+npm run dev
 ```
 
 ## Scripts
@@ -26,68 +45,42 @@ npm run dev               # start the API (http://localhost:3000)
 - `npm run dev`: Run the API with hot reload (tsx)
 - `npm run build`: Compile TypeScript to `dist/`
 - `npm start`: Run the compiled app
-- `npm test`: Run the test suite (Vitest)
+- `npm test`: Run all tests
 - `npm run lint`: ESLint (incl. hexagonal boundaries)
 - `npm run typecheck`: Type-check without emitting
 - `npm run db:migrate`: Apply database migrations
 
-## How we work — Spec-Driven Development
-
-The workflow is split across two Claude Code skills under `.claude/skills/`,
-each used by one agent:
-
-| Agent         | Owns                 | Model  | Skill                 |
-| ------------- | -------------------- | ------ | --------------------- |
-| `planner`     | PLAN, steps 1–4      | opus   | `spec-planner`        |
-| `implementer` | IMPLEMENT, steps 5–8 | sonnet | `spec-implementation` |
-
-**Invocation:**
+## Project Structure
 
 ```
-Use the planner subagent on "<feature story>".
-# if the planner returns INTERVIEW REQUIRED: answer each question,
-# re-invoke the planner with the full Q&A list
-# review artifacts, then approve:
-The artifacts for specs/NNN-<slug>/ are approved.
-Use the implementer subagent on specs/NNN-<slug>/.
+src/
+  logic/                # legacy business logic
+  modules/              # business logic (follows conventions from skill `domain-driven-design`)
+  handlers/             # Route handlers
+  middleware/           # Global and routes middleware
+  schemas/              # validateRequestMiddleware validation schemas
+  config.ts             # Config with loaded env vars + hardcoded params
+  app.ts                # HTTP app: middleware + routes (no listen)
+  index.ts              # app server bootstrap
+tests/                  
+  lib/                  # Shared test helpers (database, mocks, builders, sample responses,...)
+  unit/                 # Unit tests
+  integration/          # Integration 
+specs/                  # Spec driven development specs
+drizzle/                # Drizzle kit migrations
 ```
 
-Every feature flows through the SDD pipeline, with a hard gate between planning
-and implementation:
+## Testing
 
-```
-PLAN area  ──────────────────────────────▶  IMPLEMENT area
-user story → spec.md → plan.md → tasks.md ─┊─ red → green → refactor → verify
-       (documents only, no code)               (TDD only, no new scope)
-```
+## Claude Code
 
-1. **Capture** the user story.
-2. **Specify** → `spec.md` (what & why; no tech).
-3. **Plan** → `plan.md` (map onto the architecture).
-4. **Tasks** → `tasks.md` (ordered, test-first checklist).
-5. **Implement** test-first: red → green → refactor → verify.
+### Skills
 
-## Project layout
+- *clean-code*:  SOLID and Clean Code principles
+- *coding-style*: TypeScript coding style guidelines
+- *database-schema-design*: Engine-agnostic relational schema-design conventions
+- *spec-driven-development*: Spec-driven (SDD) workflow (agnostic to project)
+- *domain-driven-design*:  Domain-Driven Design guidelines for TypeScript
 
-```
-src/                 # Project source code
-specs/               # spec plans created by the planner subagent
-tests/               # app tests
-drizzle/             # database migrations
-drizzle.config.ts    # database config for migrations
-```
+## Spec-Driven Development Flow
 
-## Documentation
-
-The project conventions live as skills under `.claude/skills/`, preloaded into
-the `planner` and `implementer` agents (and available in any session):
-
-- **Spec-Driven Development** — `spec-planner` (PLAN) and `spec-implementation`
-  (IMPLEMENT).
-- **Architecture** — `hexagonal-architecture` (layers & dependency rules).
-- **Coding style** — `coding-style` (conventions & what's not allowed).
-- **Testing** — `testing` (strategy & TDD).
-- **Database modeling** — `database-modeling` (table/column conventions & migrations).
-- **Project stack** — `project-stack` (concrete Express/Drizzle/Zod/Vitest patterns).
-
-The concrete stack and cross-cutting rules are summarized in [CLAUDE.md](./CLAUDE.md).
