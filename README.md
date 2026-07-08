@@ -1,6 +1,14 @@
+<p align="center">
+  <img width="100" height="100" alt="ai-prompt-vault-icon" src="https://github.com/user-attachments/assets/1e75cd54-8f85-4ab4-9979-1bd0aa20932a" />
+</p>
+
 # AI Prompt Vault API
 
 A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, **Domain Driven Design**, and **TDD**.
+
+<p align="center">
+  <img height="30" alt="claude-badge" src="https://github.com/user-attachments/assets/ab5deb13-e3a0-4574-825b-989112284e90" />
+</p>
 
 ## Tech stack
 
