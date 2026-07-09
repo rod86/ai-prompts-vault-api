@@ -75,7 +75,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     correctness is proven by type-checking and by the tests of the capabilities it
     composes."; V5
 
-- [ ] T5. Verify coverage is preserved, legacy is untouched, and all quality gates pass
+- [x] T5. Verify coverage is preserved, legacy is untouched, and all quality gates pass
   - Type: tooling
   - Depends on: T1, T2, T3, T4
   - Red: `git diff` would show unexpected changes under `src/logic/**` or its tests,
