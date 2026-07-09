@@ -8,7 +8,7 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
   - Green: create `src/modules/shared/domain/interfaces/DateTimeInterface.ts` (`now(): Date`, default export) and `src/modules/shared/infrastructure/DateTimeService.ts` (`class DateTimeService implements DateTimeInterface`), copied from legacy with the import re-pointed to the new interface path.
   - Covers: AC1 "Given the new canonical location, When the current-time provider is asked for the time, Then it returns the present moment, exactly as the legacy provider does"; V1, V2
 
-- [ ] T2. Relocate the database connection provider
+- [x] T2. Relocate the database connection provider
   - Type: infrastructure
   - Depends on: none
   - Red: add `tests/unit/modules/shared/infrastructure/DatabaseClient.test.ts` (mirror of the legacy `DatabaseClient` unit test, with `pg` and `drizzle-orm/node-postgres` mocked) importing `DatabaseClient`/`DatabaseConfig` from `@src/modules/shared/infrastructure/DatabaseClient.js`; asserts it opens a pool bound to the schema, reuses one pool across `connect()` calls, ends the pool on `close()`, builds a fresh pool after close, and is a no-op closing with no open connection. Fails: module not found.
