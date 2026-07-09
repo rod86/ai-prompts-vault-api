@@ -113,7 +113,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/services.ts` — one shared `db` const from `databaseClient.connect()`, both repositories, all 6 use cases, `CreatePromptUseCase`/`UpdatePromptUseCase` additionally wired with `dateTimeService`/`idGenerator`, all imported from `@src/modules/shared/services.js`.
   - Covers: V6 (makes AC1–AC8 reachable from one entry point)
 
-- [ ] T17. Enforce boundaries for the new context
+- [x] T17. Enforce boundaries for the new context
   - Type: infrastructure
   - Depends on: T16
   - Red: none — config change. Verify by temporarily adding a deliberately illegal import (e.g. `src/modules/prompt/application/GetPromptUseCase.ts` importing directly from `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`), confirming `npm run lint` reports a boundary violation, then removing it.
