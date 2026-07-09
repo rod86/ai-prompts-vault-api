@@ -7,6 +7,7 @@ import {
 } from '@src/modules/prompt/application/UpdatePromptUseCase.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { PromptUpdateError } from '@src/modules/prompt/domain/errors/PromptUpdateError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
@@ -145,5 +146,20 @@ describe('UpdatePromptUseCase', () => {
         const result = await useCase.invoke(query);
 
         expect(result.description).toBe('');
+    });
+
+    it('throws PromptUpdateError wrapping the original error when the repository rejects while updating', async () => {
+        const existingPrompt = buildExistingPrompt();
+        const fixtureCategory = promptCategoryModelFactory.create();
+        const fixtureError = new Error('connection lost');
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.update.mockRejectedValue(fixtureError);
+        const query = buildQuery({ id: existingPrompt.id, categoryId: fixtureCategory.id });
+
+        const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
+
+        expect(error).toBeInstanceOf(PromptUpdateError);
+        expect((error as PromptUpdateError).cause).toBe(fixtureError);
     });
 });

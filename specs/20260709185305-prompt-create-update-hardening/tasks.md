@@ -82,7 +82,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     still-validated, changed-category path with no changes needed.
   - Covers: V1 "AC1"; V2, E1 "AC2, AC3" (regression, pre-existing test)
 
-- [ ] T6. `UpdatePromptUseCase` wraps save failures in `PromptUpdateError`
+- [x] T6. `UpdatePromptUseCase` wraps save failures in `PromptUpdateError`
   - Type: application
   - Depends on: T5
   - Red: add a test to `UpdatePromptUseCase.test.ts` — "throws PromptUpdateError
