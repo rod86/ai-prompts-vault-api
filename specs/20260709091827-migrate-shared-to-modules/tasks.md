@@ -25,9 +25,7 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
 - [x] T4. Add the shared composition entry point
   - Type: infrastructure
   - Depends on: T1, T2, T3
-  - Red: none — `services.ts` is a pure composition root (no logic of its own); per
-    `testing-practices`/`domain-driven-design`, proven by `tsc` and by the tests of the
-    pieces it wires (T1–T3), not a dedicated test.
+  - Red: add `tests/unit/modules/shared/services.test.ts` importing `{ databaseClient, passwordHasher, dateTimeService }` from `@src/modules/shared/services.js`; asserts `dateTimeService` is a `DateTimeService`, `passwordHasher` is a `BcryptPasswordHasher`, and `databaseClient` is a `DatabaseClient` (via `instanceof`, opening no connection). Fails: module not found.
   - Green: create `src/modules/shared/services.ts` exporting the three singletons (`databaseClient` built from `@src/config` database config + schema, `passwordHasher`, `dateTimeService`), copied from legacy with imports re-pointed to the new adapter paths.
   - Covers: AC4 "Given the new canonical location, When the shared composition entry point is loaded, Then it exposes ready-to-use instances of the current-time provider, the password hasher, and the database connection provider"; V1
 
@@ -44,6 +42,6 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
 | AC1 | *Current-time provider relocated.* Given the new canonical location, When the current-time provider is asked for the time, Then it returns the present moment, exactly as the legacy provider does. | T1 |
 | AC2 | *Database connection provider relocated.* Given the new canonical location, When the database connection provider is opened, reused, and closed, Then it opens a single reusable connection bound to the supplied schema, closes it on request, and is a safe no-op when closed without an open connection — exactly as the legacy provider does. | T2 |
 | AC3 | *Password hasher relocated.* Given the new canonical location, When a password is hashed and then compared, Then the hash is never the plaintext, a matching password compares true, and a non-matching password compares false — exactly as the legacy hasher does. | T3 |
-| AC4 | *Single composition entry point.* Given the new canonical location, When the shared composition entry point is loaded, Then it exposes ready-to-use instances of the current-time provider, the password hasher, and the database connection provider. | T4 (no dedicated test — proven by `tsc` + T1–T3's tests) |
+| AC4 | *Single composition entry point.* Given the new canonical location, When the shared composition entry point is loaded, Then it exposes ready-to-use instances of the current-time provider, the password hasher, and the database connection provider. | T4 |
 | AC5 | *Legacy left intact.* Given the migration is complete, When the legacy copy and the existing business areas are inspected, Then they are unchanged and their tests still pass. | T5 |
 | AC6 | *Quality gates pass.* Given the migration is complete, When the project's lint, type-check, and full test suite are run, Then all pass. | T5 |
