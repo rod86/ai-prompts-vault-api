@@ -106,7 +106,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`, preserving both `::text` casts and the manual partial-update `.set()` verbatim; same `DrizzleDatabaseConnection` typing as T14.
   - Covers: V1, V2, V4 (AC2, AC3, AC4, AC6, AC8)
 
-- [ ] T16. Prompt module composition root
+- [x] T16. Prompt module composition root
   - Type: infrastructure
   - Depends on: T3, T7, T8, T9, T10, T11, T12, T14, T15
   - Red: none — `services.ts` is pure composition.
