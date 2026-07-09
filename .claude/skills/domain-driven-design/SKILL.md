@@ -22,7 +22,7 @@ src/modules/
     services.ts              # wires infrastructure into use cases
   shared/                  # code used by 2+ contexts; imports from no context
     domain/interfaces/     # cross-cutting ports: DateTimeInterface, IdGeneratorInterface, ...
-    infrastructure/         # their adapters: SystemDateTime, UuidGenerator, ...
+    infrastructure/         # their adapters, grouped in subfolders (datetime/, identity/, database/, ...)
 ```
 
 **Non-determinism is a port, not a call.** Time, random IDs, and env/config reads are impure — the domain and application layers never call `new Date()`, `Date.now()`, `randomUUID()`, or `process.env` directly. Each becomes a small interface (`DateTimeInterface.now()`, `IdGeneratorInterface.generate()`, `ConfigInterface.get(key)`), injected into the use case constructor like any other dependency, and produced inside `invoke()` when the business logic needs it — not passed in from the edge. Because these ports are used by many contexts, they live in `shared/domain/interfaces/` with their adapters in `shared/infrastructure/`, and every context's `services.ts` wires the same shared instance in. This is what makes use cases deterministic in tests: swap in a `FixedDateTime` and a `FixedIdGenerator` instead of mocking globals or freezing the system clock.
@@ -40,7 +40,7 @@ src/modules/
 | Use case | `class <Name>UseCase`, filename = class, single `invoke(query?)` | `<context>/application/` |
 | Use case input | `<Name>Query` — optional; when present it's an object of native types (never raw params); omit entirely when the use case takes no input | same file as the use case |
 | Use case output | `<Name>Response` — the return shape, never a domain entity; omit it and return `void` when not needed | same file as the use case |
-| Adapter | `class <Technology><Contract>` implementing a domain port | `<context>/infrastructure/<subfolder>/` |
+| Adapter | `class <Technology><Contract>` implementing a domain port | `<context>/infrastructure/<subfolder>/` — same rule for `shared/infrastructure/<subfolder>/` |
 | Wiring | `services.ts` exports instantiated use cases; sole entry point for outside code | `<context>/services.ts` |
 
 Port names describe their role, not their technology: `OrderRepositoryInterface` (persistence), `PaymentTransactionProviderInterface` (external provider).
@@ -166,7 +166,9 @@ Rules:
 
 ## Infrastructure layer (`<context>/infrastructure/`)
 
-The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. This has no exceptions — even a low-level client/connection wrapper (e.g. a database connection provider) implements a domain interface; there is no category of adapter exempt from this. Adapters never sit at the top level of `infrastructure/` — group them in a subfolder by kind: `persistence/` (DB repositories, plus the schema definitions), `providerApi/` (external HTTP clients), and so on.
+The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. This has no exceptions — even a low-level client/connection wrapper (e.g. a database connection provider) implements a domain interface; there is no category of adapter exempt from this.
+
+**No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories plus their schema definitions, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
 
 Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes:
 
@@ -240,8 +242,8 @@ export default interface DatabaseClientInterface<DatabaseSchema extends Record<s
 ```
 
 ```typescript
-// shared/infrastructure/SystemDateTime.ts
-import type DateTimeInterface from '../domain/interfaces/DateTimeInterface.js';
+// shared/infrastructure/datetime/SystemDateTime.ts
+import type DateTimeInterface from '../../domain/interfaces/DateTimeInterface.js';
 
 export class SystemDateTime implements DateTimeInterface {
     public now(): Date {
@@ -251,9 +253,9 @@ export class SystemDateTime implements DateTimeInterface {
 ```
 
 ```typescript
-// shared/infrastructure/UuidGenerator.ts
+// shared/infrastructure/identity/UuidGenerator.ts
 import { randomUUID } from 'node:crypto';
-import type IdGeneratorInterface from '../domain/interfaces/IdGeneratorInterface.js';
+import type IdGeneratorInterface from '../../domain/interfaces/IdGeneratorInterface.js';
 
 export class UuidGenerator implements IdGeneratorInterface {
     public generate(): string {
@@ -263,10 +265,10 @@ export class UuidGenerator implements IdGeneratorInterface {
 ```
 
 ```typescript
-// shared/infrastructure/DatabaseClient.ts
+// shared/infrastructure/database/DatabaseClient.ts
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import type DatabaseClientInterface, { type DatabaseConnection } from '../domain/interfaces/DatabaseClientInterface.js';
+import type DatabaseClientInterface, { type DatabaseConnection } from '../../domain/interfaces/DatabaseClientInterface.js';
 
 export type DatabaseConfig = {
     host: string;
@@ -309,9 +311,9 @@ export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
 
 ```typescript
 // shared/services.ts
-import { SystemDateTime } from './infrastructure/SystemDateTime.js';
-import { UuidGenerator } from './infrastructure/UuidGenerator.js';
-import { DatabaseClient } from './infrastructure/DatabaseClient.js';
+import { SystemDateTime } from './infrastructure/datetime/SystemDateTime.js';
+import { UuidGenerator } from './infrastructure/identity/UuidGenerator.js';
+import { DatabaseClient } from './infrastructure/database/DatabaseClient.js';
 
 export const systemDateTime = new SystemDateTime();
 export const uuidGenerator = new UuidGenerator();
