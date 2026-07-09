@@ -57,7 +57,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/ListPromptsUseCase.ts`, ported unchanged.
   - Covers: V1 (AC2)
 
-- [ ] T9. `GetPromptUseCase`
+- [x] T9. `GetPromptUseCase`
   - Type: application
   - Depends on: T5, T6
   - Red: `tests/unit/modules/prompt/application/GetPromptUseCase.test.ts` (ported) — returns the prompt from the repository; throws `PromptNotFoundError` (type and message) when the repository returns nothing. Fails: class doesn't exist.
