@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { type DatabaseConfig } from '@src/modules/shared/domain/DatabaseConfig.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 import { type DatabaseConnection } from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 
