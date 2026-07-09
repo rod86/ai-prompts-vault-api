@@ -1,5 +1,5 @@
 # Spec: Migrate shared cross-cutting capabilities to the new module structure
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer, I want the shared cross-cutting capabilities relocated into the project's current architecture structure so that new and migrated contexts can build on the canonical shared foundation, while the existing legacy copy keeps working unchanged.
 
 ## 1. Behavior
