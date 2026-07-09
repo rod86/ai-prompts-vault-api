@@ -1,7 +1,7 @@
 # Tasks: Migrate shared cross-cutting capabilities to the new module structure
 Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
 
-- [ ] T1. Relocate the current-time provider
+- [x] T1. Relocate the current-time provider
   - Type: infrastructure
   - Depends on: none
   - Red: add `tests/unit/modules/shared/infrastructure/DateTimeService.test.ts` (mirror of the legacy `DateTimeService` unit test) importing `DateTimeService` from `@src/modules/shared/infrastructure/DateTimeService.js`; it asserts `now()` returns a `Date` between a `before` and `after` timestamp. Fails: module not found.
