@@ -222,7 +222,7 @@ describe('DrizzlePromptRepository', () => {
             const fixture = promptModelFactory.create({ categoryId: recipeCategory.id });
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: recipeCategory.id, name: recipeCategory.name },
+                categoryId: recipeCategory.id,
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: fixture.description,
@@ -257,7 +257,7 @@ describe('DrizzlePromptRepository', () => {
             };
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: recipeCategory.id, name: recipeCategory.name },
+                categoryId: recipeCategory.id,
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: undefined,

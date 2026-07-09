@@ -18,7 +18,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     is left.
   - Covers: V5 "AC6"
 
-- [ ] T2. `CreatePrompt` domain type and repository contract
+- [x] T2. `CreatePrompt` domain type and repository contract
   - Type: domain
   - Depends on: T1
   - Red: update `tests/integration/modules/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`'s

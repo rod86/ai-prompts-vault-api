@@ -8,6 +8,16 @@ export type Prompt = {
     updatedAt: Date;
 };
 
+export type CreatePrompt = {
+    id: string;
+    categoryId: string;
+    title: string;
+    prompt: string;
+    description?: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
 export type UpdatePrompt = {
     categoryId?: string;
     title?: string;

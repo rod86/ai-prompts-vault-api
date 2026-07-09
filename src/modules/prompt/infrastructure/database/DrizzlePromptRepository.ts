@@ -1,6 +1,11 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
-import { type Prompt, type PromptFilter, type UpdatePrompt } from '@src/modules/prompt/domain/Prompt.js';
+import {
+    type CreatePrompt,
+    type Prompt,
+    type PromptFilter,
+    type UpdatePrompt,
+} from '@src/modules/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import { type DrizzleDatabaseConnection } from '@src/modules/shared/services.js';
 
@@ -75,10 +80,10 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
         };
     }
 
-    public async create(prompt: Prompt): Promise<void> {
+    public async create(prompt: CreatePrompt): Promise<void> {
         await this.db.insert(prompts).values({
             id: prompt.id,
-            promptCategoryId: prompt.category.id,
+            promptCategoryId: prompt.categoryId,
             title: prompt.title,
             prompt: prompt.prompt,
             description: prompt.description ?? null,
