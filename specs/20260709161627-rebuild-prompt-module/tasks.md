@@ -1,7 +1,7 @@
 # Tasks: Rebuild the prompt management capability in the current module structure
 Plan: specs/20260709161627-rebuild-prompt-module/plan.md
 
-- [ ] T1. Add the `IdGeneratorInterface` port
+- [x] T1. Add the `IdGeneratorInterface` port
   - Type: domain
   - Depends on: none
   - Red: none — pure interface declaration, no logic; see `testing-practices` "no logic, no test" rule.
