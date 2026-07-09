@@ -58,7 +58,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     rather than the concrete implementation, and still exposes the same three
     ready-to-use instances."; V4
 
-- [ ] T4. Remove the composition entry point's own dedicated test
+- [x] T4. Remove the composition entry point's own dedicated test
   - Type: infrastructure
   - Depends on: T3
   - Red: none — this task deletes a test rather than adding one; there is nothing to
