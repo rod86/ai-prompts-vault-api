@@ -19,12 +19,15 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
    enforces this — `npm run lint` must pass. **Put new contexts in `src/modules/`,
    never in `src/logic/`** (see below).
 4. **Let the tools format.** Prettier owns formatting; don't hand-format.
-5. **Git is `/spec-implement`'s job, exclusively.** Outside that command's documented
-   flow — `/spec-plan`, ad-hoc fixes, skill/doc edits, exploration, anything — never
-   invoke git or `gh` in any form, not even read-only inspection (`status`, `diff`,
-   `log`, `pull`). Leave every change as an uncommitted working-tree edit; committing,
-   pushing, and opening/editing PRs happens only inside `/spec-implement`'s steps (see
-   "Git branches" below).
+5. **Git is `/spec-implement`'s job — or an explicit instruction's.** Outside
+   `/spec-implement`'s documented flow, never invoke git or `gh` on your own
+   initiative — not for `/spec-plan`, ad-hoc fixes, skill/doc edits, or exploration,
+   and not even read-only inspection (`status`, `diff`, `log`, `pull`). **The one
+   exception:** when the user explicitly tells you to (e.g. "commit at the end",
+   "push this", "open a PR"), do exactly what they asked and nothing more. Absent such
+   an instruction, leave every change as an uncommitted working-tree edit; committing,
+   pushing, and opening/editing PRs otherwise happen only inside `/spec-implement`'s
+   steps (see "Git branches" below).
 
 ## Where the rules live (skills)
 
