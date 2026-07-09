@@ -1,5 +1,7 @@
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
+import { type DatabaseConnection } from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 
 export type DatabaseConfig = {
     host: string;
@@ -9,10 +11,9 @@ export type DatabaseConfig = {
     database: string;
 };
 
-export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
-    NodePgDatabase<DatabaseSchema>;
-
-export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>> {
+export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
+    implements DatabaseClientInterface<DatabaseSchema>
+{
     private pool: Pool | undefined;
 
     constructor(

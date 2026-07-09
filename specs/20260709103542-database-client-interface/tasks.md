@@ -20,7 +20,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     connection bound to a supplied structure, close it) as the concrete provider.";
     V1, V2
 
-- [ ] T2. Make DatabaseClient implement its contract
+- [x] T2. Make DatabaseClient implement its contract
   - Type: infrastructure
   - Depends on: T1
   - Red: none — TypeScript's structural typing already makes `DatabaseClient`
