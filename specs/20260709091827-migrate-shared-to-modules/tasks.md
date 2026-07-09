@@ -22,7 +22,7 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
   - Green: create `src/modules/shared/domain/interfaces/PasswordHasherInterface.ts` (`hash`, `compare`, default export) and `src/modules/shared/infrastructure/BcryptPasswordHasher.ts` (`class BcryptPasswordHasher implements PasswordHasherInterface`, 10 salt rounds), copied from legacy with the import re-pointed and flattened out of `security/`.
   - Covers: AC3 "Given the new canonical location, When a password is hashed and then compared, Then the hash is never the plaintext, a matching password compares true, and a non-matching password compares false — exactly as the legacy hasher does"; V1, V2
 
-- [ ] T4. Add the shared composition entry point
+- [x] T4. Add the shared composition entry point
   - Type: infrastructure
   - Depends on: T1, T2, T3
   - Red: add `tests/unit/modules/shared/services.test.ts` importing `{ databaseClient, passwordHasher, dateTimeService }` from `@src/modules/shared/services.js`; asserts `dateTimeService` is a `DateTimeService`, `passwordHasher` is a `BcryptPasswordHasher`, and `databaseClient` is a `DatabaseClient` (via `instanceof`, opening no connection). Fails: module not found.
