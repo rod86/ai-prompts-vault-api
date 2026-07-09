@@ -85,7 +85,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/UpdatePromptUseCase.ts` per `plan.md` §3.
   - Covers: V2, V3, V4, V5, E1, E2 (AC6, AC7)
 
-- [ ] T13. Drizzle schema
+- [x] T13. Drizzle schema
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure table declarations, no logic.
