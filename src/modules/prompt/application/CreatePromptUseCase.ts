@@ -1,4 +1,5 @@
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
+import { PromptCreationError } from '@src/modules/prompt/domain/errors/PromptCreationError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
@@ -28,9 +29,8 @@ export class CreatePromptUseCase {
         }
 
         const now = this.dateTime.now();
-        const prompt: Prompt = {
+        const common = {
             id: this.idGenerator.generate(),
-            category,
             title: query.title,
             prompt: query.prompt,
             description: query.description,
@@ -38,8 +38,12 @@ export class CreatePromptUseCase {
             updatedAt: now,
         };
 
-        await this.promptRepository.create(prompt);
+        try {
+            await this.promptRepository.create({ ...common, categoryId: category.id });
+        } catch (error) {
+            throw new PromptCreationError(common.id, error);
+        }
 
-        return prompt;
+        return { ...common, category };
     }
 }

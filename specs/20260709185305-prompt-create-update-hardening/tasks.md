@@ -1,7 +1,7 @@
 # Tasks: Harden the prompt module's create and update operations
 Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
 
-- [ ] T1. Rename `infrastructure/persistence/` to `infrastructure/database/`
+- [x] T1. Rename `infrastructure/persistence/` to `infrastructure/database/`
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure file relocation, no behavior change. Proven by the existing
@@ -18,7 +18,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     is left.
   - Covers: V5 "AC6"
 
-- [ ] T2. `CreatePrompt` domain type and repository contract
+- [x] T2. `CreatePrompt` domain type and repository contract
   - Type: domain
   - Depends on: T1
   - Red: update `tests/integration/modules/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`'s
@@ -33,7 +33,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     `prompt.categoryId` instead of `prompt.category.id`.
   - Covers: V6 "AC7"
 
-- [ ] T3. `CreatePromptUseCase` builds a `CreatePrompt` for persistence
+- [x] T3. `CreatePromptUseCase` builds a `CreatePrompt` for persistence
   - Type: application
   - Depends on: T2
   - Red: update `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts`'s
@@ -46,7 +46,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     return `{ ...common, category }` to the caller.
   - Covers: V6 "AC7"
 
-- [ ] T4. `CreatePromptUseCase` wraps save failures in `PromptCreationError`
+- [x] T4. `CreatePromptUseCase` wraps save failures in `PromptCreationError`
   - Type: application
   - Depends on: T3
   - Red: add a test to `CreatePromptUseCase.test.ts` — "throws PromptCreationError
@@ -62,7 +62,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     in a try/catch that rethrows `new PromptCreationError(createPrompt.id, error)`.
   - Covers: V3, E3 "AC4"
 
-- [ ] T5. `UpdatePromptUseCase` skips the category lookup when unchanged
+- [x] T5. `UpdatePromptUseCase` skips the category lookup when unchanged
   - Type: application
   - Depends on: T1
   - Red: add a test to
@@ -82,7 +82,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     still-validated, changed-category path with no changes needed.
   - Covers: V1 "AC1"; V2, E1 "AC2, AC3" (regression, pre-existing test)
 
-- [ ] T6. `UpdatePromptUseCase` wraps save failures in `PromptUpdateError`
+- [x] T6. `UpdatePromptUseCase` wraps save failures in `PromptUpdateError`
   - Type: application
   - Depends on: T5
   - Red: add a test to `UpdatePromptUseCase.test.ts` — "throws PromptUpdateError
@@ -98,7 +98,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     in a try/catch that rethrows `new PromptUpdateError(query.id, error)`.
   - Covers: V4, E4 "AC5"
 
-- [ ] T7. Full-suite verification
+- [x] T7. Full-suite verification
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6
   - Red: none — verification step, no new behavior.

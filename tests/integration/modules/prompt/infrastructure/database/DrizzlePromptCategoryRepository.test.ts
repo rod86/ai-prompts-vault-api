@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.js';
+import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
 import {
     databaseClient,
     promptCategoryModelFactory,

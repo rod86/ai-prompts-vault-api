@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.js';
+import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
 import {
     databaseClient,
     promptCategoryModelFactory,
@@ -222,7 +222,7 @@ describe('DrizzlePromptRepository', () => {
             const fixture = promptModelFactory.create({ categoryId: recipeCategory.id });
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: recipeCategory.id, name: recipeCategory.name },
+                categoryId: recipeCategory.id,
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: fixture.description,
@@ -257,7 +257,7 @@ describe('DrizzlePromptRepository', () => {
             };
             const fixturePrompt = {
                 id: fixture.id,
-                category: { id: recipeCategory.id, name: recipeCategory.name },
+                categoryId: recipeCategory.id,
                 title: fixture.title,
                 prompt: fixture.prompt,
                 description: undefined,

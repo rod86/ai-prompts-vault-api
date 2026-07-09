@@ -1,5 +1,5 @@
 # Spec: Harden the prompt module's create and update operations
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer maintaining the prompt module, I want the create and update
 operations to avoid unnecessary lookups, surface persistence failures as their own
 distinguishable errors, keep the creation operation's save step working from only the

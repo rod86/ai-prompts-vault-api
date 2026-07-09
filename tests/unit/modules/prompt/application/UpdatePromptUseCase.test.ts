@@ -7,6 +7,7 @@ import {
 } from '@src/modules/prompt/application/UpdatePromptUseCase.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { PromptUpdateError } from '@src/modules/prompt/domain/errors/PromptUpdateError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
@@ -118,6 +119,18 @@ describe('UpdatePromptUseCase', () => {
         expect(result.description).toBeUndefined();
     });
 
+    it('does not look up the category and reuses the existing one when the requested category id is unchanged', async () => {
+        const existingPrompt = buildExistingPrompt();
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        promptRepository.update.mockResolvedValue(undefined);
+        const query = buildQuery({ id: existingPrompt.id, categoryId: existingPrompt.category.id });
+
+        const result = await useCase.invoke(query);
+
+        expect(categoryRepository.findById).not.toHaveBeenCalled();
+        expect(result.category).toEqual(existingPrompt.category);
+    });
+
     it('updates a prompt to have an empty-text description, distinct from no description', async () => {
         const existingPrompt = buildExistingPrompt();
         const fixtureCategory = promptCategoryModelFactory.create();
@@ -133,5 +146,20 @@ describe('UpdatePromptUseCase', () => {
         const result = await useCase.invoke(query);
 
         expect(result.description).toBe('');
+    });
+
+    it('throws PromptUpdateError wrapping the original error when the repository rejects while updating', async () => {
+        const existingPrompt = buildExistingPrompt();
+        const fixtureCategory = promptCategoryModelFactory.create();
+        const fixtureError = new Error('connection lost');
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.update.mockRejectedValue(fixtureError);
+        const query = buildQuery({ id: existingPrompt.id, categoryId: fixtureCategory.id });
+
+        const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
+
+        expect(error).toBeInstanceOf(PromptUpdateError);
+        expect((error as PromptUpdateError).cause).toBe(fixtureError);
     });
 });
