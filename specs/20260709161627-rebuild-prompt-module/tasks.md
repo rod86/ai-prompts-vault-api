@@ -8,7 +8,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/shared/domain/interfaces/IdGeneratorInterface.ts` — default-exported `interface IdGeneratorInterface { generate(): string; }`.
   - Covers: V5, V6
 
-- [ ] T2. Add the `UuidGenerator` adapter
+- [x] T2. Add the `UuidGenerator` adapter
   - Type: infrastructure
   - Depends on: T1
   - Red: `tests/unit/modules/shared/infrastructure/utils/UuidGenerator.test.ts` — asserts `generate()` returns a UUID-shaped string and that two consecutive calls return different values (mirrors `tests/unit/modules/shared/infrastructure/utils/DateTimeService.test.ts`'s pattern). Fails: `UuidGenerator` doesn't exist yet.
