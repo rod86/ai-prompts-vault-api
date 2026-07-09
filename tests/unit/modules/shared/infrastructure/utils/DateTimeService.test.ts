@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DateTimeService } from '@src/modules/shared/infrastructure/DateTimeService.js';
+import { DateTimeService } from '@src/modules/shared/infrastructure/utils/DateTimeService.js';
 
 describe('DateTimeService', () => {
     it('returns the current time', () => {

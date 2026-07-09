@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { describe, expect, it } from 'vitest';
-import { BcryptPasswordHasher } from '@src/modules/shared/infrastructure/BcryptPasswordHasher.js';
+import { BcryptPasswordHasher } from '@src/modules/shared/infrastructure/security/BcryptPasswordHasher.js';
 
 describe('BcryptPasswordHasher', () => {
     it('produces a verifiable hash, never the plaintext password', async () => {

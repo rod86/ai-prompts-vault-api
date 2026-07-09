@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { type DatabaseConfig } from '@src/modules/shared/domain/Database.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/DatabaseClient.js';
+import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 
 vi.mock('pg', () => ({
     Pool: vi.fn(),
