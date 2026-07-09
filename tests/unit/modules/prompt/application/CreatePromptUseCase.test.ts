@@ -1,0 +1,83 @@
+import { faker } from '@faker-js/faker';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { mock, type MockProxy } from 'vitest-mock-extended';
+import {
+    type CreatePromptQuery,
+    CreatePromptUseCase,
+} from '@src/modules/prompt/application/CreatePromptUseCase.js';
+import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
+import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
+import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
+import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
+import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
+import { promptCategoryModelFactory } from '@tests/lib/config.js';
+
+const buildQuery = (data: Partial<CreatePromptQuery> = {}): CreatePromptQuery => ({
+    title: data.title ?? faker.lorem.sentence(),
+    prompt: data.prompt ?? faker.lorem.paragraph(),
+    categoryId: data.categoryId ?? faker.string.uuid(),
+    description: 'description' in data ? data.description : faker.lorem.sentence(),
+});
+
+describe('CreatePromptUseCase', () => {
+    let promptRepository: MockProxy<PromptRepositoryInterface>;
+    let categoryRepository: MockProxy<PromptCategoryRepositoryInterface>;
+    let dateTime: MockProxy<DateTimeInterface>;
+    let idGenerator: MockProxy<IdGeneratorInterface>;
+    let useCase: CreatePromptUseCase;
+    const generatedId = faker.string.uuid();
+    const now = faker.date.recent();
+
+    beforeEach(() => {
+        promptRepository = mock<PromptRepositoryInterface>();
+        categoryRepository = mock<PromptCategoryRepositoryInterface>();
+        dateTime = mock<DateTimeInterface>();
+        idGenerator = mock<IdGeneratorInterface>();
+        dateTime.now.mockReturnValue(now);
+        idGenerator.generate.mockReturnValue(generatedId);
+        useCase = new CreatePromptUseCase(promptRepository, categoryRepository, dateTime, idGenerator);
+    });
+
+    it('creates and returns the assembled prompt with a self-assigned id and timestamps', async () => {
+        const fixtureCategory = promptCategoryModelFactory.create();
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.create.mockResolvedValue(undefined);
+        const query = buildQuery({ categoryId: fixtureCategory.id });
+
+        const result = await useCase.invoke(query);
+
+        const expected = {
+            id: generatedId,
+            category: fixtureCategory,
+            title: query.title,
+            prompt: query.prompt,
+            description: query.description,
+            createdAt: now,
+            updatedAt: now,
+        };
+        expect(result).toEqual(expected);
+        expect(promptRepository.create).toHaveBeenCalledOnce();
+        expect(promptRepository.create).toHaveBeenCalledWith(expected);
+        expect(dateTime.now).toHaveBeenCalledOnce();
+    });
+
+    it('throws CategoryNotFoundError and does not persist when the category does not exist', async () => {
+        categoryRepository.findById.mockResolvedValue(undefined);
+        const query = buildQuery();
+
+        await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
+        await expect(useCase.invoke(query)).rejects.toThrow(`Category not found: ${query.categoryId}`);
+        expect(promptRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('creates a prompt with no description unchanged', async () => {
+        const fixtureCategory = promptCategoryModelFactory.create();
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.create.mockResolvedValue(undefined);
+        const query = buildQuery({ categoryId: fixtureCategory.id, description: undefined });
+
+        const result = await useCase.invoke(query);
+
+        expect(result.description).toBeUndefined();
+    });
+});

@@ -71,7 +71,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/DeletePromptUseCase.ts`, ported unchanged.
   - Covers: V2, V4, E2 (AC8)
 
-- [ ] T11. `CreatePromptUseCase` with internal id/timestamp generation
+- [x] T11. `CreatePromptUseCase` with internal id/timestamp generation
   - Type: application
   - Depends on: T1, T4, T5, T6
   - Red: `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts` (ported, substantively rewritten per `plan.md` §2) — mocks `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`, `DateTimeInterface`, `IdGeneratorInterface`; `buildQuery()` no longer includes `id`/`createdAt`/`updatedAt`; asserts the returned prompt and the `promptRepository.create` call use the mocked generator's id and the mocked clock's time for both `createdAt` and `updatedAt`, and that `dateTime.now()` is called exactly once; keeps the existing "no description" and "`CategoryNotFoundError`, does not persist" cases. Fails: class/constructor shape doesn't exist yet.
