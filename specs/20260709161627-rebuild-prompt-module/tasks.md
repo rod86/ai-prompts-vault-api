@@ -43,7 +43,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/domain/interfaces/PromptRepositoryInterface.ts` and `PromptCategoryRepositoryInterface.ts`, default-exported, ported unchanged from `src/logic/prompt/domain/interfaces/*.ts`.
   - Covers: V6
 
-- [ ] T7. `ListPromptCategoriesUseCase`
+- [x] T7. `ListPromptCategoriesUseCase`
   - Type: application
   - Depends on: T6
   - Red: `tests/unit/modules/prompt/application/ListPromptCategoriesUseCase.test.ts` (ported from `tests/unit/logic/prompt/application/ListPromptCategoriesUseCase.test.ts`, import paths updated) — returns all categories from the repository; returns an empty array when there are none. Fails: class doesn't exist.
