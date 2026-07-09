@@ -22,7 +22,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: edit `src/modules/shared/services.ts`, add `export const idGenerator = new UuidGenerator();`.
   - Covers: V5
 
-- [ ] T4. Add the `Prompt`/`PromptCategory` entities
+- [x] T4. Add the `Prompt`/`PromptCategory` entities
   - Type: domain
   - Depends on: none
   - Red: none — pure type declarations.
