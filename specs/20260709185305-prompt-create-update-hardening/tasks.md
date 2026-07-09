@@ -33,7 +33,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     `prompt.categoryId` instead of `prompt.category.id`.
   - Covers: V6 "AC7"
 
-- [ ] T3. `CreatePromptUseCase` builds a `CreatePrompt` for persistence
+- [x] T3. `CreatePromptUseCase` builds a `CreatePrompt` for persistence
   - Type: application
   - Depends on: T2
   - Red: update `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts`'s

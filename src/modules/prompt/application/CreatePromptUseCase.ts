@@ -28,9 +28,8 @@ export class CreatePromptUseCase {
         }
 
         const now = this.dateTime.now();
-        const prompt: Prompt = {
+        const common = {
             id: this.idGenerator.generate(),
-            category,
             title: query.title,
             prompt: query.prompt,
             description: query.description,
@@ -38,8 +37,8 @@ export class CreatePromptUseCase {
             updatedAt: now,
         };
 
-        await this.promptRepository.create(prompt);
+        await this.promptRepository.create({ ...common, categoryId: category.id });
 
-        return prompt;
+        return { ...common, category };
     }
 }

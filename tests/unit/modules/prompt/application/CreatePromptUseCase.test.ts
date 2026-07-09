@@ -57,7 +57,15 @@ describe('CreatePromptUseCase', () => {
         };
         expect(result).toEqual(expected);
         expect(promptRepository.create).toHaveBeenCalledOnce();
-        expect(promptRepository.create).toHaveBeenCalledWith(expected);
+        expect(promptRepository.create).toHaveBeenCalledWith({
+            id: generatedId,
+            categoryId: fixtureCategory.id,
+            title: query.title,
+            prompt: query.prompt,
+            description: query.description,
+            createdAt: now,
+            updatedAt: now,
+        });
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
