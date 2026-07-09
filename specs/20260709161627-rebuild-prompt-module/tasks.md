@@ -120,7 +120,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: edit `.eslintrc.json`'s `boundaries/elements` — change the `domain`/`application`/`infrastructure` entries' `pattern` from a single string to an array that also matches `src/modules/*/{domain,application,infrastructure}`.
   - Covers: V6
 
-- [ ] T18. Full-suite verification
+- [x] T18. Full-suite verification
   - Type: infrastructure
   - Depends on: T1–T17
   - Red: none — verification step, no new behavior.
