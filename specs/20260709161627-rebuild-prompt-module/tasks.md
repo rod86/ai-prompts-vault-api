@@ -99,7 +99,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts`, preserving the `sql\`${col}::text\`` cast verbatim; `db` typed `DrizzleDatabaseConnection` (imported from `@src/modules/shared/services.js`) per `plan.md` §7 Assumption 3.
   - Covers: V1, V4 (AC1)
 
-- [ ] T15. `DrizzlePromptRepository`
+- [x] T15. `DrizzlePromptRepository`
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`, import paths updated) — `findAll` (joined with category, most-recent-first, category filter, non-UUID filter returns empty, empty-table case, absent-description representation), `findById` (joined match, not-found, non-UUID, absent description), `create` (persists row, with/without description), `update` (persists changed fields, absent description), `delete` (removes row). Fails: class doesn't exist.
