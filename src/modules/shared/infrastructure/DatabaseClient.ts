@@ -3,14 +3,6 @@ import { Pool } from 'pg';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 import { type DatabaseConnection } from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 
-export type DatabaseConfig = {
-    host: string;
-    port: number;
-    user: string;
-    password: string;
-    database: string;
-};
-
 export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
     implements DatabaseClientInterface<DatabaseSchema>
 {
