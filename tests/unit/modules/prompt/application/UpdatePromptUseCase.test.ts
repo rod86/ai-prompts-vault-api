@@ -118,6 +118,18 @@ describe('UpdatePromptUseCase', () => {
         expect(result.description).toBeUndefined();
     });
 
+    it('does not look up the category and reuses the existing one when the requested category id is unchanged', async () => {
+        const existingPrompt = buildExistingPrompt();
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        promptRepository.update.mockResolvedValue(undefined);
+        const query = buildQuery({ id: existingPrompt.id, categoryId: existingPrompt.category.id });
+
+        const result = await useCase.invoke(query);
+
+        expect(categoryRepository.findById).not.toHaveBeenCalled();
+        expect(result.category).toEqual(existingPrompt.category);
+    });
+
     it('updates a prompt to have an empty-text description, distinct from no description', async () => {
         const existingPrompt = buildExistingPrompt();
         const fixtureCategory = promptCategoryModelFactory.create();

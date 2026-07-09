@@ -62,7 +62,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     in a try/catch that rethrows `new PromptCreationError(createPrompt.id, error)`.
   - Covers: V3, E3 "AC4"
 
-- [ ] T5. `UpdatePromptUseCase` skips the category lookup when unchanged
+- [x] T5. `UpdatePromptUseCase` skips the category lookup when unchanged
   - Type: application
   - Depends on: T1
   - Red: add a test to

@@ -27,7 +27,10 @@ export class UpdatePromptUseCase {
             throw new PromptNotFoundError(query.id);
         }
 
-        const category = await this.categoryRepository.findById(query.categoryId);
+        const category =
+            query.categoryId === existingPrompt.category.id
+                ? existingPrompt.category
+                : await this.categoryRepository.findById(query.categoryId);
 
         if (!category) {
             throw new CategoryNotFoundError(query.categoryId);
