@@ -75,3 +75,6 @@ rules it doesn't:
   default resolves a decision.
 - Full traceability: story → spec → plan → tasks. Anything untraceable is a defect.
 - Ground every claim in the code you read or the user's answers. Cite file paths.
+- A refactor, fix, or convention change touching already-`IMPLEMENTED` behavior is
+  planned as a **brand-new** folder — never open an `IMPLEMENTED` spec's `spec.md`,
+  `plan.md`, or `tasks.md` to edit them, no matter how small the change or who asks.

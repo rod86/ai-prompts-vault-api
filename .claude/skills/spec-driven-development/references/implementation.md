@@ -63,9 +63,12 @@ Keep every test green. Then tick the task's checkbox in `tasks.md`: `- [ ]` → 
   closing it.
 
 As the **last action**, once verify passes, set `spec.md`'s `Status` to **`IMPLEMENTED`**.
-That value is terminal: the spec is now a frozen historical record. Any later change —
-even a fix or extension — opens a **new** `specs/<YMDHMS>-<slug>/` folder via PLANNING;
-you never reopen or edit an `IMPLEMENTED` spec.
+That value is terminal: the spec is now a frozen historical record. **No file in that
+folder is ever edited again — not for a bug found later, not a refactor, not a
+convention change adopted after the fact, and not even on an explicit request to patch
+just this one.** Any later change opens a **new** `specs/<YMDHMS>-<slug>/` folder via
+PLANNING. If asked to modify an `IMPLEMENTED` folder, refuse and start a new spec instead
+of complying.
 
 ## When the plan is wrong (BLOCKED)
 

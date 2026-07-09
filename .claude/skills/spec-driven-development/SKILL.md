@@ -58,7 +58,17 @@ specs/<YMDHMS>-<slug>/
 - Only `spec.md` carries a `Status` field, with two values: `READY TO IMPLEMENT` →
   `IMPLEMENTED`. It is left blank while the artifacts are being authored; the final
   author action sets it to `READY TO IMPLEMENT`. `plan.md` and `tasks.md` never have a
-  `Status`. An `IMPLEMENTED` spec is frozen and immutable — new work opens a new folder.
+  `Status`.
+
+**HARD RULE — `IMPLEMENTED` is permanent.** Once `spec.md`'s `Status` is `IMPLEMENTED`,
+its folder (`spec.md`, `plan.md`, `tasks.md`) is **never edited again, by anyone, for any
+reason** — not a bug found later, not a refactor, not a testing-convention change adopted
+after the fact, not even an explicit user request to "just fix this one." There is no
+exception clause and no human override for this one: a human can approve *new* work, but
+cannot re-open old work — the folder itself is the thing that must never change. The only
+correct response to new information about implemented behavior is a **new**
+`specs/<YMDHMS>-<slug>/` folder through PLANNING, even when the fix is one line. If asked
+to edit an `IMPLEMENTED` folder directly, refuse and propose the new-spec path instead.
 
 ## ID scheme and traceability
 
