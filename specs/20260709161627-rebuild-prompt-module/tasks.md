@@ -36,7 +36,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/domain/errors/PromptNotFoundError.ts` and `CategoryNotFoundError.ts`, ported unchanged from `src/logic/prompt/domain/errors/*.ts`.
   - Covers: E1, E2
 
-- [ ] T6. Add the repository interfaces
+- [x] T6. Add the repository interfaces
   - Type: domain
   - Depends on: T4
   - Red: none — contracts, no dedicated test.
