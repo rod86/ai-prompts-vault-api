@@ -170,20 +170,40 @@ The only layer where third-party libraries appear (ORM, crypto, HTTP clients). E
 
 **No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories plus their schema definitions, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
 
-Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes:
+Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes. A repository receives the shared `DatabaseClientInterface` port itself (not a bare connection) and pulls both the query connection and its table objects from it, once, in the constructor. The co-located `schema.ts` may still be imported, but only for its **types** (to parameterize the generic) — never for the runtime table-object values:
+
+```typescript
+// infrastructure/persistence/schema.ts
+import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
+
+export const orders = pgTable('orders', {
+    /* ... */
+});
+
+export type OrderSchema = { orders: typeof orders };
+```
 
 ```typescript
 // infrastructure/persistence/DrizzleOrderRepository.ts
 import { eq } from 'drizzle-orm';
+import type DatabaseClientInterface, {
+    type DatabaseConnection,
+} from '../../../shared/domain/interfaces/DatabaseClientInterface.js';
 import type OrderRepositoryInterface from '../../domain/interfaces/OrderRepositoryInterface.js';
 import { type Order } from '../../domain/Order.js';
-import { orders } from './schema.js';
+import { type OrderSchema } from './schema.js';
 
 export class DrizzleOrderRepository implements OrderRepositoryInterface {
-    constructor(private readonly db: DatabaseConnection) {}
+    private readonly db: DatabaseConnection<OrderSchema>;
+    private readonly orders: OrderSchema['orders'];
+
+    constructor(client: DatabaseClientInterface<OrderSchema>) {
+        this.db = client.connect();
+        this.orders = client.schema().orders;
+    }
 
     public async findById(id: string): Promise<Order | undefined> {
-        const rows = await this.db.select().from(orders).where(eq(orders.id, id)).limit(1);
+        const rows = await this.db.select().from(this.orders).where(eq(this.orders.id, id)).limit(1);
         const row = rows[0];
 
         if (!row) {
@@ -237,6 +257,7 @@ export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = 
 
 export default interface DatabaseClientInterface<DatabaseSchema extends Record<string, unknown>> {
     connect(): DatabaseConnection<DatabaseSchema>;
+    schema(): DatabaseSchema;
     close(): Promise<void>;
 }
 ```
@@ -285,7 +306,7 @@ export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
 
     constructor(
         private readonly config: DatabaseConfig,
-        private readonly schema: DatabaseSchema,
+        private readonly databaseSchema: DatabaseSchema,
     ) {}
 
     public connect(): DatabaseConnection<DatabaseSchema> {
@@ -293,7 +314,11 @@ export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
             this.pool = new Pool(this.config);
         }
 
-        return drizzle(this.pool, { schema: this.schema });
+        return drizzle(this.pool, { schema: this.databaseSchema });
+    }
+
+    public schema(): DatabaseSchema {
+        return this.databaseSchema;
     }
 
     public async close(): Promise<void> {
@@ -333,7 +358,7 @@ import { GetOrderUseCase } from './application/GetOrderUseCase.js';
 import { DrizzleOrderRepository } from './infrastructure/persistence/DrizzleOrderRepository.js';
 import { databaseClient, systemDateTime, uuidGenerator } from '../shared/services.js';
 
-const orderRepository = new DrizzleOrderRepository(databaseClient.connect());
+const orderRepository = new DrizzleOrderRepository(databaseClient);
 
 export const createOrderUseCase = new CreateOrderUseCase(orderRepository, systemDateTime, uuidGenerator);
 export const getOrderUseCase = new GetOrderUseCase(orderRepository);
