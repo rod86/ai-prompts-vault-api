@@ -14,7 +14,9 @@ as you go.
 
 Spec is the source of truth; code exists to satisfy it. Decide **what** and **why**
 before **how**, write it down, get it approved, then implement test-first. "Done" means
-every acceptance criterion has a passing test.
+every acceptance criterion is proven — by a passing test, or, for an AC covered solely by
+a logic-less file (a composition root, a pure re-export — see `testing-practices`), by a
+clean type-check instead.
 
 ## Two stages, one-way gate
 

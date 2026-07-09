@@ -6,6 +6,9 @@ Ordered, test-first checklist. Each task is exactly ONE red→green step: one fa
 then the minimal code to pass it. Ordered dependency-first; no task depends on a later
 one; migration and dependency-change tasks (from plan §4 and §6) come before the code
 that needs them. One test per task — if a task needs two tests, split it.
+Exception: a task wiring a logic-less file (composition root, pure re-export — see
+testing-practices/domain-driven-design) has no test; write `Red: none — <file> is pure
+composition/re-export; see testing-practices` and go straight to Green.
 - Type: the layer the task lands in — migration | domain | application | infrastructure.
   domain and application are the business-logic layers. For a task outside these standard
   layers, use a short custom name (e.g. route handler, middleware). Reading the Type tags
