@@ -14,7 +14,9 @@ as you go.
 
 Spec is the source of truth; code exists to satisfy it. Decide **what** and **why**
 before **how**, write it down, get it approved, then implement test-first. "Done" means
-every acceptance criterion has a passing test.
+every acceptance criterion is proven — by a passing test, or, for an AC covered solely by
+a logic-less file (a composition root, a pure re-export — see `testing-practices`), by a
+clean type-check instead.
 
 ## Two stages, one-way gate
 
@@ -26,6 +28,11 @@ steps 1–4                          │              steps 5–8
 ```
 
 - No production code in PLANNING. No new scope in IMPLEMENTATION.
+- **Git is IMPLEMENTATION's alone.** PLANNING never touches git — not a commit, not a
+  push, not even a read-only `status`/`diff`/`log` to check in on things. Every
+  artifact PLANNING writes is left as an uncommitted file for the human to review.
+  Branching, committing, merging, pushing, and opening/editing a PR happen only inside
+  IMPLEMENTATION's documented steps.
 - The gate opens only when `spec.md`'s **`Status`** is **READY TO IMPLEMENT** and a
   human has explicitly approved the artifacts.
 - If implementation later reveals a gap, the feature returns to PLANNING; you never
@@ -56,7 +63,17 @@ specs/<YMDHMS>-<slug>/
 - Only `spec.md` carries a `Status` field, with two values: `READY TO IMPLEMENT` →
   `IMPLEMENTED`. It is left blank while the artifacts are being authored; the final
   author action sets it to `READY TO IMPLEMENT`. `plan.md` and `tasks.md` never have a
-  `Status`. An `IMPLEMENTED` spec is frozen and immutable — new work opens a new folder.
+  `Status`.
+
+**HARD RULE — `IMPLEMENTED` is permanent.** Once `spec.md`'s `Status` is `IMPLEMENTED`,
+its folder (`spec.md`, `plan.md`, `tasks.md`) is **never edited again, by anyone, for any
+reason** — not a bug found later, not a refactor, not a testing-convention change adopted
+after the fact, not even an explicit user request to "just fix this one." There is no
+exception clause and no human override for this one: a human can approve *new* work, but
+cannot re-open old work — the folder itself is the thing that must never change. The only
+correct response to new information about implemented behavior is a **new**
+`specs/<YMDHMS>-<slug>/` folder through PLANNING, even when the fix is one line. If asked
+to edit an `IMPLEMENTED` folder directly, refuse and propose the new-spec path instead.
 
 ## ID scheme and traceability
 

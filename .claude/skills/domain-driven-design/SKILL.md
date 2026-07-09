@@ -282,9 +282,11 @@ The architecture buys you two kinds of tests, plus what's left uncovered on purp
 - **Infrastructure adapter → integration test.** Test against the **real** dependency (real DB, real HTTP client), never a mock — a mocked dependency proves nothing. What's under test is the mapping (row ↔ entity, `null → undefined`) and that the port contract holds against the real technology. How you provision that dependency is up to your setup.
 - **Composed adapters (an adapter with other adapters injected) → still integration.** The injection graph doesn't decide the test type — what sits at the bottom of it does. If the class's value comes from touching real technology (directly or through an injected adapter that wraps it), test it end-to-end against the real dependency. Mocking the injected port would erase the very thing the adapter exists to do. Smell to watch for: an "adapter" with real branching logic that depends *only* on other domain ports (no real technology of its own) is application logic in disguise — move it into a use case, where it gets a proper unit test with port mocks, and leave the thin adapters to integration tests.
 - **Domain (types, interfaces, errors) → no dedicated tests.** It has no logic of its own, so it's covered indirectly: interfaces by the port mocks and real adapters above, errors by the use-case error-branch assertions, plain types by nothing.
+- **Wiring (`services.ts`) → no dedicated tests.** It has no logic of its own either — pure composition, instantiating and exporting singletons/use cases. Covered indirectly: `tsc` proves the exports are shaped correctly, and the unit/integration tests of what it wires (use cases, adapters) prove those pieces work. See `testing-practices` for the general "no logic, no test" rule this follows.
 
 | Component | Test type | Strategy |
 | --- | --- | --- |
 | Use case | Unit test | Mock ports, fixed shared dependencies, verify responses and interactions |
 | Infrastructure adapter | Integration test | Use real dependencies, verify mappings and contracts |
 | Domain (types / interfaces / errors) | — | No dedicated tests; covered through the use-case and adapter tests above |
+| Wiring (`services.ts`) | — | No dedicated tests; covered by `tsc` + the tests of what it wires |

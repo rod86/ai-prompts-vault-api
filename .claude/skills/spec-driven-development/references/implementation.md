@@ -35,6 +35,11 @@ it and confirm it **fails for the expected reason** (assertion or missing symbol
 typo or setup error). A test that passes the moment you write it is a defect: stop, and
 treat it as a deviation (the behavior already exists, or the task is mis-specified).
 
+**Exception — logic-less wiring tasks.** A task whose `Type:` names a composition root or
+other file with no logic of its own (see `testing-practices` / `domain-driven-design`) has
+no test to write. Its `Red:` line reads `none — <file> is pure composition/re-export; see
+testing-practices`, and you skip straight to Green.
+
 ### 6. Green
 Write the **minimum** code to make that test pass, in the layer `tasks.md` assigns via its
 `Type:` tag (`migration` | `domain` | `application` | `infrastructure` | custom) and the
@@ -50,16 +55,20 @@ and [coding-style](../../coding-style/SKILL.md) skills (and [domain-driven-desig
 Keep every test green. Then tick the task's checkbox in `tasks.md`: `- [ ]` → `- [x]`.
 
 ### 8. Verify (once, after the full list)
-- Every `AC#` in `spec.md` §5 has at least one passing test.
+- Every `AC#` in `spec.md` §5 has at least one passing test — except an AC covered solely
+  by a logic-less wiring task, which a clean typecheck proves instead.
 - The full suite, lint, and typecheck are all clean (e.g. `npm test`, `npm run lint`,
   `npm run typecheck` — use the project's actual scripts).
 - **Never** weaken, skip, or delete a test to reach green; that hides the gap instead of
   closing it.
 
 As the **last action**, once verify passes, set `spec.md`'s `Status` to **`IMPLEMENTED`**.
-That value is terminal: the spec is now a frozen historical record. Any later change —
-even a fix or extension — opens a **new** `specs/<YMDHMS>-<slug>/` folder via PLANNING;
-you never reopen or edit an `IMPLEMENTED` spec.
+That value is terminal: the spec is now a frozen historical record. **No file in that
+folder is ever edited again — not for a bug found later, not a refactor, not a
+convention change adopted after the fact, and not even on an explicit request to patch
+just this one.** Any later change opens a **new** `specs/<YMDHMS>-<slug>/` folder via
+PLANNING. If asked to modify an `IMPLEMENTED` folder, refuse and start a new spec instead
+of complying.
 
 ## When the plan is wrong (BLOCKED)
 
@@ -98,8 +107,8 @@ Finish by reporting, for the human to review before a PR is raised:
   not a bigger diff here.
 - **One task, one test, in order.** Never skip, reorder, or merge tasks; never write two
   tests for one task (split the task in PLANNING instead).
-- **Red before green, always.** No production code without a test that failed first for
-  the right reason.
+- **Red before green, always** — except a logic-less wiring task (composition root, pure
+  re-export), which has no test to write; see the Red-step exception above.
 - **Never weaken the suite to pass.** Deleting, skipping, or loosening a test to reach
   green is a defect, not progress.
 - **Stop on gaps.** A wrong or missing plan → BLOCKED + deviation → re-plan. Never patch

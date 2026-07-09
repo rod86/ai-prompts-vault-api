@@ -32,12 +32,12 @@ Read the target `spec.md`'s `Status:` field and act on it:
 
 - **Blank (still drafting)** or **READY TO IMPLEMENT** → update the artifacts
   freely in place.
-- **IMPLEMENTED** → the `spec-driven-development` skill normally treats an
-  IMPLEMENTED spec as frozen. For this command that rule is overridden: when I
-  explicitly instruct you to update an IMPLEMENTED spec, **do not refuse and do
-  not redirect me to a new folder** — proceed to update the artifacts in place.
-  (This changes only the planning documents; because this command never touches
-  code, the already-shipped implementation is unaffected.)
+- **IMPLEMENTED** → the `spec-driven-development` skill's immutability rule is
+  unconditional and has **no override here**: an `IMPLEMENTED` folder's `spec.md`,
+  `plan.md`, and `tasks.md` are never edited again, even on my direct instruction to
+  do so. Refuse the UPDATE, tell me the target is `IMPLEMENTED`, and switch to
+  **CREATE mode** instead — author a brand-new `specs/<YMDHMS>-<slug>/` folder for
+  the requested change, cross-referencing the original spec for context.
 
 In every case you remain inside PLANNING: no production code, tests, or migrations.
 
@@ -58,12 +58,15 @@ traceability rather than starting from a blank page.
    history). Decide only trivial choices silently, logging them as assumptions.
 4. **Author** — write/rewrite `spec.md` → `plan.md` → `tasks.md` in order using the
    skill's templates, keeping full traceability (story → spec → plan → tasks) and
-   re-checking the coverage table. Set `spec.md` `Status:` as the final action:
-   - CREATE, or UPDATE of a drafting/READY spec → `READY TO IMPLEMENT`.
-   - UPDATE of an IMPLEMENTED spec → leave `Status:` as `IMPLEMENTED` (the code
-     already shipped; this command does not re-open implementation), unless the
-     revision adds genuinely unimplemented behavior — in that case tell me so and
-     recommend a new spec folder rather than silently downgrading the status.
+   re-checking the coverage table. Set the new/updated `spec.md`'s `Status:` to
+   `READY TO IMPLEMENT` as the final action (CREATE, and UPDATE of a drafting/READY
+   spec, both land here — an IMPLEMENTED target was already redirected to CREATE
+   mode above, so this step never touches an IMPLEMENTED folder).
+
+**Do not touch git.** Not `add`/`commit`/`push`, not a branch, not even a read-only
+`status`/`diff`/`log` — leave `spec.md`/`plan.md`/`tasks.md` as plain uncommitted files.
+Committing this work is `/spec-implement`'s job, not this command's (see CLAUDE.md
+Golden Rule 5).
 
 Then **stop at the gate**: report the folder path and the three file paths, whether
 you created or updated them, the number of decisions logged (and how many are new in

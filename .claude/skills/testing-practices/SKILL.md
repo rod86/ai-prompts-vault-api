@@ -22,6 +22,9 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
 - Structure every test as Arrange / Act / Assert; no `try/catch` in tests — use hooks.
 - Build fake domain objects with model factories, not object literals.
 - Filter DB assertions to the test's own fixture ids — parallel test files share tables.
+- Don't write a test for a file with no logic of its own — a composition root
+  (`services.ts`), a pure re-export, an interface/type-only file. Prove it via the type
+  checker and via the tests of the pieces it wires together.
 
 ## TDD loop
 
@@ -65,6 +68,12 @@ tests/
   No code from `src` may use them.
 - Code under `tests/lib/` is helper-only: keep it simple and do not write tests
   for it — it exists solely to support the tests.
+- The same "no logic, no test" rule applies to production code: a composition root
+  (a context's or `shared`'s `services.ts`, which only instantiates and exports
+  singletons/use cases) gets no dedicated test file. There's no branch to cover —
+  `tsc` proves the exports are shaped correctly, and the unit/integration tests of
+  the pieces being wired already prove they work. This is why none of the existing
+  `src/logic/{shared,user,prompt,auth}/services.ts` files have a test.
 
 ### Where to declare test values
 
