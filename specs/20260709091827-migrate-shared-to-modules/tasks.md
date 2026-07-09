@@ -29,7 +29,7 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
   - Green: create `src/modules/shared/services.ts` exporting the three singletons (`databaseClient` built from `@src/config` database config + schema, `passwordHasher`, `dateTimeService`), copied from legacy with imports re-pointed to the new adapter paths.
   - Covers: AC4 "Given the new canonical location, When the shared composition entry point is loaded, Then it exposes ready-to-use instances of the current-time provider, the password hasher, and the database connection provider"; V1
 
-- [ ] T5. Register the new folder with the architecture-boundary tooling and verify all gates
+- [x] T5. Register the new folder with the architecture-boundary tooling and verify all gates
   - Type: tooling
   - Depends on: T1, T2, T3, T4
   - Red: `npm run lint` does not recognize `src/modules/shared` as a bounded element (no `shared` element matches the new path).

@@ -38,7 +38,8 @@
                 "mode": "folder",
                 "capture": ["context"]
             },
-            { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" }
+            { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" },
+            { "type": "shared", "pattern": "src/modules/shared", "mode": "folder" }
         ]
     },
     "rules": {
