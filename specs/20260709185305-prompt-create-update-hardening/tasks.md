@@ -98,7 +98,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     in a try/catch that rethrows `new PromptUpdateError(query.id, error)`.
   - Covers: V4, E4 "AC5"
 
-- [ ] T7. Full-suite verification
+- [x] T7. Full-suite verification
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6
   - Red: none — verification step, no new behavior.
