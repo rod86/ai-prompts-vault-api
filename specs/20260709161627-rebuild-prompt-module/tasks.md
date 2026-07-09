@@ -1,126 +1,126 @@
 # Tasks: Rebuild the prompt management capability in the current module structure
 Plan: specs/20260709161627-rebuild-prompt-module/plan.md
 
-- [ ] T1. Add the `IdGeneratorInterface` port
+- [x] T1. Add the `IdGeneratorInterface` port
   - Type: domain
   - Depends on: none
   - Red: none — pure interface declaration, no logic; see `testing-practices` "no logic, no test" rule.
   - Green: create `src/modules/shared/domain/interfaces/IdGeneratorInterface.ts` — default-exported `interface IdGeneratorInterface { generate(): string; }`.
   - Covers: V5, V6
 
-- [ ] T2. Add the `UuidGenerator` adapter
+- [x] T2. Add the `UuidGenerator` adapter
   - Type: infrastructure
   - Depends on: T1
   - Red: `tests/unit/modules/shared/infrastructure/utils/UuidGenerator.test.ts` — asserts `generate()` returns a UUID-shaped string and that two consecutive calls return different values (mirrors `tests/unit/modules/shared/infrastructure/utils/DateTimeService.test.ts`'s pattern). Fails: `UuidGenerator` doesn't exist yet.
   - Green: create `src/modules/shared/infrastructure/utils/UuidGenerator.ts` implementing `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`.
   - Covers: V5, V6
 
-- [ ] T3. Wire `idGenerator` into shared services
+- [x] T3. Wire `idGenerator` into shared services
   - Type: infrastructure
   - Depends on: T2
   - Red: none — `services.ts` is pure composition; see `testing-practices`.
   - Green: edit `src/modules/shared/services.ts`, add `export const idGenerator = new UuidGenerator();`.
   - Covers: V5
 
-- [ ] T4. Add the `Prompt`/`PromptCategory` entities
+- [x] T4. Add the `Prompt`/`PromptCategory` entities
   - Type: domain
   - Depends on: none
   - Red: none — pure type declarations.
   - Green: create `src/modules/prompt/domain/Prompt.ts` (`Prompt`, `UpdatePrompt`, `PromptFilter` as `export type`, ported from `src/logic/prompt/domain/Prompt.ts`) and `src/modules/prompt/domain/PromptCategory.ts` (`PromptCategory` as `export type`).
   - Covers: V6 (entity shape underlies every AC)
 
-- [ ] T5. Add the domain errors
+- [x] T5. Add the domain errors
   - Type: domain
   - Depends on: none
   - Red: none — no dedicated test; covered indirectly by the use-case error-branch tests in T9/T10/T11/T12.
   - Green: create `src/modules/prompt/domain/errors/PromptNotFoundError.ts` and `CategoryNotFoundError.ts`, ported unchanged from `src/logic/prompt/domain/errors/*.ts`.
   - Covers: E1, E2
 
-- [ ] T6. Add the repository interfaces
+- [x] T6. Add the repository interfaces
   - Type: domain
   - Depends on: T4
   - Red: none — contracts, no dedicated test.
   - Green: create `src/modules/prompt/domain/interfaces/PromptRepositoryInterface.ts` and `PromptCategoryRepositoryInterface.ts`, default-exported, ported unchanged from `src/logic/prompt/domain/interfaces/*.ts`.
   - Covers: V6
 
-- [ ] T7. `ListPromptCategoriesUseCase`
+- [x] T7. `ListPromptCategoriesUseCase`
   - Type: application
   - Depends on: T6
   - Red: `tests/unit/modules/prompt/application/ListPromptCategoriesUseCase.test.ts` (ported from `tests/unit/logic/prompt/application/ListPromptCategoriesUseCase.test.ts`, import paths updated) — returns all categories from the repository; returns an empty array when there are none. Fails: class doesn't exist.
   - Green: create `src/modules/prompt/application/ListPromptCategoriesUseCase.ts`, ported unchanged.
   - Covers: V1 (AC1)
 
-- [ ] T8. `ListPromptsUseCase`
+- [x] T8. `ListPromptsUseCase`
   - Type: application
   - Depends on: T6
   - Red: `tests/unit/modules/prompt/application/ListPromptsUseCase.test.ts` (ported) — returns all prompts; returns an empty array when there are none; forwards the category filter to the repository unchanged. Fails: class doesn't exist.
   - Green: create `src/modules/prompt/application/ListPromptsUseCase.ts`, ported unchanged.
   - Covers: V1 (AC2)
 
-- [ ] T9. `GetPromptUseCase`
+- [x] T9. `GetPromptUseCase`
   - Type: application
   - Depends on: T5, T6
   - Red: `tests/unit/modules/prompt/application/GetPromptUseCase.test.ts` (ported) — returns the prompt from the repository; throws `PromptNotFoundError` (type and message) when the repository returns nothing. Fails: class doesn't exist.
   - Green: create `src/modules/prompt/application/GetPromptUseCase.ts`, ported unchanged.
   - Covers: V1, V4, E2 (AC3)
 
-- [ ] T10. `DeletePromptUseCase`
+- [x] T10. `DeletePromptUseCase`
   - Type: application
   - Depends on: T5, T6
   - Red: `tests/unit/modules/prompt/application/DeletePromptUseCase.test.ts` (ported) — deletes an existing prompt; throws `PromptNotFoundError` and does not call delete when the prompt doesn't exist. Fails: class doesn't exist.
   - Green: create `src/modules/prompt/application/DeletePromptUseCase.ts`, ported unchanged.
   - Covers: V2, V4, E2 (AC8)
 
-- [ ] T11. `CreatePromptUseCase` with internal id/timestamp generation
+- [x] T11. `CreatePromptUseCase` with internal id/timestamp generation
   - Type: application
   - Depends on: T1, T4, T5, T6
   - Red: `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts` (ported, substantively rewritten per `plan.md` §2) — mocks `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`, `DateTimeInterface`, `IdGeneratorInterface`; `buildQuery()` no longer includes `id`/`createdAt`/`updatedAt`; asserts the returned prompt and the `promptRepository.create` call use the mocked generator's id and the mocked clock's time for both `createdAt` and `updatedAt`, and that `dateTime.now()` is called exactly once; keeps the existing "no description" and "`CategoryNotFoundError`, does not persist" cases. Fails: class/constructor shape doesn't exist yet.
   - Green: create `src/modules/prompt/application/CreatePromptUseCase.ts` per `plan.md` §3.
   - Covers: V2, V3, V5, E1 (AC4, AC5)
 
-- [ ] T12. `UpdatePromptUseCase` with internal timestamp generation
+- [x] T12. `UpdatePromptUseCase` with internal timestamp generation
   - Type: application
   - Depends on: T4, T5, T6
   - Red: `tests/unit/modules/prompt/application/UpdatePromptUseCase.test.ts` (ported, substantively rewritten per `plan.md` §2) — mocks `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`, `DateTimeInterface`; `buildQuery()` no longer includes `updatedAt` (keeps `id`); asserts `result.updatedAt` and the `promptRepository.update` call's `updatedAt` equal the mocked clock's time, `result.createdAt` still equals the pre-fetched existing prompt's `createdAt` (proves manual reconstruction, not a re-fetch, per Decision #4); the not-found/category-invalid tests additionally assert `dateTime.now()` was never called; keeps the existing "no description"/"empty description" cases. Fails: class/constructor shape doesn't exist yet.
   - Green: create `src/modules/prompt/application/UpdatePromptUseCase.ts` per `plan.md` §3.
   - Covers: V2, V3, V4, V5, E1, E2 (AC6, AC7)
 
-- [ ] T13. Drizzle schema
+- [x] T13. Drizzle schema
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure table declarations, no logic.
   - Green: create `src/modules/prompt/infrastructure/persistence/schema.ts`, ported unchanged (same table/column names, types, constraints) from `src/logic/prompt/infrastructure/database/schema.ts`.
   - Covers: V8
 
-- [ ] T14. `DrizzlePromptCategoryRepository`
+- [x] T14. `DrizzlePromptCategoryRepository`
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.test.ts`, import paths updated, real DB via `tests/lib/config.ts`) — `findAll` returns categories alphabetically; `findById` returns a match / `undefined` when missing / `undefined` when not UUID-shaped. Fails: class doesn't exist.
   - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts`, preserving the `sql\`${col}::text\`` cast verbatim; `db` typed `DrizzleDatabaseConnection` (imported from `@src/modules/shared/services.js`) per `plan.md` §7 Assumption 3.
   - Covers: V1, V4 (AC1)
 
-- [ ] T15. `DrizzlePromptRepository`
+- [x] T15. `DrizzlePromptRepository`
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`, import paths updated) — `findAll` (joined with category, most-recent-first, category filter, non-UUID filter returns empty, empty-table case, absent-description representation), `findById` (joined match, not-found, non-UUID, absent description), `create` (persists row, with/without description), `update` (persists changed fields, absent description), `delete` (removes row). Fails: class doesn't exist.
   - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`, preserving both `::text` casts and the manual partial-update `.set()` verbatim; same `DrizzleDatabaseConnection` typing as T14.
   - Covers: V1, V2, V4 (AC2, AC3, AC4, AC6, AC8)
 
-- [ ] T16. Prompt module composition root
+- [x] T16. Prompt module composition root
   - Type: infrastructure
   - Depends on: T3, T7, T8, T9, T10, T11, T12, T14, T15
   - Red: none — `services.ts` is pure composition.
   - Green: create `src/modules/prompt/services.ts` — one shared `db` const from `databaseClient.connect()`, both repositories, all 6 use cases, `CreatePromptUseCase`/`UpdatePromptUseCase` additionally wired with `dateTimeService`/`idGenerator`, all imported from `@src/modules/shared/services.js`.
   - Covers: V6 (makes AC1–AC8 reachable from one entry point)
 
-- [ ] T17. Enforce boundaries for the new context
+- [x] T17. Enforce boundaries for the new context
   - Type: infrastructure
   - Depends on: T16
   - Red: none — config change. Verify by temporarily adding a deliberately illegal import (e.g. `src/modules/prompt/application/GetPromptUseCase.ts` importing directly from `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`), confirming `npm run lint` reports a boundary violation, then removing it.
   - Green: edit `.eslintrc.json`'s `boundaries/elements` — change the `domain`/`application`/`infrastructure` entries' `pattern` from a single string to an array that also matches `src/modules/*/{domain,application,infrastructure}`.
   - Covers: V6
 
-- [ ] T18. Full-suite verification
+- [x] T18. Full-suite verification
   - Type: infrastructure
   - Depends on: T1–T17
   - Red: none — verification step, no new behavior.

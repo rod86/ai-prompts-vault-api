@@ -22,19 +22,19 @@
         "boundaries/elements": [
             {
                 "type": "domain",
-                "pattern": "src/logic/*/domain",
+                "pattern": ["src/logic/*/domain", "src/modules/*/domain"],
                 "mode": "folder",
                 "capture": ["context"]
             },
             {
                 "type": "application",
-                "pattern": "src/logic/*/application",
+                "pattern": ["src/logic/*/application", "src/modules/*/application"],
                 "mode": "folder",
                 "capture": ["context"]
             },
             {
                 "type": "infrastructure",
-                "pattern": "src/logic/*/infrastructure",
+                "pattern": ["src/logic/*/infrastructure", "src/modules/*/infrastructure"],
                 "mode": "folder",
                 "capture": ["context"]
             },
