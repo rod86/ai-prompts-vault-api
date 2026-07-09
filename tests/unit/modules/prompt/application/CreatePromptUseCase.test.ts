@@ -6,6 +6,7 @@ import {
     CreatePromptUseCase,
 } from '@src/modules/prompt/application/CreatePromptUseCase.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
+import { PromptCreationError } from '@src/modules/prompt/domain/errors/PromptCreationError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
@@ -87,5 +88,18 @@ describe('CreatePromptUseCase', () => {
         const result = await useCase.invoke(query);
 
         expect(result.description).toBeUndefined();
+    });
+
+    it('throws PromptCreationError wrapping the original error when the repository rejects while creating', async () => {
+        const fixtureCategory = promptCategoryModelFactory.create();
+        const fixtureError = new Error('connection lost');
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.create.mockRejectedValue(fixtureError);
+        const query = buildQuery({ categoryId: fixtureCategory.id });
+
+        const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
+
+        expect(error).toBeInstanceOf(PromptCreationError);
+        expect((error as PromptCreationError).cause).toBe(fixtureError);
     });
 });

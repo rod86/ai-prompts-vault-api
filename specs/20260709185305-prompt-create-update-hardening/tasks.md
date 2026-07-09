@@ -46,7 +46,7 @@ Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
     return `{ ...common, category }` to the caller.
   - Covers: V6 "AC7"
 
-- [ ] T4. `CreatePromptUseCase` wraps save failures in `PromptCreationError`
+- [x] T4. `CreatePromptUseCase` wraps save failures in `PromptCreationError`
   - Type: application
   - Depends on: T3
   - Red: add a test to `CreatePromptUseCase.test.ts` — "throws PromptCreationError
