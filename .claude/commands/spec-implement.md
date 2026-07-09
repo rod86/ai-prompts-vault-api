@@ -1,5 +1,5 @@
 ---
-description: Implement an approved spec-driven-development spec — syncs the integration branch, cuts a feature branch, runs the IMPLEMENTATION stage (Red/Green/Refactor/Verify) committing per task, and opens a PR into the integration branch.
+description: Implement an approved spec-driven-development spec — syncs the base branch, cuts a feature branch, runs the IMPLEMENTATION stage (Red/Green/Refactor/Verify) committing per task, merges the base branch into the feature branch, and opens a PR into the base branch.
 argument-hint: <spec folder name or slug to implement (optional; omit to auto-pick the lone READY spec)>
 model: sonnet
 allowed-tools: Bash(grep:*), Bash(git:*), Bash(docker compose:*), Bash(gh pr create:*)
@@ -19,17 +19,23 @@ artifacts from inside implementation.
 - Current git branch: !`git branch --show-current`
 - Uncommitted changes: !`git status --porcelain`
 - Spec statuses:
-!`grep -H "^Status:" specs/*/spec.md 2>/dev/null || echo "(no spec.md files found)"`
+  !`grep -H "^Status:" specs/*/spec.md 2>/dev/null || echo "(no spec.md files found)"`
 - Docker services:
-!`docker compose ps 2>/dev/null || echo "(docker compose not running)"`
+  !`docker compose ps 2>/dev/null || echo "(docker compose not running)"`
 
 Use the injected data above instead of rediscovering it. The **Spec statuses** list
 resolves Step 0 and the gate; **Uncommitted changes** and **Docker services** drive
 the guards below.
 
-**Branch names come from CLAUDE.md → "Git branches".** This command refers to the
-branch **roles** — *production*, *integration*, and *feature* (`<prefix>/<slug>`) —
-and you resolve each to its actual name from that table. Do not hardcode branch names.
+## Branch parameters
+
+Resolve these **once** from CLAUDE.md → "Git branches" and use the names below
+throughout; never hardcode branch names.
+
+- **BASE_BRANCH** — the integration-role branch in CLAUDE.md (feature branches are
+  cut from it; PRs target it).
+- **FEATURE_BRANCH** — `<prefix>/<slug>` per CLAUDE.md, with `<slug>` = the
+  resolved spec folder's slug.
 
 ## Step 0 — Resolve, gate & set up (before any code)
 
@@ -39,29 +45,26 @@ and write no code.
 1. **Clean-tree guard** — if the injected **Uncommitted changes** list is non-empty,
    **exit with an error** telling me to commit or stash and clean the current branch
    before re-running. Touch nothing.
-2. **Sync the integration branch** — check out the **integration branch** (CLAUDE.md
-   → Git branches) and `git pull` to get the latest changes. Never work off the
-   **production branch** — it mirrors production, never touch it.
+2. **Sync the base branch** — check out **BASE_BRANCH** and `git pull` to get the
+   latest changes.
 3. **Resolve the target spec folder** — determine which `specs/<YMDHMS>-<slug>/`
    folder to implement:
-   - **Argument given** — resolve `$ARGUMENTS`, accepting either the full folder name
-     (`20260708173845-archive-prompt`) or just the slug (`archive-prompt`). If a bare
-     slug matches more than one folder, stop and ask me which via AskUserQuestion.
-   - **No argument** — from the injected **Spec statuses**, take the spec whose status
-     is `READY TO IMPLEMENT`: exactly one → use it; more than one → list them and ask
-     me via AskUserQuestion; none → stop and tell me nothing is ready (finish a spec
-     with `/spec-plan` first).
+    - **Argument given** — resolve `$ARGUMENTS`, accepting either the full folder name
+      (`20260708173845-archive-prompt`) or just the slug (`archive-prompt`). If a bare
+      slug matches more than one folder, stop and ask me which via AskUserQuestion.
+    - **No argument** — from the injected **Spec statuses**, take the spec whose status
+      is `READY TO IMPLEMENT`: exactly one → use it; more than one → list them and ask
+      me via AskUserQuestion; none → stop and tell me nothing is ready (finish a spec
+      with `/spec-plan` first).
 4. **Gate check** — running this command **is my explicit approval**, so do not
    additionally pause. But hard-verify and refuse (write no code) if either fails:
-   - The resolved `spec.md`'s `Status` must be **`READY TO IMPLEMENT`**. **Blank** →
-     planning isn't finished, stop (run `/spec-plan`). **`IMPLEMENTED`** → frozen and
-     immutable, refuse and tell me to open a **new** spec folder via `/spec-plan`.
-   - The **Coverage check** table in `tasks.md` must be complete — every `AC#` maps to
-     at least one task. A missing row means the plan is incomplete: stop, re-plan.
-5. **Cut the feature branch** — create and switch to the **feature branch** for this
-   spec, cut off the integration branch. Its name follows the feature-branch pattern
-   in CLAUDE.md → Git branches, with `<slug>` = the resolved folder's slug. If the
-   branch already exists, switch to it.
+    - The resolved `spec.md`'s `Status` must be **`READY TO IMPLEMENT`**. **Blank** →
+      planning isn't finished, stop (run `/spec-plan`). **`IMPLEMENTED`** → frozen and
+      immutable, refuse and tell me to open a **new** spec folder via `/spec-plan`.
+    - The **Coverage check** table in `tasks.md` must be complete — every `AC#` maps to
+      at least one task. A missing row means the plan is incomplete: stop, re-plan.
+5. **Cut the feature branch** — create and switch to **FEATURE_BRANCH** for this
+   spec, cut off **BASE_BRANCH**. If the branch already exists, switch to it.
 6. **Database up** — run `docker compose up -d`. Integration tests hit a real
    Postgres. If Postgres **cannot be initialized / brought up** (compose fails or the
    DB never becomes reachable), **finish with an error** and stop — never implement
@@ -95,12 +98,25 @@ Use the names from `plan.md` (entities, ports, use cases, routes, schemas)
    reach green. Then set `spec.md`'s `Status` to **`IMPLEMENTED`** and commit that
    change.
 
-## Open the pull request
+## Sync the base branch & open the pull request
 
-Once the spec is `IMPLEMENTED` and committed, push the feature branch and open a pull
-request **into the integration branch** (CLAUDE.md → Git branches) with
-`gh pr create --base <integration-branch> …` (no reviewer), following repo PR
-conventions. Report the PR URL in the completion report.
+Once the spec is `IMPLEMENTED` and committed, sync **BASE_BRANCH** into
+**FEATURE_BRANCH** *before* opening the PR — so any merge conflicts surface here,
+on the feature branch, not on the target branch / in the PR. In order:
+
+1. **Push FEATURE_BRANCH** to its remote (send all committed changes up).
+2. **Check out BASE_BRANCH** and `git pull` to get the latest changes.
+3. **Check out FEATURE_BRANCH** and **`git merge BASE_BRANCH`**.
+4. **Resolve any conflicts** within the spec's scope, then complete the merge commit.
+5. **Re-run the full verification suite** after the merge — `npm test`,
+   `npm run lint`, `npm run typecheck` — to prove the merge broke nothing. **Never**
+   weaken, skip, or delete a test to reach green. If anything fails and it can't be
+   fixed within scope, **stop as BLOCKED**: report the failure and the
+   conflicted/affected files, and **do not open the PR**.
+6. On green, **push FEATURE_BRANCH again** (the merge commit), then open a pull
+   request **into BASE_BRANCH** with `gh pr create --base <BASE_BRANCH> …` (no
+   reviewer), following repo PR conventions. Report the PR URL in the completion
+   report.
 
 ## When the plan is wrong (BLOCKED)
 
