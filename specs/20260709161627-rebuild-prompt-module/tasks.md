@@ -15,7 +15,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/shared/infrastructure/utils/UuidGenerator.ts` implementing `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`.
   - Covers: V5, V6
 
-- [ ] T3. Wire `idGenerator` into shared services
+- [x] T3. Wire `idGenerator` into shared services
   - Type: infrastructure
   - Depends on: T2
   - Red: none — `services.ts` is pure composition; see `testing-practices`.
