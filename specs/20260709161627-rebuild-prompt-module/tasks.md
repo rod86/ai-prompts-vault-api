@@ -11,8 +11,8 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
 - [ ] T2. Add the `UuidGenerator` adapter
   - Type: infrastructure
   - Depends on: T1
-  - Red: `tests/unit/modules/shared/infrastructure/identity/UuidGenerator.test.ts` — asserts `generate()` returns a UUID-shaped string and that two consecutive calls return different values (mirrors `DateTimeService.test.ts`'s pattern). Fails: `UuidGenerator` doesn't exist yet.
-  - Green: create `src/modules/shared/infrastructure/identity/UuidGenerator.ts` implementing `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`.
+  - Red: `tests/unit/modules/shared/infrastructure/utils/UuidGenerator.test.ts` — asserts `generate()` returns a UUID-shaped string and that two consecutive calls return different values (mirrors `tests/unit/modules/shared/infrastructure/utils/DateTimeService.test.ts`'s pattern). Fails: `UuidGenerator` doesn't exist yet.
+  - Green: create `src/modules/shared/infrastructure/utils/UuidGenerator.ts` implementing `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`.
   - Covers: V5, V6
 
 - [ ] T3. Wire `idGenerator` into shared services
@@ -96,14 +96,14 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.test.ts`, import paths updated, real DB via `tests/lib/config.ts`) — `findAll` returns categories alphabetically; `findById` returns a match / `undefined` when missing / `undefined` when not UUID-shaped. Fails: class doesn't exist.
-  - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts`, preserving the `sql\`${col}::text\`` cast verbatim; `db` typed `DatabaseConnection<NodePgDatabase<Record<string, unknown>>>` per `plan.md` §7 Assumption 3.
+  - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts`, preserving the `sql\`${col}::text\`` cast verbatim; `db` typed `DrizzleDatabaseConnection` (imported from `@src/modules/shared/services.js`) per `plan.md` §7 Assumption 3.
   - Covers: V1, V4 (AC1)
 
 - [ ] T15. `DrizzlePromptRepository`
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`, import paths updated) — `findAll` (joined with category, most-recent-first, category filter, non-UUID filter returns empty, empty-table case, absent-description representation), `findById` (joined match, not-found, non-UUID, absent description), `create` (persists row, with/without description), `update` (persists changed fields, absent description), `delete` (removes row). Fails: class doesn't exist.
-  - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`, preserving both `::text` casts and the manual partial-update `.set()` verbatim; same `DatabaseConnection` typing as T14.
+  - Green: create `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts`, preserving both `::text` casts and the manual partial-update `.set()` verbatim; same `DrizzleDatabaseConnection` typing as T14.
   - Covers: V1, V2, V4 (AC2, AC3, AC4, AC6, AC8)
 
 - [ ] T16. Prompt module composition root

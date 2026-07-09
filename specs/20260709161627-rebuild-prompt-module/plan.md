@@ -11,7 +11,9 @@ context depends on the already-rebuilt `src/modules/shared` (per Decision #2) fo
 its database connection and current-time port, and gains one new capability that
 `src/modules/shared` doesn't have yet: a shared identifier-generation port
 (`IdGeneratorInterface` + `UuidGenerator`), matching the skill's own canonical
-worked example almost verbatim. `CreatePromptUseCase` and `UpdatePromptUseCase`
+worked example in interface/class shape, but filed under `infrastructure/utils/`
+(alongside the existing sibling adapter `DateTimeService`) rather than the skill's
+`infrastructure/identity/` example path. `CreatePromptUseCase` and `UpdatePromptUseCase`
 are rebuilt to generate identifiers/timestamps internally instead of receiving
 them as input (V5), everything else is a faithful, behavior-preserving port of the
 existing implementation at `src/logic/prompt/`.
@@ -26,7 +28,8 @@ outside itself. Making it live is explicitly deferred (spec §1 "Out of scope").
 | Component | New/existing | File path | Change |
 | --------- | ------------ | --------- | ------ |
 | `IdGeneratorInterface` | New | `src/modules/shared/domain/interfaces/IdGeneratorInterface.ts` | Default-exported port: `generate(): string`. |
-| `UuidGenerator` | New | `src/modules/shared/infrastructure/identity/UuidGenerator.ts` | Implements `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`. |
+| `UuidGenerator` | New | `src/modules/shared/infrastructure/utils/UuidGenerator.ts` | Implements `IdGeneratorInterface` via `node:crypto`'s `randomUUID()`. Filed under `infrastructure/utils/`, colocated with the existing `DateTimeService` adapter, rather than a dedicated `infrastructure/identity/` subfolder. |
+| `DrizzleDatabaseConnection` | Existing | `src/modules/shared/services.ts` | Already implemented (`export type DrizzleDatabaseConnection = ReturnType<typeof databaseClient.connect>;`, verified via `npm run typecheck`/`npm run lint`). Reused as-is — see §7 Assumption 3. |
 | Shared wiring | Existing | `src/modules/shared/services.ts` | Add `export const idGenerator = new UuidGenerator();`. |
 | `Prompt` entity | New | `src/modules/prompt/domain/Prompt.ts` | `Prompt`, `UpdatePrompt`, `PromptFilter` as `export type` (ported from `src/logic/prompt/domain/Prompt.ts`, `interface` → `type` per Decision #1). |
 | `PromptCategory` entity | New | `src/modules/prompt/domain/PromptCategory.ts` | `PromptCategory` as `export type` (ported from `src/logic/prompt/domain/PromptCategory.ts`). |
@@ -41,8 +44,8 @@ outside itself. Making it live is explicitly deferred (spec §1 "Out of scope").
 | `CreatePromptUseCase` | New | `src/modules/prompt/application/CreatePromptUseCase.ts` | Rebuilt: `CreatePromptQuery` drops `id`/`createdAt`/`updatedAt`; constructor gains `DateTimeInterface`+`IdGeneratorInterface`; `invoke()` calls `dateTime.now()` once (reused for both timestamps) and `idGenerator.generate()`. |
 | `UpdatePromptUseCase` | New | `src/modules/prompt/application/UpdatePromptUseCase.ts` | Rebuilt: `UpdatePromptQuery` drops `updatedAt` (keeps `id`); constructor gains `DateTimeInterface`; `invoke()` calls `dateTime.now()` once; response still assembled manually from the pre-fetched existing prompt + new values (Decision #4 — no re-fetch after write). |
 | Drizzle schema | New | `src/modules/prompt/infrastructure/persistence/schema.ts` | Ported unchanged (same table/column names/types/constraints) from `src/logic/prompt/infrastructure/database/schema.ts`. |
-| `DrizzlePromptCategoryRepository` | New | `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts` | Ported from `src/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.ts`; only its `DatabaseConnection` import/typing changes (§3). |
-| `DrizzlePromptRepository` | New | `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts` | Ported from `src/logic/prompt/infrastructure/database/DrizzlePromptRepository.ts`, preserving the `sql\`${col}::text\`` non-UUID-tolerance casts verbatim (spec §3/§6 Decision 4 of `002-list-prompts`); only its `DatabaseConnection` import/typing changes (§3). |
+| `DrizzlePromptCategoryRepository` | New | `src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.ts` | Ported from `src/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.ts`; only its database-connection typing changes — constructor parameter typed `DrizzleDatabaseConnection`, imported from `@src/modules/shared/services.js` (§7 Assumption 3). |
+| `DrizzlePromptRepository` | New | `src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.ts` | Ported from `src/logic/prompt/infrastructure/database/DrizzlePromptRepository.ts`, preserving the `sql\`${col}::text\`` non-UUID-tolerance casts verbatim (spec §3/§6 Decision 4 of `002-list-prompts`); only its database-connection typing changes — same `DrizzleDatabaseConnection` as above (§7 Assumption 3). |
 | Prompt module wiring | New | `src/modules/prompt/services.ts` | Composition root: one shared `db` const (fixing the legacy file's double `connect()` call), both repositories, all 6 use cases, `Create`/`UpdatePromptUseCase` additionally wired with `dateTimeService`/`idGenerator` from `@src/modules/shared/services.js`. |
 | Boundary enforcement | Existing | `.eslintrc.json` | Extend the `domain`/`application`/`infrastructure` `boundaries/elements` `pattern` values from a single string to an array also matching `src/modules/*/{domain,application,infrastructure}`, so the new context's layers are enforced (today only `src/logic/*/...` is matched; `src/modules/shared` currently only works via its own coarse `"shared"` folder-mode entry). |
 
@@ -130,37 +133,47 @@ depends only on already-installed packages (`drizzle-orm`, `vitest`,
 ## 7. Assumptions & risks
 
 Assumptions:
-1. Subfolder names `infrastructure/persistence/` (schema + Drizzle repos) and
-   `infrastructure/identity/` (the new id-generator adapter) match the
-   `domain-driven-design` skill's own canonical worked examples exactly — consequence
-   if wrong: a cosmetic rename, no behavior change.
+1. Subfolder name `infrastructure/persistence/` (schema + Drizzle repos) matches the
+   `domain-driven-design` skill's own canonical worked example. The id-generator
+   adapter deliberately deviates from the skill's `infrastructure/identity/` example
+   path: it's filed under `infrastructure/utils/` instead, colocated with the
+   existing sibling adapter `DateTimeService` (already at
+   `src/modules/shared/infrastructure/utils/DateTimeService.ts`) — both are small,
+   stateless technical adapters with no domain vocabulary of their own, so grouping
+   them together reads more consistently than splitting them across two
+   single-adapter subfolders. Consequence if wrong: a cosmetic rename, no behavior
+   change.
 2. The id-generator adapter's class name is `UuidGenerator` (matching the skill's
    canonical example verbatim, rather than inventing a different name for the same
    `node:crypto` technology) — consequence if wrong: cosmetic rename.
-3. `src/modules/shared`'s existing `DatabaseConnection<T = unknown> = T` type and
-   non-generic `DatabaseClientInterface` (already implemented, deliberately
-   simplified relative to the skill's fully-generic canonical example, per the
-   `migrate-shared-to-modules` spec's own Decision #1) are left untouched by this
-   spec — the new prompt repositories work around the bare-alias-resolves-to-`unknown`
-   gap by parametrizing it explicitly as `DatabaseConnection<NodePgDatabase<Record<string,
-   unknown>>>` (importing `NodePgDatabase` type-only from `drizzle-orm/node-postgres`).
-   Consequence if wrong: a compile error surfaces immediately in T14/T15's Green step,
-   which per the SDD "implementation reveals a gap" rule sends this back to PLANNING
-   rather than being silently patched.
-4. `tests/lib/config.ts`'s existing `databaseClient` (built on the legacy shared
-   `DatabaseClient`) is structurally compatible with the new repositories'
-   `DatabaseConnection<NodePgDatabase<Record<string, unknown>>>` constructor
-   parameter and needs no change — the same "specific schema → `Record<string,
-   unknown>`" assignment already compiles today for the legacy repositories built
-   against the exact same test fixture. Consequence if wrong: T14/T15's integration
-   test tasks fail to compile, surfaced immediately.
+3. `src/modules/shared/services.ts` already exports
+   `DrizzleDatabaseConnection = ReturnType<typeof databaseClient.connect>` — a
+   non-generic, fully schema-typed alias (`NodePgDatabase<typeof
+   config.database.schema>`, not `unknown` and not a generic `Record<string,
+   unknown>` fallback) derived directly off the existing `databaseClient` singleton.
+   This was added ahead of this spec and already verified with `npm run typecheck`/
+   `npm run lint`. The new prompt repositories' `db` constructor parameter is typed
+   `DrizzleDatabaseConnection`, imported from `@src/modules/shared/services.js`,
+   instead of hand-parametrizing the domain-level `DatabaseConnection<T>` generic
+   (which stays untouched, and stays free of Drizzle types, since it's the domain
+   layer's opaque passthrough — `DrizzleDatabaseConnection` lives in `services.ts`,
+   not in `domain/`). Consequence if wrong: a compile error surfaces immediately in
+   T14/T15's Green step, which per the SDD "implementation reveals a gap" rule sends
+   this back to PLANNING rather than being silently patched.
+4. `tests/lib/config.ts`'s existing `TestDatabaseConnection = ReturnType<typeof
+   databaseClient.connect>` (built on the legacy `@logic/shared/database/DatabaseClient.js`,
+   whose `connect()` returns `NodePgDatabase<DatabaseSchema>` directly, parametrized
+   with the same `typeof config.database.schema` from the same `src/config.ts`) is
+   structurally identical to `DrizzleDatabaseConnection` and needs no change — a
+   `TestDatabaseConnection` value is assignable wherever the new repositories expect
+   `DrizzleDatabaseConnection`. Consequence if wrong: T14/T15's integration test
+   tasks fail to compile, surfaced immediately.
 
 Risks:
 | # | Risk | Likelihood | Impact | Mitigation |
 |--|--|--|--|--|
-| R1 | The `DatabaseConnection` generic-typing workaround (Assumption 3) doesn't compile as expected | Medium | High — blocks T14/T15 | Run `npm run typecheck` immediately after writing each repository file, not only at the end |
-| R2 | Extending `.eslintrc.json`'s element patterns to arrays has an unintended interaction with the existing `src/logic/*` boundary rules | Low | Medium — could silently stop enforcing legacy boundaries | Change is additive (array includes the existing string pattern unchanged); verify with a deliberate illegal-import sanity check in both `src/logic/prompt` and `src/modules/prompt` before/after |
-| R3 | A later spec introduces the identifier-generation port with a different name/shape, causing rework | Low | Low | Name/shape matches the DDD skill's own canonical example exactly, minimizing the chance a future spec diverges |
+| R1 | Extending `.eslintrc.json`'s element patterns to arrays has an unintended interaction with the existing `src/logic/*` boundary rules | Low | Medium — could silently stop enforcing legacy boundaries | Change is additive (array includes the existing string pattern unchanged); verify with a deliberate illegal-import sanity check in both `src/logic/prompt` and `src/modules/prompt` before/after |
+| R2 | A later spec introduces the identifier-generation port with a different name/shape, causing rework | Low | Low | Name/shape matches the DDD skill's own canonical example exactly, minimizing the chance a future spec diverges |
 
 ## 8. Edge cases
 
