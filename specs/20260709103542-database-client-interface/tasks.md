@@ -1,5 +1,6 @@
-# Tasks: Give the shared database connection provider its own contract
-Plan: specs/20260709102334-database-client-interface/plan.md
+# Tasks: Give the shared database connection provider its own contract, with no dedicated composition-root test
+
+Plan: specs/20260709103542-database-client-interface/plan.md
 
 - [ ] T1. Add the database connection provider's contract
   - Type: domain
@@ -50,45 +51,60 @@ Plan: specs/20260709102334-database-client-interface/plan.md
   - Green: update `src/modules/shared/services.ts` — import `DatabaseClientInterface`
     from the new domain file and type the `databaseClient` export as
     `DatabaseClientInterface<typeof config.database.schema>` instead of leaving it
-    inferred as the concrete `DatabaseClient` class.
+    inferred as the concrete `DatabaseClient` class. `passwordHasher`/`dateTimeService`
+    exports are untouched.
   - Covers: AC3 "Given the single composition entry point, When it exposes the
     database connection provider, Then it is described in terms of the contract
-    rather than the concrete implementation."; V4
+    rather than the concrete implementation, and still exposes the same three
+    ready-to-use instances."; V4
 
-- [ ] T4. Remove the composition entry point's own test
+- [ ] T4. Remove the composition entry point's own dedicated test
   - Type: infrastructure
   - Depends on: T3
   - Red: none — this task deletes a test rather than adding one; there is nothing to
     fail first. Per `domain-driven-design`'s Testing section, `services.ts` is pure
     composition with no logic of its own, so it gets no dedicated test — its
     correctness is proven by `tsc` plus the tests of `DateTimeService`,
-    `BcryptPasswordHasher`, and `DatabaseClient` that it wires together.
+    `BcryptPasswordHasher`, and `DatabaseClient` that it wires together. The check is
+    that no test in the suite exercises `src/modules/shared/services.ts` directly
+    afterward (confirmed by inspection/search, not a failing test).
   - Green: delete `tests/unit/modules/shared/services.test.ts`.
+    `src/modules/shared/services.ts` itself is not modified beyond T3's typed export.
   - Covers: AC4 "Given the composition entry point holds no logic of its own, When
     its test suite is inspected, Then it has no dedicated test file — its
     correctness is proven by type-checking and by the tests of the capabilities it
     composes."; V5
 
-- [ ] T5. Verify legacy is untouched and all quality gates pass
+- [ ] T5. Verify coverage is preserved, legacy is untouched, and all quality gates pass
   - Type: tooling
   - Depends on: T1, T2, T3, T4
   - Red: `git diff` would show unexpected changes under `src/logic/**` or its tests,
-    or under the `migrate-shared-to-modules` spec folder, if any leaked in — none are
-    expected since this task only checks.
-  - Green: run `npm run lint`, `npm run typecheck`, and `npm test`; confirm all pass;
+    or under `specs/20260709091827-migrate-shared-to-modules/`, if any leaked in —
+    none are expected since this task only checks.
+  - Green: run `npm run lint`, `npm run typecheck`, and `npm test`; confirm all pass,
+    including `tests/unit/modules/shared/infrastructure/DateTimeService.test.ts`,
+    `tests/unit/modules/shared/infrastructure/DatabaseClient.test.ts`, and
+    `tests/integration/modules/shared/infrastructure/BcryptPasswordHasher.test.ts`;
     confirm `git diff` shows no changes under `src/logic/**`, `tests/**/logic/**`, or
     `specs/20260709091827-migrate-shared-to-modules/**`.
-  - Covers: AC5 "Given the change is complete, When the legacy copy of the provider
-    and the existing business areas are inspected, Then they are unchanged and their
-    tests still pass."; AC6 "Given the change is complete, When the project's lint,
-    type-check, and full test suite are run, Then all pass."; V6, V7
+  - Covers: AC5 "Given the project's quality gates, When type-checking and the
+    existing tests of the three wired capabilities are run, Then they pass and
+    demonstrate the entry point's correctness without a dedicated test."; AC6 "Given
+    the change is complete, When the legacy copy of the provider and the existing
+    business areas are inspected, Then they are unchanged and their tests still
+    pass."; AC7 "Given the change is complete, When the original relocation work's
+    own documentation is inspected, Then it is unchanged."; AC8 "Given the change is
+    complete, When the project's lint, type-check, and full test suite are run, Then
+    all pass."; V5, V6, V7, V8
 
 ## Coverage check
 | AC# | Criterion text (verbatim from spec §5) | Covered by task(s) |
 | --- | -------------------------------------- | ------------------ |
 | AC1 | *Contract stated.* Given the new canonical location, When the database connection provider's contract is inspected, Then it declares the same operations (open a connection bound to a supplied structure, close it) as the concrete provider. | T1 |
 | AC2 | *Behavior unchanged.* Given the contract is in place, When the provider is opened, reused, and closed, Then it opens a single reusable connection bound to the supplied structure, closes it on request, and is a safe no-op when closed without an open connection — exactly as before. | T2 |
-| AC3 | *Composition refers to the contract.* Given the single composition entry point, When it exposes the database connection provider, Then it is described in terms of the contract rather than the concrete implementation. | T3 |
+| AC3 | *Composition refers to the contract.* Given the single composition entry point, When it exposes the database connection provider, Then it is described in terms of the contract rather than the concrete implementation, and still exposes the same three ready-to-use instances. | T3 |
 | AC4 | *No dedicated test for pure composition.* Given the composition entry point holds no logic of its own, When its test suite is inspected, Then it has no dedicated test file — its correctness is proven by type-checking and by the tests of the capabilities it composes. | T4 |
-| AC5 | *Legacy left intact.* Given the change is complete, When the legacy copy of the provider and the existing business areas are inspected, Then they are unchanged and their tests still pass. | T5 |
-| AC6 | *Quality gates pass.* Given the change is complete, When the project's lint, type-check, and full test suite are run, Then all pass. | T5 |
+| AC5 | *Coverage preserved by other means.* Given the project's quality gates, When type-checking and the existing tests of the three wired capabilities are run, Then they pass and demonstrate the entry point's correctness without a dedicated test. | T5 |
+| AC6 | *Legacy left intact.* Given the change is complete, When the legacy copy of the provider and the existing business areas are inspected, Then they are unchanged and their tests still pass. | T5 |
+| AC7 | *Historical record untouched.* Given the change is complete, When the original relocation work's own documentation is inspected, Then it is unchanged. | T5 |
+| AC8 | *Quality gates pass.* Given the change is complete, When the project's lint, type-check, and full test suite are run, Then all pass. | T5 |
