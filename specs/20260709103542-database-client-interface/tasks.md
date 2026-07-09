@@ -2,7 +2,7 @@
 
 Plan: specs/20260709103542-database-client-interface/plan.md
 
-- [ ] T1. Add the database connection provider's contract
+- [x] T1. Add the database connection provider's contract
   - Type: domain
   - Depends on: none
   - Red: none — this introduces only a type-level contract (an interface plus a type
