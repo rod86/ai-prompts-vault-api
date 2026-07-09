@@ -2,7 +2,7 @@
 
 Plan: specs/20260709103542-database-client-interface/plan.md
 
-- [ ] T1. Add the database connection provider's contract
+- [x] T1. Add the database connection provider's contract
   - Type: domain
   - Depends on: none
   - Red: none — this introduces only a type-level contract (an interface plus a type
@@ -20,7 +20,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     connection bound to a supplied structure, close it) as the concrete provider.";
     V1, V2
 
-- [ ] T2. Make DatabaseClient implement its contract
+- [x] T2. Make DatabaseClient implement its contract
   - Type: infrastructure
   - Depends on: T1
   - Red: none — TypeScript's structural typing already makes `DatabaseClient`
@@ -42,7 +42,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     structure, closes it on request, and is a safe no-op when closed without an open
     connection — exactly as before."; V1, V2, V3
 
-- [ ] T3. Compose the provider through its contract
+- [x] T3. Compose the provider through its contract
   - Type: infrastructure
   - Depends on: T2
   - Red: none — same structural-typing reasoning as T2: annotating the export's type
@@ -58,7 +58,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     rather than the concrete implementation, and still exposes the same three
     ready-to-use instances."; V4
 
-- [ ] T4. Remove the composition entry point's own dedicated test
+- [x] T4. Remove the composition entry point's own dedicated test
   - Type: infrastructure
   - Depends on: T3
   - Red: none — this task deletes a test rather than adding one; there is nothing to
@@ -75,7 +75,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     correctness is proven by type-checking and by the tests of the capabilities it
     composes."; V5
 
-- [ ] T5. Verify coverage is preserved, legacy is untouched, and all quality gates pass
+- [x] T5. Verify coverage is preserved, legacy is untouched, and all quality gates pass
   - Type: tooling
   - Depends on: T1, T2, T3, T4
   - Red: `git diff` would show unexpected changes under `src/logic/**` or its tests,

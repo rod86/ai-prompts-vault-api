@@ -1,6 +1,6 @@
 # Spec: Give the shared database connection provider its own contract, with no dedicated composition-root test
 
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer, I want the canonical shared database connection provider
 described by its own explicit contract — built from the current legacy provider as
 the behavioral reference — and the single composition entry point's coverage
