@@ -42,7 +42,7 @@ Plan: specs/20260709103542-database-client-interface/plan.md
     structure, closes it on request, and is a safe no-op when closed without an open
     connection — exactly as before."; V1, V2, V3
 
-- [ ] T3. Compose the provider through its contract
+- [x] T3. Compose the provider through its contract
   - Type: infrastructure
   - Depends on: T2
   - Red: none — same structural-typing reasoning as T2: annotating the export's type
