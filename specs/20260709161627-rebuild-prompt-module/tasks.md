@@ -92,7 +92,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/infrastructure/persistence/schema.ts`, ported unchanged (same table/column names, types, constraints) from `src/logic/prompt/infrastructure/database/schema.ts`.
   - Covers: V8
 
-- [ ] T14. `DrizzlePromptCategoryRepository`
+- [x] T14. `DrizzlePromptCategoryRepository`
   - Type: infrastructure
   - Depends on: T6, T13
   - Red: `tests/integration/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.test.ts` (ported from `tests/integration/logic/prompt/infrastructure/database/DrizzlePromptCategoryRepository.test.ts`, import paths updated, real DB via `tests/lib/config.ts`) — `findAll` returns categories alphabetically; `findById` returns a match / `undefined` when missing / `undefined` when not UUID-shaped. Fails: class doesn't exist.
