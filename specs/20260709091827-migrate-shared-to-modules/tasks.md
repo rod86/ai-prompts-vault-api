@@ -15,7 +15,7 @@ Plan: specs/20260709091827-migrate-shared-to-modules/plan.md
   - Green: create `src/modules/shared/infrastructure/DatabaseClient.ts` (default-export `DatabaseClient<DatabaseSchema>` plus named `DatabaseConfig` and `DatabaseConnection` types), copied verbatim from legacy `database/DatabaseClient.ts`.
   - Covers: AC2 "Given the new canonical location, When the database connection provider is opened, reused, and closed, Then it opens a single reusable connection bound to the supplied schema, closes it on request, and is a safe no-op when closed without an open connection — exactly as the legacy provider does"; V1, V2
 
-- [ ] T3. Relocate the password hasher
+- [x] T3. Relocate the password hasher
   - Type: infrastructure
   - Depends on: none
   - Red: add `tests/integration/modules/shared/infrastructure/BcryptPasswordHasher.test.ts` (mirror of the legacy `BcryptPasswordHasher` integration test) importing `BcryptPasswordHasher` from `@src/modules/shared/infrastructure/BcryptPasswordHasher.js`; asserts a hash is never the plaintext and verifies true, `compare` is true for a matching password and false for a non-matching one. Fails: module not found.
