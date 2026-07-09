@@ -50,7 +50,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/ListPromptCategoriesUseCase.ts`, ported unchanged.
   - Covers: V1 (AC1)
 
-- [ ] T8. `ListPromptsUseCase`
+- [x] T8. `ListPromptsUseCase`
   - Type: application
   - Depends on: T6
   - Red: `tests/unit/modules/prompt/application/ListPromptsUseCase.test.ts` (ported) — returns all prompts; returns an empty array when there are none; forwards the category filter to the repository unchanged. Fails: class doesn't exist.
