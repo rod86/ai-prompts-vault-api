@@ -64,7 +64,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/GetPromptUseCase.ts`, ported unchanged.
   - Covers: V1, V4, E2 (AC3)
 
-- [ ] T10. `DeletePromptUseCase`
+- [x] T10. `DeletePromptUseCase`
   - Type: application
   - Depends on: T5, T6
   - Red: `tests/unit/modules/prompt/application/DeletePromptUseCase.test.ts` (ported) — deletes an existing prompt; throws `PromptNotFoundError` and does not call delete when the prompt doesn't exist. Fails: class doesn't exist.
