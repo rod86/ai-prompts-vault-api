@@ -78,7 +78,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/application/CreatePromptUseCase.ts` per `plan.md` §3.
   - Covers: V2, V3, V5, E1 (AC4, AC5)
 
-- [ ] T12. `UpdatePromptUseCase` with internal timestamp generation
+- [x] T12. `UpdatePromptUseCase` with internal timestamp generation
   - Type: application
   - Depends on: T4, T5, T6
   - Red: `tests/unit/modules/prompt/application/UpdatePromptUseCase.test.ts` (ported, substantively rewritten per `plan.md` §2) — mocks `PromptRepositoryInterface`, `PromptCategoryRepositoryInterface`, `DateTimeInterface`; `buildQuery()` no longer includes `updatedAt` (keeps `id`); asserts `result.updatedAt` and the `promptRepository.update` call's `updatedAt` equal the mocked clock's time, `result.createdAt` still equals the pre-fetched existing prompt's `createdAt` (proves manual reconstruction, not a re-fetch, per Decision #4); the not-found/category-invalid tests additionally assert `dateTime.now()` was never called; keeps the existing "no description"/"empty description" cases. Fails: class/constructor shape doesn't exist yet.
