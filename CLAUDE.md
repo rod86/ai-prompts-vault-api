@@ -28,6 +28,15 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
    an instruction, leave every change as an uncommitted working-tree edit; committing,
    pushing, and opening/editing PRs otherwise happen only inside `/spec-implement`'s
    steps (see "Git branches" below).
+6. **When in doubt, guidelines win — then ask.** When comparing two ways to write
+   or organize code, or unsure which pattern to follow, prefer whichever option
+   more closely follows this file and its skills (`spec-driven-development`,
+   `domain-driven-design`, `coding-style`, `testing-practices`,
+   `database-schema-design`, `clean-code`) — even if the other option looks more
+   familiar, shorter, or already appears elsewhere in the codebase (including
+   legacy `src/logic/*` code). If it's still unclear which option follows the
+   guidelines more closely, or the guidelines themselves conflict, don't guess —
+   ask the user.
 
 ## Where the rules live (skills)
 
