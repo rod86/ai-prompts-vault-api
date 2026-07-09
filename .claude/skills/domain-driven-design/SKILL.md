@@ -166,7 +166,7 @@ Rules:
 
 ## Infrastructure layer (`<context>/infrastructure/`)
 
-The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. Adapters never sit at the top level of `infrastructure/` — group them in a subfolder by kind: `persistence/` (DB repositories, plus the schema definitions), `providerApi/` (external HTTP clients), and so on.
+The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. This has no exceptions — even a low-level client/connection wrapper (e.g. a database connection provider) implements a domain interface; there is no category of adapter exempt from this. Adapters never sit at the top level of `infrastructure/` — group them in a subfolder by kind: `persistence/` (DB repositories, plus the schema definitions), `providerApi/` (external HTTP clients), and so on.
 
 Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes:
 
@@ -203,7 +203,11 @@ export class DrizzleOrderRepository implements OrderRepositoryInterface {
 
 ## Shared cross-cutting ports (`shared/domain/interfaces/`)
 
-Time and randomness are dependencies like any other — model them as ports in `shared/`, implemented once, and injected into every use case that needs them:
+Time, randomness, and low-level infrastructure clients (a database connection provider, an
+HTTP client wrapper, …) are dependencies like any other — model them as ports in `shared/`,
+implemented once, and injected into every context that needs them. This applies without
+exception, even to a class that just wraps a driver/pool and exposes `connect`/`close`: it
+still implements a domain interface, exactly like a repository does.
 
 ```typescript
 // shared/domain/interfaces/DateTimeInterface.ts
@@ -216,6 +220,22 @@ export default interface DateTimeInterface {
 // shared/domain/interfaces/IdGeneratorInterface.ts
 export default interface IdGeneratorInterface {
     generate(): string;
+}
+```
+
+```typescript
+// shared/domain/interfaces/DatabaseClientInterface.ts
+import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+
+// The connection shape is part of the port's contract (connect()'s return type), not an
+// implementation detail, so it lives here in domain/ alongside the interface — not in
+// infrastructure/.
+export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
+    NodePgDatabase<DatabaseSchema>;
+
+export default interface DatabaseClientInterface<DatabaseSchema extends Record<string, unknown>> {
+    connect(): DatabaseConnection<DatabaseSchema>;
+    close(): Promise<void>;
 }
 ```
 
@@ -238,6 +258,49 @@ import type IdGeneratorInterface from '../domain/interfaces/IdGeneratorInterface
 export class UuidGenerator implements IdGeneratorInterface {
     public generate(): string {
         return randomUUID();
+    }
+}
+```
+
+```typescript
+// shared/infrastructure/DatabaseClient.ts
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import type DatabaseClientInterface, { type DatabaseConnection } from '../domain/interfaces/DatabaseClientInterface.js';
+
+export type DatabaseConfig = {
+    host: string;
+    port: number;
+    user: string;
+    password: string;
+    database: string;
+};
+
+export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
+    implements DatabaseClientInterface<DatabaseSchema>
+{
+    private pool: Pool | undefined;
+
+    constructor(
+        private readonly config: DatabaseConfig,
+        private readonly schema: DatabaseSchema,
+    ) {}
+
+    public connect(): DatabaseConnection<DatabaseSchema> {
+        if (this.pool === undefined) {
+            this.pool = new Pool(this.config);
+        }
+
+        return drizzle(this.pool, { schema: this.schema });
+    }
+
+    public async close(): Promise<void> {
+        if (this.pool === undefined) {
+            return;
+        }
+
+        await this.pool.end();
+        this.pool = undefined;
     }
 }
 ```
