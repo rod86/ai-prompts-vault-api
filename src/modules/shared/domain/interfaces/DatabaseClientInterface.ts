@@ -1,9 +1,7 @@
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DatabaseConnection } from '@src/modules/shared/domain/Database.js';
 
-export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
-    NodePgDatabase<DatabaseSchema>;
 
-export default interface DatabaseClientInterface<DatabaseSchema extends Record<string, unknown>> {
-    connect(): DatabaseConnection<DatabaseSchema>;
+export default interface DatabaseClientInterface {
+    connect(): DatabaseConnection;
     close(): Promise<void>;
 }
