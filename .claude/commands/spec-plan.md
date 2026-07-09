@@ -63,6 +63,11 @@ traceability rather than starting from a blank page.
    spec, both land here — an IMPLEMENTED target was already redirected to CREATE
    mode above, so this step never touches an IMPLEMENTED folder).
 
+**Do not touch git.** Not `add`/`commit`/`push`, not a branch, not even a read-only
+`status`/`diff`/`log` — leave `spec.md`/`plan.md`/`tasks.md` as plain uncommitted files.
+Committing this work is `/spec-implement`'s job, not this command's (see CLAUDE.md
+Golden Rule 5).
+
 Then **stop at the gate**: report the folder path and the three file paths, whether
 you created or updated them, the number of decisions logged (and how many are new in
 UPDATE mode), and any dependency changes. State that the artifacts await my explicit

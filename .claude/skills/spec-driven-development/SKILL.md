@@ -28,6 +28,11 @@ steps 1–4                          │              steps 5–8
 ```
 
 - No production code in PLANNING. No new scope in IMPLEMENTATION.
+- **Git is IMPLEMENTATION's alone.** PLANNING never touches git — not a commit, not a
+  push, not even a read-only `status`/`diff`/`log` to check in on things. Every
+  artifact PLANNING writes is left as an uncommitted file for the human to review.
+  Branching, committing, merging, pushing, and opening/editing a PR happen only inside
+  IMPLEMENTATION's documented steps.
 - The gate opens only when `spec.md`'s **`Status`** is **READY TO IMPLEMENT** and a
   human has explicitly approved the artifacts.
 - If implementation later reveals a gap, the feature returns to PLANNING; you never
