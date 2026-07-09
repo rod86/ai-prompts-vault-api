@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
-import { promptCategories } from '@src/modules/prompt/infrastructure/persistence/schema.js';
+import { promptCategories } from '@src/modules/prompt/infrastructure/database/schema.js';
 import { type DrizzleDatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzlePromptCategoryRepository implements PromptCategoryRepositoryInterface {

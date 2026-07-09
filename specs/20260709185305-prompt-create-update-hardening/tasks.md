@@ -1,7 +1,7 @@
 # Tasks: Harden the prompt module's create and update operations
 Plan: specs/20260709185305-prompt-create-update-hardening/plan.md
 
-- [ ] T1. Rename `infrastructure/persistence/` to `infrastructure/database/`
+- [x] T1. Rename `infrastructure/persistence/` to `infrastructure/database/`
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure file relocation, no behavior change. Proven by the existing

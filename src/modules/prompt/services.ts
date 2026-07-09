@@ -4,8 +4,8 @@ import { GetPromptUseCase } from '@src/modules/prompt/application/GetPromptUseCa
 import { ListPromptCategoriesUseCase } from '@src/modules/prompt/application/ListPromptCategoriesUseCase.js';
 import { ListPromptsUseCase } from '@src/modules/prompt/application/ListPromptsUseCase.js';
 import { UpdatePromptUseCase } from '@src/modules/prompt/application/UpdatePromptUseCase.js';
-import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/persistence/DrizzlePromptCategoryRepository.js';
-import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/persistence/DrizzlePromptRepository.js';
+import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
+import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
 import { databaseClient, dateTimeService, idGenerator } from '@src/modules/shared/services.js';
 
 const db = databaseClient.connect();
