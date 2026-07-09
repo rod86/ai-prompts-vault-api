@@ -41,12 +41,11 @@ Reused verbatim from legacy (same code, new path):
 | `DateTimeService` (adapter) | new (copy) | `src/modules/shared/infrastructure/DateTimeService.ts` | Same class/name; imports the new `DateTimeInterface` path. |
 | `BcryptPasswordHasher` (adapter) | new (copy) | `src/modules/shared/infrastructure/BcryptPasswordHasher.ts` | Same class/name; flattened out of `security/`; imports the new `PasswordHasherInterface` path. |
 | `DatabaseClient` (+ `DatabaseConfig`, `DatabaseConnection` types) | new (copy) | `src/modules/shared/infrastructure/DatabaseClient.ts` | Same class/types/name; flattened out of `database/`. |
-| `services.ts` (composition root) | new (copy) | `src/modules/shared/services.ts` | Exports `databaseClient`, `passwordHasher`, `dateTimeService` singletons; imports the new adapter paths and `@src/config`. |
+| `services.ts` (composition root) | new (copy) | `src/modules/shared/services.ts` | Exports `databaseClient`, `passwordHasher`, `dateTimeService` singletons; imports the new adapter paths and `@src/config`. No dedicated test — pure composition, no logic of its own; proven by `tsc` and by the tests of the pieces it wires (see `testing-practices`/`domain-driven-design`). |
 | ESLint boundaries config | existing | `.eslintrc.json` | Add a `shared` element entry for `src/modules/shared` alongside the existing `src/logic/shared` entry. |
 | `DateTimeService` unit test | new (copy) | `tests/unit/modules/shared/infrastructure/DateTimeService.test.ts` | Mirror of legacy test, re-pointed to new path. |
 | `DatabaseClient` unit test | new (copy) | `tests/unit/modules/shared/infrastructure/DatabaseClient.test.ts` | Mirror of legacy test, re-pointed to new path. |
 | `BcryptPasswordHasher` integration test | new (copy) | `tests/integration/modules/shared/infrastructure/BcryptPasswordHasher.test.ts` | Mirror of legacy test, re-pointed to new path. |
-| `services.ts` composition test | new | `tests/unit/modules/shared/services.test.ts` | Asserts the entry point exposes the three instances. |
 
 Legacy files under `src/logic/shared/**` and `tests/**/logic/shared/**`, and the
 prompt/user/auth contexts, are **not** touched.
@@ -95,14 +94,13 @@ None.
 
 Assumptions (trivial, silent):
 1. The new context is imported via the `@src/modules/shared/...` alias form per CLAUDE.md (no new tsconfig path alias is added) — consequence if wrong: import specifiers would need adjusting, but resolution still works via `@src/*`.
-2. Test files mirror the legacy directory shape under `tests/unit/modules/shared/` and `tests/integration/modules/shared/`, keeping the layer-based split from `testing-practices` (adapter integration lives in `integration/`, the trivial clock/DB-client unit tests in `unit/`) — consequence if wrong: only test-file placement differs, no behavior impact.
+2. Test files mirror the legacy directory shape under `tests/unit/modules/shared/` and `tests/integration/modules/shared/`, keeping the layer-based split from `testing-practices` (adapter integration lives in `integration/`, the trivial clock/DB-client unit tests in `unit/`); `services.ts` itself gets no test file, per the same skill's "no logic, no test" rule for composition roots — consequence if wrong: only test-file placement differs, no behavior impact.
 3. A second `shared` element (pattern `src/modules/shared`) is added to `.eslintrc.json` alongside the existing legacy one; both keep `type: "shared"` so the existing boundary rules apply to the new folder unchanged — consequence if wrong: boundary rules would not cover the new folder, but lint would still pass (unknown elements are allowed).
 
 Risks:
 | # | Risk | Likelihood | Impact | Mitigation |
 |--|--|--|--|--|
 | R1 | Duplicated shared code drifts between the legacy and new copies before business areas migrate | med | low (interim only; deferred cleanup) | Keep the new copy byte-identical; a follow-up spec migrates business areas and deletes the legacy copy. |
-| R2 | `services.ts` composition test triggers real config/env loading (it constructs `DatabaseClient` from `@src/config`) | low | low | The client is lazy — no `Pool` is created until `connect()`; asserting `instanceof` opens no connection, mirroring how the legacy `services.ts` is already imported by the running app. |
 
 ## 8. Edge cases
 
@@ -125,6 +123,6 @@ Risks:
 | AC1 | `DateTimeService` + `DateTimeInterface` files + unit test |
 | AC2 | `DatabaseClient` file + unit test; §8 connection edge cases |
 | AC3 | `BcryptPasswordHasher` + `PasswordHasherInterface` files + integration test; §8 password edge cases |
-| AC4 | `services.ts` + composition test |
+| AC4 | `services.ts` (no dedicated test — proven by `tsc` + the tests of the pieces it wires) |
 | AC5 | §1 coexistence; §5 V3 |
 | AC6 | §5 V4 |
