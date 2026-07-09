@@ -54,14 +54,16 @@ a running Postgres (`docker compose up -d`) and DB env vars (see `.env.example`)
 
 ## Git branches
 
-The repository uses three branch roles. Tooling and commands should refer to these
-**roles**, not the literal names, so the model resolves the current name here:
+The repository uses two branch roles. Tooling and commands should refer to these
+**roles**, not the literal names, so the model resolves the current name here.
+Commands may bind the roles to parameter names — the `spec-implement` command
+resolves the integration role to **`BASE_BRANCH`** and the feature role to
+**`FEATURE_BRANCH`**.
 
-| Role | Branch | Rules |
-| --- | --- | --- |
-| **Production** | `main` | Exact mirror of production. Never commit to it or branch feature work off it. |
-| **Integration** | `development` | Central branch. Feature branches are cut from it; all PRs target it. |
-| **Feature** | `spec/<slug>` | Where a spec's implementation changes are made. `<slug>` is the spec folder's slug (e.g. `spec/archive-prompt`). Cut from the integration branch. |
+| Role | Branch        | Rules                                                                                                                                                                                                                                                                                                    |
+| --- |---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Integration** (`BASE_BRANCH`) | `main`        | Central branch; feature branches are cut from it and all PRs target it.                                                                                                                                                                                                                                |
+| **Feature** (`FEATURE_BRANCH`) | `spec/<slug>` | Where a spec's implementation changes are made. `<slug>` is the spec folder's slug (e.g. `spec/archive-prompt`). Cut from the integration branch. Before opening a PR, merge the integration branch **into** the feature branch so any conflicts resolve here, on the feature branch, not on the target. |
 
 ## Project structure
 

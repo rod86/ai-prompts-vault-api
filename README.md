@@ -113,27 +113,27 @@ npx vitest run -t 'returns 404'            # run tests whose name matches a stri
 
 ## Git workflow
 
-The repository uses three kinds of branches:
+The repository follows **GitHub flow** with two kinds of branches:
 
-- **`main`** — always matches what is running in **production**. It is never worked on
-  directly; you only merge into it through a release.
-- **`development`** — the shared **integration** branch where finished features come
-  together. Every new piece of work starts from here, and every pull request is merged
-  back into here.
+- **`main`** — the shared **integration** branch and the base for all work. Every new
+  piece of work starts from here, every pull request is merged back into here, and it is
+  always deployable. It is never committed to directly.
 - **`spec/<slug>`** — a **feature** branch for building a single spec. `<slug>` is the
   name of the spec being implemented (for example, `spec/archive-prompt`). This is where
   day-to-day changes happen.
 
 A typical feature goes through these steps:
 
-1. Update your local `development` branch: `git checkout development && git pull`.
+1. Update your local `main` branch: `git checkout main && git pull`.
 2. Create a feature branch from it: `git checkout -b spec/<slug>`.
 3. Implement the spec, committing as you go (one commit per completed task).
-4. Push the branch and open a **pull request into `development`**.
-5. Once reviewed and merged, the feature is part of the next release into `main`.
+4. Before opening the PR, merge `main` **into** your feature branch (`git checkout main &&
+   git pull && git checkout spec/<slug> && git merge main`) so any conflicts resolve on
+   the feature branch, not on the target.
+5. Push the branch and open a **pull request into `main`**.
 
-> Rule of thumb: never commit to `main` or `development` directly — always work on a
-> `spec/<slug>` branch and open a pull request into `development`.
+> Rule of thumb: never commit to `main` directly — always work on a `spec/<slug>` branch
+> and open a pull request into `main`.
 
 ## Claude Code
 
@@ -211,4 +211,9 @@ A feature is only "done" when every acceptance criterion in `spec.md` has a pass
 The workflow is supported by two commands: `/spec-plan` runs the planning stage and stops
 at the approval gate, and `/spec-implement` takes an approved spec and builds it
 test-first. See `CLAUDE.md` and the `spec-driven-development` skill for the full details.
+
+`/spec-implement` also handles the Git branching around implementation: **before** coding
+it syncs `main` and cuts the `spec/<slug>` feature branch, and **after** the spec is
+implemented it merges `main` back into the feature branch (resolving any conflicts there)
+and opens the pull request into `main`.
 
