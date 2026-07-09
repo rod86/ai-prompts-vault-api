@@ -29,7 +29,7 @@ Plan: specs/20260709161627-rebuild-prompt-module/plan.md
   - Green: create `src/modules/prompt/domain/Prompt.ts` (`Prompt`, `UpdatePrompt`, `PromptFilter` as `export type`, ported from `src/logic/prompt/domain/Prompt.ts`) and `src/modules/prompt/domain/PromptCategory.ts` (`PromptCategory` as `export type`).
   - Covers: V6 (entity shape underlies every AC)
 
-- [ ] T5. Add the domain errors
+- [x] T5. Add the domain errors
   - Type: domain
   - Depends on: none
   - Red: none — no dedicated test; covered indirectly by the use-case error-branch tests in T9/T10/T11/T12.
