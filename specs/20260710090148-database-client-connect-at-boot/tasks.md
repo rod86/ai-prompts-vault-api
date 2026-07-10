@@ -84,7 +84,7 @@ again by T10; run typecheck/lint at final verify.
     type export.
   - Covers: story "one pool, schema aggregated at the composition root" (plan §2, §9)
 
-- [ ] **T9. Inject the client into `DrizzlePromptRepository`**
+- [x] **T9. Inject the client into `DrizzlePromptRepository`**
   - Type: infrastructure
   - Depends on: T2, T3, T8
   - Red: update

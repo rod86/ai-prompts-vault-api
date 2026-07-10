@@ -1,12 +1,11 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import config from '@src/config.js';
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
-import {
-    databaseClient,
-    promptCategoryModelFactory,
-    promptModelFactory,
-    type TestDatabaseConnection,
-} from '@tests/lib/config.js';
+import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import * as globalSchema from '@src/modules/shared/infrastructure/database/globalSchema.js';
+import { type DatabaseSchema } from '@src/modules/shared/services.js';
+import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
@@ -19,15 +18,17 @@ import {
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 describe('DrizzlePromptRepository', () => {
-    let db: TestDatabaseConnection;
+    const client = new DatabaseClient<DatabaseSchema>(config.database, globalSchema);
+    let db: ReturnType<typeof client.getConnection>;
     let repository: DrizzlePromptRepository;
     const recipeCategory = promptCategoryModelFactory.create({ name: 'Recipes & Cooking' });
     const travelCategory = promptCategoryModelFactory.create({ name: 'Travel & Adventure' });
     const fitnessCategory = promptCategoryModelFactory.create({ name: 'Fitness & Wellness' });
 
     beforeAll(async () => {
-        db = databaseClient.connect();
-        repository = new DrizzlePromptRepository(db);
+        client.connect();
+        db = client.getConnection();
+        repository = new DrizzlePromptRepository(client);
         await insertPromptCategories(db, [recipeCategory, travelCategory, fitnessCategory]);
     });
 
@@ -37,7 +38,7 @@ describe('DrizzlePromptRepository', () => {
             travelCategory.id,
             fitnessCategory.id,
         ]);
-        await databaseClient.close();
+        await client.close();
     });
 
     describe('findAll', () => {
