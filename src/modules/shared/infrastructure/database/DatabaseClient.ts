@@ -41,5 +41,6 @@ export default class DatabaseClient<DatabaseSchema extends Record<string, unknow
 
         await this.pool.end();
         this.pool = undefined;
+        this.connection = undefined;
     }
 }

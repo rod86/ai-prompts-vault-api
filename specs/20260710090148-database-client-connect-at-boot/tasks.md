@@ -49,7 +49,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: `connect()` guards on the existing pool/connection (no-op when already set).
   - Covers: AC3 "Establish is idempotent. Given an already-established component, When establish is requested again, Then still exactly one resource has been reserved."
 
-- [ ] **T5. Release frees the resource and re-locks access**
+- [x] **T5. Release frees the resource and re-locks access**
   - Type: infrastructure
   - Depends on: T3
   - Red: assert that after `connect()` then `close()`, `pool.end()` was called once and a
