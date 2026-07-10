@@ -118,6 +118,28 @@ again by T10; run typecheck/lint at final verify.
   - Covers: story "connection established once at startup, not as an import side effect"
     (plan §1, §2, §9)
 
+- [ ] **T12. Move schema aggregation into `config.ts` (boundaries fix)**
+  - Type: infrastructure
+  - Depends on: T1, T8, T9, T10
+  - Context: `npm run lint` failed after T1–T11 landed — `globalSchema.ts` (added by T1,
+    consumed by T8–T10) is classified `infrastructure`/context `shared` by
+    `eslint-plugin-boundaries`, which forbids depending on `prompt`-context
+    infrastructure. See spec Decision 5.
+  - Red: none — `src/config.ts` is a composition-root-level config file, not a testable
+    unit; see testing-practices. Validated by `npm run lint` (the check this fixes) plus
+    typecheck + full suite. Go straight to Green.
+  - Green: delete `src/modules/shared/infrastructure/database/globalSchema.ts`. In
+    `src/config.ts`, rename the existing legacy schema imports to
+    `legacyPromptSchema`/`legacyUserSchema`, add a `promptSchema` import from
+    `@src/modules/prompt/infrastructure/database/schema.js`, and mix all three into
+    `database.schema: { ...legacyPromptSchema, ...legacyUserSchema, ...promptSchema }`
+    (single default export only, no new named export). Update
+    `src/modules/shared/services.ts` and both prompt repository integration tests
+    (`DrizzlePromptRepository.test.ts`, `DrizzlePromptCategoryRepository.test.ts`) to bind
+    to `config.database.schema` directly instead of the deleted `globalSchema` module.
+  - Covers: story "single aggregated schema" (plan §2, §9) — corrects T1/T8's original
+    (boundaries-violating) implementation of this story; no spec AC changes.
+
 ## Coverage check
 | AC# | Criterion text (verbatim from spec §5) | Covered by task(s) |
 | --- | -------------------------------------- | ------------------ |
