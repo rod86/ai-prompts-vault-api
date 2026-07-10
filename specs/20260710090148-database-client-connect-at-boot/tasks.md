@@ -118,7 +118,7 @@ again by T10; run typecheck/lint at final verify.
   - Covers: story "connection established once at startup, not as an import side effect"
     (plan §1, §2, §9)
 
-- [ ] **T12. Move schema aggregation into `config.ts` (boundaries fix)**
+- [x] **T12. Move schema aggregation into `config.ts` (boundaries fix)**
   - Type: infrastructure
   - Depends on: T1, T8, T9, T10
   - Context: `npm run lint` failed after T1–T11 landed — `globalSchema.ts` (added by T1,

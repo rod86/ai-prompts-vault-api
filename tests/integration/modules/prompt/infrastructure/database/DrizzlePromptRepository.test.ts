@@ -3,7 +3,6 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import config from '@src/config.js';
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import * as globalSchema from '@src/modules/shared/infrastructure/database/globalSchema.js';
 import { type DatabaseSchema } from '@src/modules/shared/services.js';
 import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
 import {
@@ -18,7 +17,7 @@ import {
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 describe('DrizzlePromptRepository', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, globalSchema);
+    const client = new DatabaseClient<DatabaseSchema>(config.database, config.database.schema);
     let db: ReturnType<typeof client.getConnection>;
     let repository: DrizzlePromptRepository;
     const recipeCategory = promptCategoryModelFactory.create({ name: 'Recipes & Cooking' });
