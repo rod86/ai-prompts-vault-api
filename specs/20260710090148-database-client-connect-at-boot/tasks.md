@@ -99,7 +99,7 @@ again by T10; run typecheck/lint at final verify.
     `DrizzleDatabaseConnection` import; own-context table imports unchanged.
   - Covers: story "repositories reuse the single established connection" (plan §2, §9)
 
-- [ ] **T10. Inject the client into `DrizzlePromptCategoryRepository`**
+- [x] **T10. Inject the client into `DrizzlePromptCategoryRepository`**
   - Type: infrastructure
   - Depends on: T2, T3, T8
   - Red: same change as T9 for
