@@ -57,7 +57,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.ts` per `plan.md` §3 — constructor takes `DatabaseClientInterface<DatabaseConnection>`; `findByEmail` calls `this.database.getConnection()` then `db.select({ id, email, passwordHash }).from(users).where(sql\`lower(email) = lower(?)\`).limit(1)`, mapping to `UserCredentials` or `undefined`; `DatabaseConnection` imported from `@src/modules/shared/services.js`.
   - Covers: AC5 "Given the rebuilt persistence adapter, When an account is looked up by email, Then the same account's credentials projection (identifier, email, stored secured password) is found case-insensitively and nothing is found for an absent email, exactly as the existing adapter does"; V1, V2
 
-- [ ] T9. Auth module composition root
+- [x] T9. Auth module composition root
   - Type: infrastructure
   - Depends on: T5, T6, T8
   - Red: none — `services.ts` is pure composition; see `testing-practices`.
