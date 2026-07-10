@@ -58,7 +58,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: `close()` ends the pool and resets both `pool` and `connection` to `undefined`.
   - Covers: AC4 "Release frees the resource and re-locks access. Given an established component, When it is released, Then the resource is freed and a subsequent request for the connection is refused with E1."; E1
 
-- [ ] **T6. Release without establish is a safe no-op**
+- [x] **T6. Release without establish is a safe no-op**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert `close()` on a never-connected client resolves and never calls `pool.end()`.
