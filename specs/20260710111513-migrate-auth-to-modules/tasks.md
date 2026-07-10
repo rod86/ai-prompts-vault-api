@@ -8,7 +8,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/domain/UserCredentials.ts` — `export type UserCredentials { id: string; email: string; passwordHash: string }`, ported from `src/logic/auth/domain/UserCredentials.ts` (declared as `type` per `plan.md` §7 Assumption 1).
   - Covers: underlies AC1, AC5 (credentials shape); V1
 
-- [ ] T2. Add the `InvalidCredentialsError` domain error
+- [x] T2. Add the `InvalidCredentialsError` domain error
   - Type: domain
   - Depends on: none
   - Red: none — no dedicated test; covered indirectly by the use-case rejection branches in T5.
