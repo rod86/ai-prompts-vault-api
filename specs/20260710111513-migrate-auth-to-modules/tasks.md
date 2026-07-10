@@ -1,7 +1,7 @@
 # Tasks: Rebuild the sign-in (authentication) capability in the current module structure
 Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
 
-- [ ] T1. Add the `UserCredentials` entity
+- [x] T1. Add the `UserCredentials` entity
   - Type: domain
   - Depends on: none
   - Red: none — pure type declaration, no logic; see `testing-practices` "no logic, no test" rule.
