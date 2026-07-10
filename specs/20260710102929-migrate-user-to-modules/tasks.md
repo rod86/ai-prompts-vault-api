@@ -22,7 +22,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/domain/interfaces/UserRepositoryInterface.ts`, default-exported, ported unchanged from legacy: `findByEmail(email: string): Promise<User | undefined>`, `create(user: User): Promise<void>`.
   - Covers: V5
 
-- [ ] T4. `RegisterUserUseCase` with internal id/timestamp generation
+- [x] T4. `RegisterUserUseCase` with internal id/timestamp generation
   - Type: application
   - Depends on: T1, T2, T3
   - Red: `tests/unit/modules/user/application/RegisterUserUseCase.test.ts` (ported from `tests/unit/logic/user/application/RegisterUserUseCase.test.ts`, substantively adjusted per `plan.md` §2) — mocks `UserRepositoryInterface`, `PasswordHasherInterface`, `DateTimeInterface`, `IdGeneratorInterface`; `buildQuery()` no longer includes `id`/`createdAt`/`updatedAt` (keeps `name`/`email`/`password`); asserts the returned account and the `userRepository.create` call use the mocked generator's id and the mocked clock's time for both `createdAt` and `updatedAt`, that the returned account omits the password, that `passwordHasher.hash` is called with the query password, and keeps the existing "email already in use → `EmailAlreadyInUseError`, `create` not called" case (which additionally asserts `dateTime.now()`/`idGenerator.generate()` were never called). Fails: class/constructor shape doesn't exist yet.
