@@ -15,7 +15,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/domain/errors/InvalidCredentialsError.ts`, ported unchanged from `src/logic/auth/domain/errors/InvalidCredentialsError.ts` (extends `Error`, sets `name`, message `Invalid authentication credentials`).
   - Covers: E1
 
-- [ ] T3. Add the `UserCredentialsRepositoryInterface` port
+- [x] T3. Add the `UserCredentialsRepositoryInterface` port
   - Type: domain
   - Depends on: T1
   - Red: none — contract only, no dedicated test.
