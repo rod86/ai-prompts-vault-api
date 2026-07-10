@@ -2,6 +2,7 @@ import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTi
 import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 import type PasswordHasherInterface from '@src/modules/shared/domain/interfaces/PasswordHasherInterface.js';
 import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
+import { UserCreationError } from '@src/modules/user/domain/errors/UserCreationError.js';
 import type UserRepositoryInterface from '@src/modules/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@src/modules/user/domain/User.js';
 
@@ -46,7 +47,11 @@ export class RegisterUserUseCase {
             updatedAt: now,
         };
 
-        await this.userRepository.create(user);
+        try {
+            await this.userRepository.create(user);
+        } catch (error) {
+            throw new UserCreationError(user.id, error);
+        }
 
         return {
             id: user.id,

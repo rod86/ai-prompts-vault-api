@@ -9,6 +9,7 @@ import {
     RegisterUserUseCase,
 } from '@src/modules/user/application/RegisterUserUseCase.js';
 import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
+import { UserCreationError } from '@src/modules/user/domain/errors/UserCreationError.js';
 import type UserRepositoryInterface from '@src/modules/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@src/modules/user/domain/User.js';
 
@@ -72,6 +73,19 @@ describe('RegisterUserUseCase', () => {
             createdAt: now,
             updatedAt: now,
         });
+    });
+
+    it('throws UserCreationError wrapping the original error when the repository rejects while creating', async () => {
+        const fixtureError = new Error('connection lost');
+        userRepository.findByEmail.mockResolvedValue(undefined);
+        passwordHasher.hash.mockResolvedValue('hashed-password');
+        userRepository.create.mockRejectedValue(fixtureError);
+        const query = buildQuery();
+
+        const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
+
+        expect(error).toBeInstanceOf(UserCreationError);
+        expect((error as UserCreationError).cause).toBe(fixtureError);
     });
 
     it('throws EmailAlreadyInUseError and does not persist when the email is already in use', async () => {
