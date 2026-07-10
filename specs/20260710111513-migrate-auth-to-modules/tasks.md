@@ -50,7 +50,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/infrastructure/database/schema.ts`, a full `users` table declared identically to `src/modules/user/infrastructure/database/schema.ts` (same table/column names, types, and `lower(email)` unique index) per `plan.md` §4, Decision 3.
   - Covers: V8 (no new migration); underlies AC5
 
-- [ ] T8. `DrizzleUserCredentialsRepository` on the current persistence convention
+- [x] T8. `DrizzleUserCredentialsRepository` on the current persistence convention
   - Type: infrastructure
   - Depends on: T1, T3, T7
   - Red: `tests/integration/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.test.ts` (ported from `tests/integration/logic/auth/infrastructure/database/DrizzleUserCredentialsRepository.test.ts`, import paths updated; real DB via `tests/lib/config.ts`; builds a `DatabaseClient` locally and passes the **client** to the repository, mirroring `tests/integration/modules/user/infrastructure/database/DrizzleUserRepository.test.ts`) — `findByEmail` resolves the credentials projection `{ id, email, passwordHash }` for a matching email case-insensitively and `undefined` when none matches. Reuses `userModelFactory` and `tests/lib/database/users.ts`. Fails: class doesn't exist.
