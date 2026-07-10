@@ -29,7 +29,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/application/RegisterUserUseCase.ts` per `plan.md` §3 — constructor `(userRepository, passwordHasher, dateTime, idGenerator)`; `RegisterUserQuery = { name, email, password }`; self-assign `id = idGenerator.generate()`, `createdAt = updatedAt = dateTime.now()`; unchanged `RegisterUserResponse`.
   - Covers: AC1 "Given the rebuilt implementation, When an account is registered with a name, an email not already in use, and a password, Then a new account is created with a capability-assigned unique identifier and creation/last-updated moment, its password stored only in secured form, and the created account is returned without the password — exactly as `008-user-registration` describes"; AC2 "Given the rebuilt implementation, When an account is registered with an email that already belongs to an existing account (compared case-insensitively), Then the duplicate-email error (E1) is raised and no account is created, exactly as `008-user-registration` describes"; V1, V2, V3, V4, E1
 
-- [ ] T5. Port the `users` Drizzle schema
+- [x] T5. Port the `users` Drizzle schema
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure table declaration, no logic.
