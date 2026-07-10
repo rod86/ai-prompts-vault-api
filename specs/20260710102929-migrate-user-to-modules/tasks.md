@@ -50,7 +50,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/services.ts` — `new DrizzleUserRepository(databaseClient)`, `new RegisterUserUseCase(userRepository, passwordHasher, dateTimeService, idGenerator)` (all imported from `@src/modules/shared/services.js`); export `registerUserUseCase`.
   - Covers: AC4 "Given the rebuilt module, When its composition entry point is loaded, Then it exposes a ready-to-use registration capability wired to the shared current-time, secured-password, and unique-identifier providers"; V1, V3, V4
 
-- [ ] T8. Full-suite verification and legacy-intact check
+- [x] T8. Full-suite verification and legacy-intact check
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6, T7
   - Red: none — verification step, no new behavior.

@@ -1,5 +1,5 @@
 # Spec: Rebuild the user registration capability in the current module structure
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer, I want the user account registration capability rebuilt inside the project's current module structure, coexisting with its existing implementation, so that a verified, current-standards foundation exists for retiring the existing implementation later.
 
 ## 1. Behavior
