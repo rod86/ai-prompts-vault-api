@@ -64,7 +64,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/services.ts` — `new DrizzleUserCredentialsRepository(databaseClient)`, `new JwtTokenIssuer(config.jwtSecret)`, `new LoginUseCase(userCredentialsRepository, passwordHasher, tokenIssuer, dateTimeService, config.jwtExpirationSeconds)` (`databaseClient`, `passwordHasher`, `dateTimeService` imported from `@src/modules/shared/services.js`; `config` from `@src/config.js`); export `loginUseCase`.
   - Covers: AC6 "Given the rebuilt module, When its composition entry point is loaded, Then it exposes a ready-to-use sign-in capability wired to the credentials adapter, the shared secured-password provider, the token issuer, the shared current-time provider, and the configured token expiry"; V1, V5
 
-- [ ] T10. Full-suite verification and legacy-intact check
+- [x] T10. Full-suite verification and legacy-intact check
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6, T7, T8, T9
   - Red: none — verification step, no new behavior.
