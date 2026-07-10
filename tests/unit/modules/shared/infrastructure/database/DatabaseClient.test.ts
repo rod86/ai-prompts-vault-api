@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { type DatabaseConfig } from '@src/modules/shared/domain/Database.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { DatabaseNotConnectedError } from '@src/modules/shared/infrastructure/database/DatabaseNotConnectedError.js';
 
 vi.mock('pg', () => ({
     Pool: vi.fn(),
@@ -55,6 +56,11 @@ describe('DatabaseClient', () => {
         expect(drizzleMock).toHaveBeenCalledTimes(1);
         expect(first).toBe(CONNECTION);
         expect(second).toBe(CONNECTION);
+    });
+
+    it('refuses to hand out a connection before establish', () => {
+        expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
+        expect(PoolMock).not.toHaveBeenCalled();
     });
 
     it('reuses the same pool when connect is called again', () => {

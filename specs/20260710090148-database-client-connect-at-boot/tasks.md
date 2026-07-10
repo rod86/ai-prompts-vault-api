@@ -32,7 +32,7 @@ again by T10; run typecheck/lint at final verify.
     it from `getConnection()`.
   - Covers: AC1 "Establish reserves exactly one resource. Given a fresh component, When it is established and then asked for the connection several times, Then only one underlying connection resource is reserved and the same connection is returned each time."
 
-- [ ] **T3. Refuse access before establish**
+- [x] **T3. Refuse access before establish**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert `getConnection()` on a never-connected client throws
