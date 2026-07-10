@@ -16,3 +16,7 @@ npm-debug.log*
 .idea/
 .vscode/
 *.swp
+
+# Claude Code (personal / machine-specific)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
