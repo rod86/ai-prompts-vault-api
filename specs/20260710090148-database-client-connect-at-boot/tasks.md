@@ -74,7 +74,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: rely on the reset in T5 so a later `connect()` builds a new pool + connection.
   - Covers: AC6 "Re-establish after release starts fresh. Given a component that was established and then released, When it is established again, Then a new resource is reserved and asking for the connection succeeds."
 
-- [ ] **T8. Bind the shared client to `globalSchema` and export the schema type**
+- [x] **T8. Bind the shared client to `globalSchema` and export the schema type**
   - Type: infrastructure
   - Depends on: T1, T2
   - Red: none — `src/modules/shared/services.ts` is a composition root; see
