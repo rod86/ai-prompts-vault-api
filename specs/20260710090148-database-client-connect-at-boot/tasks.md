@@ -18,7 +18,7 @@ again by T10; run typecheck/lint at final verify.
     `@src/modules/prompt/infrastructure/database/schema.js`.
   - Covers: story "single aggregated schema, owned by globalSchema" (plan §2, §9)
 
-- [ ] **T2. Split establish from access with a single memoized connection**
+- [x] **T2. Split establish from access with a single memoized connection**
   - Type: infrastructure
   - Depends on: none
   - Red: in `tests/unit/modules/shared/infrastructure/database/DatabaseClient.test.ts`,

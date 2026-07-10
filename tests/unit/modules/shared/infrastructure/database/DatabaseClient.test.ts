@@ -43,12 +43,18 @@ describe('DatabaseClient', () => {
         client = new DatabaseClient(CONFIG, SCHEMA);
     });
 
-    it('opens the connection bound to the provided schema', () => {
-        const result = client.connect();
+    it('memoizes the connection so getConnection returns the same instance each time', () => {
+        client.connect();
+
+        const first = client.getConnection();
+        const second = client.getConnection();
 
         expect(PoolMock).toHaveBeenCalledWith(CONFIG);
+        expect(PoolMock).toHaveBeenCalledTimes(1);
         expect(drizzleMock).toHaveBeenCalledWith(pool, { schema: SCHEMA });
-        expect(result).toBe(CONNECTION);
+        expect(drizzleMock).toHaveBeenCalledTimes(1);
+        expect(first).toBe(CONNECTION);
+        expect(second).toBe(CONNECTION);
     });
 
     it('reuses the same pool when connect is called again', () => {
