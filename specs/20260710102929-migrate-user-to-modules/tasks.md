@@ -8,7 +8,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/domain/User.ts` — `export type User { id; name; email; passwordHash; createdAt; updatedAt }`, ported from `src/logic/user/domain/User.ts` (declared as `type` per `plan.md` §7 Assumption 1).
   - Covers: underlies AC1–AC3 (entity shape); V1
 
-- [ ] T2. Add the `EmailAlreadyInUseError` domain error
+- [x] T2. Add the `EmailAlreadyInUseError` domain error
   - Type: domain
   - Depends on: none
   - Red: none — no dedicated test; covered indirectly by the use-case duplicate-email branch in T4.
