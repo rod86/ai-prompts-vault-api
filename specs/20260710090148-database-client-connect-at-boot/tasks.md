@@ -8,7 +8,7 @@ consumers until T8–T10 land — the tasks are ordered contiguously so the suit
 again by T10; run typecheck/lint at final verify.
 -->
 
-- [ ] **T1. Add the `globalSchema` re-export module**
+- [x] **T1. Add the `globalSchema` re-export module**
   - Type: infrastructure
   - Depends on: none
   - Red: none — `src/modules/shared/infrastructure/database/globalSchema.ts` is a pure
