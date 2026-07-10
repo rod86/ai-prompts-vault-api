@@ -43,7 +43,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/infrastructure/database/DrizzleUserRepository.ts` per `plan.md` §3 — constructor takes `DatabaseClientInterface<DatabaseConnection>`; each method calls `this.database.getConnection()`; `lower(email)` match and insert bodies unchanged; `DatabaseConnection` imported from `@src/modules/shared/services.js`.
   - Covers: AC3 "Given the rebuilt persistence adapter, When accounts are created and looked up by email, Then the same account rows are stored and the same account is found (case-insensitively), exactly as the existing adapter does"; V1, V2, V4
 
-- [ ] T7. User module composition root
+- [x] T7. User module composition root
   - Type: infrastructure
   - Depends on: T4, T6
   - Red: none — `services.ts` is pure composition; see `testing-practices`.
