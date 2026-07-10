@@ -22,7 +22,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/domain/interfaces/UserCredentialsRepositoryInterface.ts`, default-exported, ported unchanged from legacy: `findByEmail(email: string): Promise<UserCredentials | undefined>`.
   - Covers: V6
 
-- [ ] T4. Add the `TokenIssuerInterface` port
+- [x] T4. Add the `TokenIssuerInterface` port
   - Type: domain
   - Depends on: none
   - Red: none — contract only, no dedicated test.
