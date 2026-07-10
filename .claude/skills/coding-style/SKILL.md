@@ -33,7 +33,7 @@ most maintainable option that follows TypeScript best practices.
 - `camelCase`: variables, functions, methods, properties (`createUser`, `userRepository`).
 - `UPPER_SNAKE_CASE`: constants (`MAX_RETRY_COUNT`, `DEFAULT_PAGE_SIZE`).
 - Use-case files are named after their class (a verb + `UseCase`): `CreateUserUseCase.ts`, `ListUsersUseCase.ts`.
-- **No suffix required for interfaces** — TypeScript distinguishes interfaces by syntax. Use plain names like `UserRepository` for the interface and `PostgresUserRepository` or `InMemoryUserRepository` for implementations.
+- **Suffix interfaces with `Interface`** — name ports `<Domain><Role>Interface` (e.g. `UserRepositoryInterface`, `PasswordHasherInterface`) and their implementations `<Technology><Contract>` (e.g. `DrizzleUserRepository`, `BcryptPasswordHasher`). The `domain-driven-design` skill owns the full naming convention.
 - Names reveal intent. A good name removes the need for a comment.
 - Unused variables/args must be prefixed with `_` (the linter's `no-unused-vars` ignore pattern). When destructuring to discard a property, rename it to `_` via colon syntax rather than binding it under its original name: `const { categoryId: _, ...rest } = value;`.
 
@@ -74,5 +74,5 @@ most maintainable option that follows TypeScript best practices.
 ## Formatting & Commits
 
 - The **formatter owns formatting** — don't hand-format. Use Prettier or an equivalent tool.
-- Indentation: 2 spaces (TypeScript community standard).
+- Indentation: 2 spaces (TypeScript community standard), but the project's Prettier config (`.prettierrc.json`) is authoritative and overrides it — never hand-format.
 - **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`.
