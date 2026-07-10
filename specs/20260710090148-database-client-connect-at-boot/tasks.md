@@ -8,7 +8,7 @@ consumers until T8–T10 land — the tasks are ordered contiguously so the suit
 again by T10; run typecheck/lint at final verify.
 -->
 
-- [ ] **T1. Add the `globalSchema` re-export module**
+- [x] **T1. Add the `globalSchema` re-export module**
   - Type: infrastructure
   - Depends on: none
   - Red: none — `src/modules/shared/infrastructure/database/globalSchema.ts` is a pure
@@ -18,7 +18,7 @@ again by T10; run typecheck/lint at final verify.
     `@src/modules/prompt/infrastructure/database/schema.js`.
   - Covers: story "single aggregated schema, owned by globalSchema" (plan §2, §9)
 
-- [ ] **T2. Split establish from access with a single memoized connection**
+- [x] **T2. Split establish from access with a single memoized connection**
   - Type: infrastructure
   - Depends on: none
   - Red: in `tests/unit/modules/shared/infrastructure/database/DatabaseClient.test.ts`,
@@ -32,7 +32,7 @@ again by T10; run typecheck/lint at final verify.
     it from `getConnection()`.
   - Covers: AC1 "Establish reserves exactly one resource. Given a fresh component, When it is established and then asked for the connection several times, Then only one underlying connection resource is reserved and the same connection is returned each time."
 
-- [ ] **T3. Refuse access before establish**
+- [x] **T3. Refuse access before establish**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert `getConnection()` on a never-connected client throws
@@ -41,7 +41,7 @@ again by T10; run typecheck/lint at final verify.
     `getConnection()` throws it when the memoized connection is undefined.
   - Covers: AC2 "Access before establish is refused. Given a component that has not been established, When a caller asks for the connection, Then the request is refused with the \"connection not established\" signal (E1) and no resource is reserved."; V1; E1
 
-- [ ] **T4. Make establish idempotent**
+- [x] **T4. Make establish idempotent**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert calling `connect()` twice constructs the `Pool` exactly once. Fails if
@@ -49,7 +49,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: `connect()` guards on the existing pool/connection (no-op when already set).
   - Covers: AC3 "Establish is idempotent. Given an already-established component, When establish is requested again, Then still exactly one resource has been reserved."
 
-- [ ] **T5. Release frees the resource and re-locks access**
+- [x] **T5. Release frees the resource and re-locks access**
   - Type: infrastructure
   - Depends on: T3
   - Red: assert that after `connect()` then `close()`, `pool.end()` was called once and a
@@ -58,14 +58,14 @@ again by T10; run typecheck/lint at final verify.
   - Green: `close()` ends the pool and resets both `pool` and `connection` to `undefined`.
   - Covers: AC4 "Release frees the resource and re-locks access. Given an established component, When it is released, Then the resource is freed and a subsequent request for the connection is refused with E1."; E1
 
-- [ ] **T6. Release without establish is a safe no-op**
+- [x] **T6. Release without establish is a safe no-op**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert `close()` on a never-connected client resolves and never calls `pool.end()`.
   - Green: `close()` returns early when no pool exists.
   - Covers: AC5 "Release without establish is a safe no-op. Given a component that was never established, When release is requested, Then it completes quietly and frees nothing."
 
-- [ ] **T7. Re-establish after release starts fresh**
+- [x] **T7. Re-establish after release starts fresh**
   - Type: infrastructure
   - Depends on: T5
   - Red: assert `connect()` → `close()` → `connect()` constructs a second `Pool` and a
@@ -74,7 +74,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: rely on the reset in T5 so a later `connect()` builds a new pool + connection.
   - Covers: AC6 "Re-establish after release starts fresh. Given a component that was established and then released, When it is established again, Then a new resource is reserved and asking for the connection succeeds."
 
-- [ ] **T8. Bind the shared client to `globalSchema` and export the schema type**
+- [x] **T8. Bind the shared client to `globalSchema` and export the schema type**
   - Type: infrastructure
   - Depends on: T1, T2
   - Red: none — `src/modules/shared/services.ts` is a composition root; see
@@ -84,7 +84,7 @@ again by T10; run typecheck/lint at final verify.
     type export.
   - Covers: story "one pool, schema aggregated at the composition root" (plan §2, §9)
 
-- [ ] **T9. Inject the client into `DrizzlePromptRepository`**
+- [x] **T9. Inject the client into `DrizzlePromptRepository`**
   - Type: infrastructure
   - Depends on: T2, T3, T8
   - Red: update
@@ -99,7 +99,7 @@ again by T10; run typecheck/lint at final verify.
     `DrizzleDatabaseConnection` import; own-context table imports unchanged.
   - Covers: story "repositories reuse the single established connection" (plan §2, §9)
 
-- [ ] **T10. Inject the client into `DrizzlePromptCategoryRepository`**
+- [x] **T10. Inject the client into `DrizzlePromptCategoryRepository`**
   - Type: infrastructure
   - Depends on: T2, T3, T8
   - Red: same change as T9 for
@@ -107,7 +107,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: same repo refactor for `DrizzlePromptCategoryRepository`.
   - Covers: story "repositories reuse the single established connection" (plan §2, §9)
 
-- [ ] **T11. Rewire the prompt composition root**
+- [x] **T11. Rewire the prompt composition root**
   - Type: infrastructure
   - Depends on: T8, T9, T10
   - Red: none — `src/modules/prompt/services.ts` is a composition root; see
@@ -117,6 +117,28 @@ again by T10; run typecheck/lint at final verify.
     `databaseClient.connect()` once and `close()` on shutdown when modules routes are wired.
   - Covers: story "connection established once at startup, not as an import side effect"
     (plan §1, §2, §9)
+
+- [x] **T12. Move schema aggregation into `config.ts` (boundaries fix)**
+  - Type: infrastructure
+  - Depends on: T1, T8, T9, T10
+  - Context: `npm run lint` failed after T1–T11 landed — `globalSchema.ts` (added by T1,
+    consumed by T8–T10) is classified `infrastructure`/context `shared` by
+    `eslint-plugin-boundaries`, which forbids depending on `prompt`-context
+    infrastructure. See spec Decision 5.
+  - Red: none — `src/config.ts` is a composition-root-level config file, not a testable
+    unit; see testing-practices. Validated by `npm run lint` (the check this fixes) plus
+    typecheck + full suite. Go straight to Green.
+  - Green: delete `src/modules/shared/infrastructure/database/globalSchema.ts`. In
+    `src/config.ts`, rename the existing legacy schema imports to
+    `legacyPromptSchema`/`legacyUserSchema`, add a `promptSchema` import from
+    `@src/modules/prompt/infrastructure/database/schema.js`, and mix all three into
+    `database.schema: { ...legacyPromptSchema, ...legacyUserSchema, ...promptSchema }`
+    (single default export only, no new named export). Update
+    `src/modules/shared/services.ts` and both prompt repository integration tests
+    (`DrizzlePromptRepository.test.ts`, `DrizzlePromptCategoryRepository.test.ts`) to bind
+    to `config.database.schema` directly instead of the deleted `globalSchema` module.
+  - Covers: story "single aggregated schema" (plan §2, §9) — corrects T1/T8's original
+    (boundaries-violating) implementation of this story; no spec AC changes.
 
 ## Coverage check
 | AC# | Criterion text (verbatim from spec §5) | Covered by task(s) |

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { type DatabaseConfig } from '@src/modules/shared/domain/Database.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { DatabaseNotConnectedError } from '@src/modules/shared/infrastructure/database/DatabaseNotConnectedError.js';
 
 vi.mock('pg', () => ({
     Pool: vi.fn(),
@@ -43,12 +44,23 @@ describe('DatabaseClient', () => {
         client = new DatabaseClient(CONFIG, SCHEMA);
     });
 
-    it('opens the connection bound to the provided schema', () => {
-        const result = client.connect();
+    it('memoizes the connection so getConnection returns the same instance each time', () => {
+        client.connect();
+
+        const first = client.getConnection();
+        const second = client.getConnection();
 
         expect(PoolMock).toHaveBeenCalledWith(CONFIG);
+        expect(PoolMock).toHaveBeenCalledTimes(1);
         expect(drizzleMock).toHaveBeenCalledWith(pool, { schema: SCHEMA });
-        expect(result).toBe(CONNECTION);
+        expect(drizzleMock).toHaveBeenCalledTimes(1);
+        expect(first).toBe(CONNECTION);
+        expect(second).toBe(CONNECTION);
+    });
+
+    it('refuses to hand out a connection before establish', () => {
+        expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
+        expect(PoolMock).not.toHaveBeenCalled();
     });
 
     it('reuses the same pool when connect is called again', () => {
@@ -58,19 +70,21 @@ describe('DatabaseClient', () => {
         expect(PoolMock).toHaveBeenCalledTimes(1);
     });
 
-    it('releases the connection on close', async () => {
+    it('releases the connection on close and re-locks access', async () => {
         client.connect();
         await client.close();
 
         expect(pool.end).toHaveBeenCalledTimes(1);
+        expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
     });
 
-    it('constructs a fresh pool after a close', async () => {
+    it('constructs a fresh pool and connection after a close', async () => {
         client.connect();
         await client.close();
         client.connect();
 
         expect(PoolMock).toHaveBeenCalledTimes(2);
+        expect(client.getConnection()).toBe(CONNECTION);
     });
 
     it('is a safe no-op when closing without an open connection', async () => {

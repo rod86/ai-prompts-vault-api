@@ -8,9 +8,8 @@ import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastruct
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
 import { databaseClient, dateTimeService, idGenerator } from '@src/modules/shared/services.js';
 
-const db = databaseClient.connect();
-const promptCategoryRepository = new DrizzlePromptCategoryRepository(db);
-const promptRepository = new DrizzlePromptRepository(db);
+const promptCategoryRepository = new DrizzlePromptCategoryRepository(databaseClient);
+const promptRepository = new DrizzlePromptRepository(databaseClient);
 
 export const listPromptCategoriesUseCase = new ListPromptCategoriesUseCase(
     promptCategoryRepository,

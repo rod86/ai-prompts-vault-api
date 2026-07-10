@@ -1,27 +1,28 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import config from '@src/config.js';
 import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
-import {
-    databaseClient,
-    promptCategoryModelFactory,
-    type TestDatabaseConnection,
-} from '@tests/lib/config.js';
+import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { type DatabaseSchema } from '@src/modules/shared/services.js';
+import { promptCategoryModelFactory } from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
 
 describe('DrizzlePromptCategoryRepository', () => {
-    let db: TestDatabaseConnection;
+    const client = new DatabaseClient<DatabaseSchema>(config.database, config.database.schema);
+    let db: ReturnType<typeof client.getConnection>;
     let repository: DrizzlePromptCategoryRepository;
 
     beforeAll(() => {
-        db = databaseClient.connect();
-        repository = new DrizzlePromptCategoryRepository(db);
+        client.connect();
+        db = client.getConnection();
+        repository = new DrizzlePromptCategoryRepository(client);
     });
 
     afterAll(async () => {
-        await databaseClient.close();
+        await client.close();
     });
 
     describe('findAll', () => {

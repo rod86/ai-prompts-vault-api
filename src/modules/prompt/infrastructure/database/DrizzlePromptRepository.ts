@@ -7,19 +7,22 @@ import {
     type UpdatePrompt,
 } from '@src/modules/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
-import { type DrizzleDatabaseConnection } from '@src/modules/shared/services.js';
+import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
+import { type DatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
-    constructor(private readonly db: DrizzleDatabaseConnection) {}
+    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
 
     public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
+        const db = this.database.getConnection();
+
         // Compared as text (not uuid) so a filter value that isn't UUID-shaped
         // simply matches nothing instead of erroring at the database (spec §3/§6 Decision 4).
         const whereClause = filter?.categoryId
             ? eq(sql`${prompts.promptCategoryId}::text`, filter.categoryId)
             : undefined;
 
-        const rows = await this.db
+        const rows = await db
             .select({
                 id: prompts.id,
                 title: prompts.title,
@@ -47,7 +50,9 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
     }
 
     public async findById(id: string): Promise<Prompt | undefined> {
-        const rows = await this.db
+        const db = this.database.getConnection();
+
+        const rows = await db
             .select({
                 id: prompts.id,
                 title: prompts.title,
@@ -81,7 +86,9 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
     }
 
     public async create(prompt: CreatePrompt): Promise<void> {
-        await this.db.insert(prompts).values({
+        const db = this.database.getConnection();
+
+        await db.insert(prompts).values({
             id: prompt.id,
             promptCategoryId: prompt.categoryId,
             title: prompt.title,
@@ -93,7 +100,9 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
     }
 
     public async update(id: string, prompt: UpdatePrompt): Promise<void> {
-        await this.db
+        const db = this.database.getConnection();
+
+        await db
             .update(prompts)
             .set({
                 ...(prompt.categoryId !== undefined && { promptCategoryId: prompt.categoryId }),
@@ -106,6 +115,8 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
     }
 
     public async delete(id: string): Promise<void> {
-        await this.db.delete(prompts).where(eq(prompts.id, id));
+        const db = this.database.getConnection();
+
+        await db.delete(prompts).where(eq(prompts.id, id));
     }
 }
