@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { JwtTokenIssuer } from '@src/modules/auth/infrastructure/JwtTokenIssuer.js';
+import { JwtTokenIssuer } from '@src/modules/auth/infrastructure/security/JwtTokenIssuer.js';
 
 describe('JwtTokenIssuer', () => {
     let issuer: JwtTokenIssuer;
