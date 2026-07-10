@@ -36,7 +36,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/infrastructure/database/schema.ts`, ported unchanged (same table/column names, types, and `lower(email)` unique index) from `src/logic/user/infrastructure/database/schema.ts`.
   - Covers: V7 (no new migration); underlies AC3
 
-- [ ] T6. `DrizzleUserRepository` on the current persistence convention
+- [x] T6. `DrizzleUserRepository` on the current persistence convention
   - Type: infrastructure
   - Depends on: T1, T3, T5
   - Red: `tests/integration/modules/user/infrastructure/database/DrizzleUserRepository.test.ts` (ported from `tests/integration/logic/user/infrastructure/database/DrizzleUserRepository.test.ts`, import paths updated; real DB via `tests/lib/config.ts`; builds a `DatabaseClient` locally and passes the **client** to the repository, mirroring `tests/integration/modules/prompt/infrastructure/database/DrizzlePromptRepository.test.ts`) — `create` persists an account row (verified via `selectUsersByIds`); `findByEmail` finds an account case-insensitively and returns `undefined` when none matches. Reuses `userModelFactory` and `tests/lib/database/users.ts`. Fails: class doesn't exist.
