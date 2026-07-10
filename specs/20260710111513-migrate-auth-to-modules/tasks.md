@@ -43,7 +43,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/infrastructure/JwtTokenIssuer.ts` per `plan.md` §3 — `implements TokenIssuerInterface`; `constructor(secret: string)`; `issueToken(userId, expiresAt)` returns `jwt.sign({ sub: userId, exp: Math.floor(expiresAt.getTime() / 1000) }, secret, { algorithm: 'HS256' })`. No `verifyPassword`.
   - Covers: AC4 "Given the rebuilt token issuer, When a token is issued for an account identifier and an explicit expiry, Then the token carries that identifier and that expiry, exactly as the existing implementation does"; V4, V5
 
-- [ ] T7. Add the auth module `users` Drizzle schema
+- [x] T7. Add the auth module `users` Drizzle schema
   - Type: infrastructure
   - Depends on: none
   - Red: none — pure table declaration, no logic.
