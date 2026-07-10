@@ -15,7 +15,7 @@ Plan: specs/20260710102929-migrate-user-to-modules/plan.md
   - Green: create `src/modules/user/domain/errors/EmailAlreadyInUseError.ts`, ported unchanged from `src/logic/user/domain/errors/EmailAlreadyInUseError.ts` (extends `Error`, sets `name`, message `Email already in use: <email>`).
   - Covers: E1
 
-- [ ] T3. Add the `UserRepositoryInterface` port
+- [x] T3. Add the `UserRepositoryInterface` port
   - Type: domain
   - Depends on: T1
   - Red: none — contract only, no dedicated test.
