@@ -29,7 +29,7 @@ Plan: specs/20260710111513-migrate-auth-to-modules/plan.md
   - Green: create `src/modules/auth/domain/interfaces/TokenIssuerInterface.ts`, default-exported: `issueToken(userId: string, expiresAt: Date): Promise<string>` (the narrowed token half of the legacy `AuthCryptoInterface`, per `plan.md` §2, Decision 2).
   - Covers: V5, V6
 
-- [ ] T5. `LoginUseCase` with shared password verification + separate token issuer
+- [x] T5. `LoginUseCase` with shared password verification + separate token issuer
   - Type: application
   - Depends on: T1, T2, T3, T4
   - Red: `tests/unit/modules/auth/application/LoginUseCase.test.ts` (ported from `tests/unit/logic/auth/application/LoginUseCase.test.ts`, adjusted per `plan.md` §2) — mocks `UserCredentialsRepositoryInterface`, `PasswordHasherInterface`, `TokenIssuerInterface`, `DateTimeInterface`; constructs `new LoginUseCase(userCredentialsRepository, passwordHasher, tokenIssuer, dateService, 3600)`. Success case: `findByEmail` returns `{ id: 'fixture-id', email, passwordHash: 'hash' }`, `passwordHasher.compare` → true, `dateService.now` → `2026-01-01T00:00:00Z`, `tokenIssuer.issueToken` → `'signed-token'`; asserts result `{ token: 'signed-token' }`, `passwordHasher.compare` called with `('p','hash')`, and `tokenIssuer.issueToken` called once with `('fixture-id', new Date('2026-01-01T01:00:00.000Z'))`. Unknown-email case: `findByEmail` → undefined; asserts `InvalidCredentialsError` + message `Invalid authentication credentials`, and `passwordHasher.compare`/`tokenIssuer.issueToken` never called. Wrong-password case: `compare` → false; asserts `InvalidCredentialsError` and `tokenIssuer.issueToken` never called. Fails: class/constructor shape doesn't exist yet.
