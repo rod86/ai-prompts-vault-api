@@ -8,8 +8,6 @@ import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastruct
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
 import { databaseClient, dateTimeService, idGenerator } from '@src/modules/shared/services.js';
 
-// App boot must call databaseClient.connect() once (and close() on shutdown) once
-// modules routes are wired into app.ts/index.ts — see spec 20260710090148.
 const promptCategoryRepository = new DrizzlePromptCategoryRepository(databaseClient);
 const promptRepository = new DrizzlePromptRepository(databaseClient);
 
