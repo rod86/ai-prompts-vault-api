@@ -6,7 +6,7 @@ import { DatabaseNotConnectedError } from '@src/modules/shared/infrastructure/da
 
 
 export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
-    implements DatabaseClientInterface<DatabaseSchema>
+    implements DatabaseClientInterface<NodePgDatabase<DatabaseSchema>>
 {
     private pool: Pool | undefined;
     private connection: DatabaseConnection<NodePgDatabase<DatabaseSchema>> | undefined;

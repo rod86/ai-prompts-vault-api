@@ -3,10 +3,10 @@ import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/i
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { promptCategories } from '@src/modules/prompt/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseSchema } from '@src/modules/shared/services.js';
+import { type DatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzlePromptCategoryRepository implements PromptCategoryRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseSchema>) {}
+    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
 
     public async findAll(): Promise<PromptCategory[]> {
         const db = this.database.getConnection();

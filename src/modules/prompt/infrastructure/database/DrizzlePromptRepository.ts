@@ -8,10 +8,10 @@ import {
 } from '@src/modules/prompt/domain/Prompt.js';
 import { promptCategories, prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseSchema } from '@src/modules/shared/services.js';
+import { type DatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseSchema>) {}
+    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
 
     public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
         const db = this.database.getConnection();
