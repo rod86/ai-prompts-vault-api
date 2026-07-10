@@ -1,7 +1,7 @@
 # Tasks: Rebuild the user registration capability in the current module structure
 Plan: specs/20260710102929-migrate-user-to-modules/plan.md
 
-- [ ] T1. Add the `User` entity
+- [x] T1. Add the `User` entity
   - Type: domain
   - Depends on: none
   - Red: none — pure type declaration, no logic; see `testing-practices` "no logic, no test" rule.
