@@ -41,7 +41,7 @@ again by T10; run typecheck/lint at final verify.
     `getConnection()` throws it when the memoized connection is undefined.
   - Covers: AC2 "Access before establish is refused. Given a component that has not been established, When a caller asks for the connection, Then the request is refused with the \"connection not established\" signal (E1) and no resource is reserved."; V1; E1
 
-- [ ] **T4. Make establish idempotent**
+- [x] **T4. Make establish idempotent**
   - Type: infrastructure
   - Depends on: T2
   - Red: assert calling `connect()` twice constructs the `Pool` exactly once. Fails if
