@@ -65,7 +65,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: `close()` returns early when no pool exists.
   - Covers: AC5 "Release without establish is a safe no-op. Given a component that was never established, When release is requested, Then it completes quietly and frees nothing."
 
-- [ ] **T7. Re-establish after release starts fresh**
+- [x] **T7. Re-establish after release starts fresh**
   - Type: infrastructure
   - Depends on: T5
   - Red: assert `connect()` → `close()` → `connect()` constructs a second `Pool` and a

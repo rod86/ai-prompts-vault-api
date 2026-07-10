@@ -78,12 +78,13 @@ describe('DatabaseClient', () => {
         expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
     });
 
-    it('constructs a fresh pool after a close', async () => {
+    it('constructs a fresh pool and connection after a close', async () => {
         client.connect();
         await client.close();
         client.connect();
 
         expect(PoolMock).toHaveBeenCalledTimes(2);
+        expect(client.getConnection()).toBe(CONNECTION);
     });
 
     it('is a safe no-op when closing without an open connection', async () => {
