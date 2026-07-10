@@ -107,7 +107,7 @@ again by T10; run typecheck/lint at final verify.
   - Green: same repo refactor for `DrizzlePromptCategoryRepository`.
   - Covers: story "repositories reuse the single established connection" (plan §2, §9)
 
-- [ ] **T11. Rewire the prompt composition root**
+- [x] **T11. Rewire the prompt composition root**
   - Type: infrastructure
   - Depends on: T8, T9, T10
   - Red: none — `src/modules/prompt/services.ts` is a composition root; see
