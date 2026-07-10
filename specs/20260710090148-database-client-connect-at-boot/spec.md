@@ -1,5 +1,5 @@
 # Spec: Establish the database connection once at startup
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer maintaining the service, I want the shared database connection to be established once when the application starts and reused everywhere, so that the service uses a single connection resource and misuse is caught immediately.
 
 <!--
