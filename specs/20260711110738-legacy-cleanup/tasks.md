@@ -102,7 +102,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC10 "the old-format numbered spec folders (`009` and earlier) no longer exist
     and only timestamp-format folders remain"
 
-- [ ] T9. Whole-repo verification gate
+- [x] T9. Whole-repo verification gate
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6, T7, T8
   - Red: none — verification step.

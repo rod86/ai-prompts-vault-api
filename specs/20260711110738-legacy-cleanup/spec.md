@@ -1,5 +1,5 @@
 # Spec: Legacy scaffolding cleanup before route/handler migration
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a maintainer, I want the legacy business-logic tree, the request-validation
 library and layer, and every HTTP endpoint except the health check removed — and the
 configuration reorganized — so that the codebase is a clean, unambiguous base for
