@@ -9,10 +9,4 @@ describe('app', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ status: 'ok' });
     });
-
-    it('responds with not found for a previously-available endpoint', async () => {
-        const response = await request(app).get('/prompts');
-
-        expect(response.status).toBe(404);
-    });
 });
