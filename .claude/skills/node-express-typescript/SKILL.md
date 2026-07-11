@@ -69,7 +69,7 @@ Two things are non-negotiable regardless of naming: the **HTTP layer** (`routes`
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { apiRouter } from './routes/index.js';
-import { errorHandler, notFoundHandler } from './middleware/error.js';
+import { errorMiddleware, notFoundMiddleware } from './middleware/error.js';
 
 export function createApp(): Express {
     const app = express();
@@ -77,8 +77,8 @@ export function createApp(): Express {
     app.use(helmet());                       // security headers first
     app.use(express.json({ limit: '1mb' })); // explicit body-size limit
     app.use('/api', apiRouter);              // routes
-    app.use(notFoundHandler);                // 404 — after all routes
-    app.use(errorHandler);                   // error handler — ALWAYS last
+    app.use(notFoundMiddleware);                // 404 — after all routes
+    app.use(errorMiddleware);                   // error handler — ALWAYS last
     return app;
 }
 ```
@@ -195,15 +195,15 @@ export const closeDatabase = (): Promise<void> => pool.end();                   
 ```typescript
 // routes/users.routes.ts
 import { Router } from 'express';
-import { validate } from '../middleware/validate.js';
-import { requireAuth } from '../middleware/auth.js';
-import * as handlers from '../handlers/users.js';
+import { validateMiddleware } from '../middleware/validateMiddleware.js';
+import { requireAuthMiddleware } from '../middleware/requireAuthMiddleware.js';
+import { listUsersHandler, createUserHandler, getUserHandler } from '../handlers/users.js';
 import { CreateUserSchema, UserParamsSchema } from './users.schema.js'; // schema co-located with the router
 
 export const usersRouter = Router();
-usersRouter.get('/', requireAuth, handlers.list);
-usersRouter.post('/', requireAuth, validate(CreateUserSchema), handlers.create);
-usersRouter.get('/:id', validate(UserParamsSchema, 'params'), handlers.getById);
+usersRouter.get('/', requireAuthMiddleware, listUsersHandler);
+usersRouter.post('/', requireAuthMiddleware, validateMiddleware(CreateUserSchema), createUserHandler);
+usersRouter.get('/:id', validateMiddleware(UserParamsSchema, 'params'), getUserHandler);
 ```
 
 **Keep handlers thin — no business logic in them.** A handler reads already-validated input, delegates to a decoupled service/use-case layer, and shapes the response. *How* that layer is organized (services, use cases, hexagonal/DDD) is out of scope here — see your business-logic architecture skill. This skill only asks one thing of you: keep that logic **out of the route handler** so the HTTP layer stays a thin, testable translator.
@@ -214,14 +214,16 @@ Two Express 5 mechanics do belong in the handler:
 
 ```typescript
 // NO try/catch needed — the thrown error reaches the central error handler
-export async function getById(req: Request, res: Response): Promise<void> {
+export async function getUserHandler(req: Request, res: Response): Promise<void> {
     const user = await usersService.findById(req.params.id); // delegate to your service layer
     if (!user) throw new NotFoundError(`User ${req.params.id} not found`);
     res.json(user);
 }
 ```
 
-**Group by resource, mirroring `routes/`.** The router and its validation schema(s) live together under `routes/` — `routes/posts.routes.ts` + `routes/posts.schema.ts` (the latter exporting `CreatePostSchema`, `UpdatePostSchema`, ...) — and handlers group the same way: `handlers/posts.ts` exporting `list`, `create`, ..., or a folder per resource (`handlers/posts/listPosts.ts`, `createPost.ts`) once they grow. Never split a single resource across unrelated files, and never mix two resources in one file: everything lines up by name — `routes/posts.routes.ts` + `routes/posts.schema.ts` ↔ `handlers/posts*`. Because the schema is the single source of truth for a route's shape, both the router (runtime `validate(...)`) and the handler (`z.infer` types, §8) import it from `routes/`. Pick file-per-resource *or* folder-per-resource and apply it consistently.
+**Naming — the `Handler` suffix.** A handler's exported identifier ends with `Handler` (`listUsersHandler`, `createUserHandler`, `getUserHandler`), and a single-handler file is named for its export (`handlers/users/getUserHandler.ts`). This makes the HTTP layer scannable at a glance and pairs with the `Middleware` suffix that middleware carry (§6). Routers are exempt — they keep a `Router`/resource name (`usersRouter`, `apiRouter`).
+
+**Group by resource, mirroring `routes/`.** The router and its validation schema(s) live together under `routes/` — `routes/posts.routes.ts` + `routes/posts.schema.ts` (the latter exporting `CreatePostSchema`, `UpdatePostSchema`, ...) — and handlers group the same way: `handlers/posts.ts` exporting `listPostsHandler`, `createPostHandler`, ..., or a folder per resource (`handlers/posts/listPostsHandler.ts`, `createPostHandler.ts`) once they grow. Never split a single resource across unrelated files, and never mix two resources in one file: everything lines up by name — `routes/posts.routes.ts` + `routes/posts.schema.ts` ↔ `handlers/posts*`. Because the schema is the single source of truth for a route's shape, both the router (runtime `validateMiddleware(...)`) and the handler (`z.infer` types, §8) import it from `routes/`. Pick file-per-resource *or* folder-per-resource and apply it consistently.
 
 **Express 5 path changes:** `/files/*` → `/files/*splat` (value in `req.params.splat`); `/users/:id?` → `/users{/:id}`.
 
@@ -235,27 +237,29 @@ Runs top-to-bottom. Correct order, and **why cheap-before-expensive matters**:
 3. Cross-cutting              → cors, rate-limit, compression
 4. Auth                       → route/router-level, NOT global
 5. Routes
-6. 404 handler                → notFoundHandler (after all routes)
-7. Error handler              → errorHandler (LAST, 4 args)
+6. 404 handler                → notFoundMiddleware (after all routes)
+7. Error handler              → errorMiddleware (LAST, 4 args)
 ```
 
 **Scope middleware as narrowly as possible** — apply auth per-route so public endpoints stay public; only genuinely cross-cutting concerns go global. Put cheap rejections (rate-limit, auth) before expensive work. Never block the event loop with heavy sync work. **A middleware either calls `next()` or sends a response — never both, never neither** (forgetting `next()` hangs the request).
 
 ## 6. Custom middleware
 
+**Naming — the `Middleware` suffix.** A middleware's exported identifier ends with `Middleware` (`requireAuthMiddleware`, `validateMiddleware`, `notFoundMiddleware`, `errorMiddleware`) — this includes factories that *return* a middleware. Name a single-middleware file for its export (`middleware/requireAuthMiddleware.ts`); a module grouping closely related middleware may take a domain name (e.g. `middleware/error.ts` exporting `notFoundMiddleware` + `errorMiddleware`). This mirrors the `Handler` suffix on handlers (§4), so the two HTTP layers stay distinguishable by name alone.
+
 ### Validation factory — writes validated data onto a custom prop
 
 Because `req.query` is read-only in v5, don't overwrite it; put parsed query on `req.validatedQuery`. On failure, `next(err)` — let the one error handler own the wire format.
 
 ```typescript
-// middleware/validate.ts
+// middleware/validateMiddleware.ts
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { ZodType } from 'zod';
 import { BadRequestError } from '../shared/errors.js';
 
 type Target = 'body' | 'params' | 'query';
 
-export function validate(schema: ZodType, target: Target = 'body'): RequestHandler {
+export function validateMiddleware(schema: ZodType, target: Target = 'body'): RequestHandler {
     return (req: Request, _res: Response, next: NextFunction): void => {
         const result = schema.safeParse(req[target]);
         if (!result.success) return next(new BadRequestError('Validation failed', result.error.issues));
@@ -277,11 +281,11 @@ import { AppError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
 import { config } from '../config/index.js';
 
-export function notFoundHandler(req: Request, res: Response): void {
+export function notFoundMiddleware(req: Request, res: Response): void {
     res.status(404).json({ error: 'NotFound', message: `Cannot ${req.method} ${req.path}` });
 }
 
-export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction): void {
+export function errorMiddleware(err: unknown, req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof AppError) {
         res.status(err.status).json({ error: err.name, message: err.message, details: err.details });
         return;
@@ -312,8 +316,8 @@ This is why handlers don't need `try/catch`: they `throw new NotFoundError(...)`
 Attaching data in middleware (auth user, request id, validated payload) is idiomatic. Set it early; namespace carefully. Prefer a single `req.context` object if you attach many things.
 
 ```typescript
-// middleware/auth.ts
-export const requireAuth: RequestHandler = (req, _res, next) => {
+// middleware/requireAuthMiddleware.ts
+export const requireAuthMiddleware: RequestHandler = (req, _res, next) => {
     const header = req.get('authorization');
     if (!header?.startsWith('Bearer ')) throw new UnauthorizedError('Missing token');
     req.user = verifyToken(header.slice(7)); // typed via declaration merge (§8)
@@ -336,7 +340,7 @@ declare global {
         interface Request {
             id: string;
             user?: AuthUser;            // optional: only set after requireAuth
-            validatedQuery?: unknown;   // set by validate(schema, 'query')
+            validatedQuery?: unknown;   // set by validateMiddleware(schema, 'query')
         }
     }
 }
@@ -349,9 +353,9 @@ declare global {
 export const CreateUserSchema = z.object({ email: z.string().email(), name: z.string().min(1) });
 export type CreateUserBody = z.infer<typeof CreateUserSchema>;
 
-// handlers/users.ts — validate() guarantees the runtime shape; the generic makes the compiler agree
+// handlers/users.ts — validateMiddleware() guarantees the runtime shape; the generic makes the compiler agree
 import type { CreateUserBody } from '../routes/users.schema.js'; // handlers import their types from routes/
-export const create: RequestHandler<unknown, UserResponse, CreateUserBody> = async (req, res) => {
+export const createUserHandler: RequestHandler<unknown, UserResponse, CreateUserBody> = async (req, res) => {
     const { email, name } = req.body;      // typed as CreateUserBody
     res.status(201).json(await usersService.create({ email, name }));
 };
@@ -374,7 +378,7 @@ The `createApp()`-vs-listen split (§1) is what makes this cheap: import the app
 | Mistake | Fix |
 |---------|-----|
 | `app.listen()` in the same module you import in tests | Split `createApp()` from the server/bootstrap module |
-| No error handler / no 404 → Express returns default HTML, leaks stack | Register `notFoundHandler` then `errorHandler` **last** |
+| No error handler / no 404 → Express returns default HTML, leaks stack | Register `notFoundMiddleware` then `errorMiddleware` **last** |
 | `try/catch → next(err)` in every async handler | Just `throw` (Express 5 auto-forwards); map errors once in the handler |
 | Domain-error→status mapping copy-pasted per handler | Centralize in the error handler; throw typed `AppError`s |
 | Reading `process.env` throughout; secret defaults to `''` | One validated frozen `config`; fail fast on missing/invalid env |
