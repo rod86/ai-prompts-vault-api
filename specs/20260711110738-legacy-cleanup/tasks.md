@@ -9,7 +9,7 @@ The one genuine red→green is the HTTP-surface reduction (T2), anchored by a he
 integration test. T9 is the whole-repo verification gate.
 -->
 
-- [ ] T1. Split configuration into `src/config/` and rewire every schema/config consumer
+- [x] T1. Split configuration into `src/config/` and rewire every schema/config consumer
   - Type: infrastructure
   - Depends on: none
   - Red: none — configuration split + composition rewire; verified by `npm run typecheck`.
