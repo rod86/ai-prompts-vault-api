@@ -22,7 +22,6 @@
         "baseUrl": ".",
         "paths": {
             "@src/*": ["./src/*"],
-            "@logic/*": ["./src/logic/*"],
             "@tests/*": ["./tests/*"]
         }
     },

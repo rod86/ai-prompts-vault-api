@@ -1,9 +1,12 @@
 import { inArray } from 'drizzle-orm';
-import { type User } from '@logic/user/domain/User.js';
-import { users } from '@logic/user/infrastructure/database/schema.js';
-import { type TestDatabaseConnection } from '@tests/lib/config.js';
+import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { type User } from '@src/modules/user/domain/User.js';
+import { users } from '@src/modules/user/infrastructure/database/schema.js';
 
-export async function insertUsers(db: TestDatabaseConnection, fixtures: User[]): Promise<void> {
+export async function insertUsers(
+    db: NodePgDatabase<Record<string, unknown>>,
+    fixtures: User[],
+): Promise<void> {
     if (fixtures.length === 0) {
         return;
     }
@@ -20,7 +23,10 @@ export async function insertUsers(db: TestDatabaseConnection, fixtures: User[]):
     );
 }
 
-export async function deleteUsersByIds(db: TestDatabaseConnection, ids: string[]): Promise<void> {
+export async function deleteUsersByIds(
+    db: NodePgDatabase<Record<string, unknown>>,
+    ids: string[],
+): Promise<void> {
     if (ids.length === 0) {
         return;
     }
@@ -29,7 +35,7 @@ export async function deleteUsersByIds(db: TestDatabaseConnection, ids: string[]
 }
 
 export async function selectUsersByIds(
-    db: TestDatabaseConnection,
+    db: NodePgDatabase<Record<string, unknown>>,
     ids: string[],
 ): Promise<(typeof users.$inferSelect)[]> {
     if (ids.length === 0) {

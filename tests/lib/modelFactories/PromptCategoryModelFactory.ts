@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { type PromptCategory } from '@logic/prompt/domain/PromptCategory.js';
+import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { AbstractModelFactory } from '@tests/lib/modelFactories/AbstractModelFactory.js';
 
 export class PromptCategoryModelFactory extends AbstractModelFactory<PromptCategory> {

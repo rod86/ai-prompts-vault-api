@@ -1,4 +1,4 @@
-import config from '@src/config.js';
+import config from '@src/config/config.js';
 import { LoginUseCase } from '@src/modules/auth/application/LoginUseCase.js';
 import { DrizzleUserCredentialsRepository } from '@src/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.js';
 import { JwtTokenIssuer } from '@src/modules/auth/infrastructure/security/JwtTokenIssuer.js';

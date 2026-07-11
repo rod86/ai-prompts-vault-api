@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { type Prompt } from '@logic/prompt/domain/Prompt.js';
+import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import { AbstractModelFactory } from '@tests/lib/modelFactories/AbstractModelFactory.js';
 
 export type PromptModel = Omit<Prompt, 'category'> & { categoryId: string };

@@ -9,7 +9,7 @@ The one genuine red→green is the HTTP-surface reduction (T2), anchored by a he
 integration test. T9 is the whole-repo verification gate.
 -->
 
-- [ ] T1. Split configuration into `src/config/` and rewire every schema/config consumer
+- [x] T1. Split configuration into `src/config/` and rewire every schema/config consumer
   - Type: infrastructure
   - Depends on: none
   - Red: none — configuration split + composition rewire; verified by `npm run typecheck`.
@@ -25,7 +25,7 @@ integration test. T9 is the whole-repo verification gate.
     aggregated-schema unit (default-exported), and every schema consumer reads the schema
     from the dedicated unit"
 
-- [ ] T2. Reduce the HTTP surface to the health route only
+- [x] T2. Reduce the HTTP surface to the health route only
   - Type: route handler
   - Depends on: T1
   - Red: add `tests/integration/app.test.ts` asserting `GET /health` → `200 {status:'ok'}`
@@ -40,7 +40,7 @@ integration test. T9 is the whole-repo verification gate.
     endpoint (e.g. the prompt-list endpoint), Then it receives the not-found response";
     AC5; E1
 
-- [ ] T3. Remove the legacy business-logic tree and repoint surviving references
+- [x] T3. Remove the legacy business-logic tree and repoint surviving references
   - Type: infrastructure
   - Depends on: T1, T2
   - Red: none — deletion + import repoint; verified by `npm run typecheck && npm test`.
@@ -54,7 +54,7 @@ integration test. T9 is the whole-repo verification gate.
     `TestDatabaseConnection` to `NodePgDatabase<Record<string, unknown>>`.
   - Covers: AC3 "no legacy business-logic tree remains and nothing imports it"
 
-- [ ] T4. Repoint the migration tooling at the modules schema
+- [x] T4. Repoint the migration tooling at the modules schema
   - Type: infrastructure
   - Depends on: T3
   - Red: none — build-tooling config; verified by `npx drizzle-kit generate` resolving the
@@ -65,7 +65,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC8 "the migration tooling reads the schema from the surviving modules source,
     not the removed legacy tree"
 
-- [ ] T5. Clean tooling configs of legacy references
+- [x] T5. Clean tooling configs of legacy references
   - Type: infrastructure
   - Depends on: T3
   - Red: none — tooling config; verified by `npm run lint && npm run typecheck`.
@@ -73,7 +73,7 @@ integration test. T9 is the whole-repo verification gate.
     element patterns and the `src/logic/shared` shared element from `.eslintrc.json`.
   - Covers: AC7 "the type-check, lint, and full test suite all pass" (tooling portion)
 
-- [ ] T6. Uninstall the request-validation library
+- [x] T6. Uninstall the request-validation library
   - Type: infrastructure
   - Depends on: T2
   - Red: none — dependency removal; verified by `npm run typecheck` and a grep showing no
@@ -81,7 +81,7 @@ integration test. T9 is the whole-repo verification gate.
   - Green: `npm uninstall zod` (removes it from `package.json`).
   - Covers: AC4 "the request-validation library is not a dependency and is imported nowhere"
 
-- [ ] T7. Update the project guide documentation
+- [x] T7. Update the project guide documentation
   - Type: infrastructure
   - Depends on: T3, T4, T5, T6
   - Red: none — documentation.
@@ -92,7 +92,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC9 "the project guide documentation no longer references the removed legacy
     tree, the removed validation library, or the removed validation layer"
 
-- [ ] T8. Delete the old-format spec folders
+- [x] T8. Delete the old-format spec folders
   - Type: infrastructure
   - Depends on: none
   - Red: none — housekeeping deletion; verified by listing `specs/` (only timestamp-format
@@ -102,7 +102,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC10 "the old-format numbered spec folders (`009` and earlier) no longer exist
     and only timestamp-format folders remain"
 
-- [ ] T9. Whole-repo verification gate
+- [x] T9. Whole-repo verification gate
   - Type: infrastructure
   - Depends on: T1, T2, T3, T4, T5, T6, T7, T8
   - Red: none — verification step.

@@ -1,6 +1,6 @@
-import { databaseClient } from '@logic/shared/services.js';
+import { databaseClient } from '@src/modules/shared/services.js';
 import app from './app.js';
-import config from './config.js';
+import config from './config/config.js';
 
 databaseClient.connect();
 

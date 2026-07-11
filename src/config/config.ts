@@ -1,10 +1,7 @@
 import path from 'node:path';
 import process from 'node:process';
-import * as legacyPromptSchema from '@logic/prompt/infrastructure/database/schema.js';
-import * as legacyUserSchema from '@logic/user/infrastructure/database/schema.js';
-import * as promptSchema from '@src/modules/prompt/infrastructure/database/schema.js';
 
-process.loadEnvFile(path.join(import.meta.dirname, '..', '.env'));
+process.loadEnvFile(path.join(import.meta.dirname, '..', '..', '.env'));
 
 export default {
     port: process.env.PORT ?? 3000,
@@ -17,10 +14,5 @@ export default {
         user: process.env.DATABASE_USER ?? '',
         password: process.env.DATABASE_PASSWORD ?? '',
         database: process.env.DATABASE_DB ?? '',
-        schema: {
-            ...legacyPromptSchema,
-            ...legacyUserSchema,
-            ...promptSchema,
-        },
     },
 };

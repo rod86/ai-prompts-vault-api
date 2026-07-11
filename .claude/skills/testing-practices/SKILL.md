@@ -68,12 +68,12 @@ tests/
   No code from `src` may use them.
 - Code under `tests/lib/` is helper-only: keep it simple and do not write tests
   for it — it exists solely to support the tests.
-- The same "no logic, no test" rule applies to production code: a composition root
-  (a context's or `shared`'s `services.ts`, which only instantiates and exports
-  singletons/use cases) gets no dedicated test file. There's no branch to cover —
-  `tsc` proves the exports are shaped correctly, and the unit/integration tests of
-  the pieces being wired already prove they work. This is why none of the existing
-  `src/logic/{shared,user,prompt,auth}/services.ts` files have a test.
+- The same "no logic, no test" rule applies to production code: a bounded context's
+  composition root (its `services.ts`, which only instantiates and exports
+  singletons/use cases) gets no dedicated test file, regardless of what the
+  business-logic directory is named in this project (see project docs). There's no
+  branch to cover — `tsc` proves the exports are shaped correctly, and the
+  unit/integration tests of the pieces being wired already prove they work.
 
 ### Where to declare test values
 
