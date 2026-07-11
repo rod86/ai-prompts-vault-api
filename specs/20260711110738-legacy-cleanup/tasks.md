@@ -25,7 +25,7 @@ integration test. T9 is the whole-repo verification gate.
     aggregated-schema unit (default-exported), and every schema consumer reads the schema
     from the dedicated unit"
 
-- [ ] T2. Reduce the HTTP surface to the health route only
+- [x] T2. Reduce the HTTP surface to the health route only
   - Type: route handler
   - Depends on: T1
   - Red: add `tests/integration/app.test.ts` asserting `GET /health` → `200 {status:'ok'}`
