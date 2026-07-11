@@ -81,7 +81,7 @@ integration test. T9 is the whole-repo verification gate.
   - Green: `npm uninstall zod` (removes it from `package.json`).
   - Covers: AC4 "the request-validation library is not a dependency and is imported nowhere"
 
-- [ ] T7. Update the project guide documentation
+- [x] T7. Update the project guide documentation
   - Type: infrastructure
   - Depends on: T3, T4, T5, T6
   - Red: none — documentation.

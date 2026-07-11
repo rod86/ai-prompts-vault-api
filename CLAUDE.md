@@ -16,8 +16,7 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
 3. **Respect the layers.** Business logic lives in bounded contexts under
    `src/modules/<context>/{domain,application,infrastructure}`. Handlers/middleware
    reach it only through a context's `services.ts`. `eslint-plugin-boundaries`
-   enforces this — `npm run lint` must pass. **Put new contexts in `src/modules/`,
-   never in `src/logic/`** (see below).
+   enforces this — `npm run lint` must pass.
 4. **Let the tools format.** Prettier owns formatting; don't hand-format.
 5. **Git is `/spec-implement`'s job — or an explicit instruction's.** Outside
    `/spec-implement`'s documented flow, never invoke git or `gh` on your own
@@ -33,8 +32,7 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
    more closely follows this file and its skills (`spec-driven-development`,
    `domain-driven-design`, `node-express-typescript`, `coding-style`,
    `testing-practices`, `database-schema-design`, `clean-code`) — even if the other option looks more
-   familiar, shorter, or already appears elsewhere in the codebase (including
-   legacy `src/logic/*` code). If it's still unclear which option follows the
+   familiar or shorter. If it's still unclear which option follows the
    guidelines more closely, or the guidelines themselves conflict, don't guess —
    ask the user.
 
@@ -91,31 +89,27 @@ resolves the integration role to **`BASE_BRANCH`** and the feature role to
 
 ```
 src/
-  modules/<context>/    # bounded contexts — the active home for business logic
+  modules/<context>/    # bounded contexts — the home for business logic
     domain/             # entities, domain errors, repository interfaces
     application/        # use cases (*.UseCase.ts)
     infrastructure/     # Drizzle repos, adapters, DB schema
     services.ts         # composition root for the context (DI wiring)
-  logic/<context>/      # LEGACY business logic (prompt, user, auth, shared) —
-                        # being migrated to modules/; don't add new contexts here
-  handlers/             # one Express handler per file, default export
-  middleware/           # Express middleware (Suffix: *Middleware)
-  schemas/              # Zod RequestSchemas, one per handler
-  express.d.ts          # ambient req augmentation (req.parsedRequest)
-  config.ts             # env vars + aggregated Drizzle schema
-  app.ts                # HTTP app: middleware + routes (no listen)
+  config/
+    config.ts           # env vars + fixed params (default-exported, no schema)
+    drizzle-schema.ts   # aggregated Drizzle schema (default-exported)
+  app.ts                # HTTP app: routes (no listen)
   index.ts              # server bootstrap + graceful shutdown
 tests/
-  lib/                  # shared helpers: config, DB helpers, model factories
+  lib/                  # shared helpers: DB helpers, model factories
   unit/                 # unit tests (mocked deps)
   integration/          # integration tests (real DB, supertest)
-specs/                  # SDD specs, one numbered folder per feature
+specs/                  # SDD specs, one timestamped folder per feature
 drizzle/                # generated SQL migrations
 ```
 
-Path aliases (`tsconfig.json`): `@src/*`, `@logic/*` (legacy contexts), `@tests/*`.
-New contexts under `src/modules/` are imported via `@src/modules/<context>/...`.
-Use aliases instead of long relative chains.
+Path aliases (`tsconfig.json`): `@src/*`, `@tests/*`. Contexts under
+`src/modules/` are imported via `@src/modules/<context>/...`. Use aliases
+instead of long relative chains.
 
 ---
 
@@ -123,61 +117,13 @@ Use aliases instead of long relative chains.
 
 Express 5 conventions — app/server boot, routers, middleware ordering, request
 validation, centralized error handling + 404, and custom `req` typing — are owned
-by the **`node-express-typescript` skill**. Only this project's concrete contracts
-are recorded here.
+by the **`node-express-typescript` skill**; follow it when adding routes back.
 
-**Validation contract.** `validateRequestMiddleware(schema)` takes a `RequestSchema`
-(`{ params?, query?, body? }` of Zod schemas) and parses it via `validate()` (a thin
-wrapper around `z.object(schema).safeParse`):
+`src/app.ts` currently mounts only `GET /health` → `200 { status: 'ok' }`. There
+are no handlers, schemas, or request-validation middleware yet — they were
+removed as legacy scaffolding and are reintroduced, per the skill's conventions,
+as routes/handlers get migrated onto `src/modules/`.
 
-- **failure** → responds `400 { message, errors: { field, error }[] }`, does not
-  call `next()`.
-- **success** → assigns the parsed, typed result to `req.parsedRequest` (a single
-  prop holding `{ params, query, body }`, ambient-augmented in `src/express.d.ts`),
-  then calls `next()`.
-
-Handlers read validated input from `req.parsedRequest`, never raw
-`req.params`/`query`/`body`:
-
-```typescript
-import { type z } from 'zod';
-import GetPromptSchema from '@src/schemas/GetPromptSchema.js';
-
-const { id } = req.parsedRequest?.params as z.infer<typeof GetPromptSchema.params>;
-```
-
-**Schemas (`src/schemas/*Schema.ts`)** — one per handler, default-exporting a
-`RequestSchema`-shaped object via `satisfies RequestSchema` (not `as`, which widens
-each field to `ZodTypeAny` and breaks `z.infer`):
-
-```typescript
-import { z } from 'zod';
-import { type RequestSchema } from '@src/middleware/validateRequest/validation.js';
-
-export default {
-    body: z.object({
-        title: z.string({ error: 'Missing required value' }).min(1),
-        description: z.string().optional(),
-    }),
-} satisfies RequestSchema;
-```
-
-**Naming.** Handlers (`src/handlers`): one function per file, default export, never
-inlined in `app.ts`. Middleware (`src/middleware`): one function per file, suffixed
-`Middleware`.
-
-**Zod v4 notes (this project is on Zod v4):**
-- Use the unified `error` param for custom messages (replaces v3's
-  `required_error`/`invalid_type_error`). For a plain string field pass the
-  message directly: `z.string({ error: 'Missing required value' })`.
-- UUIDs: use top-level `z.uuid()`, not the deprecated `z.string().uuid()`. Since
-  it merges type + format checks, branch on the issue code for distinct messages:
-  ```typescript
-  category_id: z.uuid({
-      error: (iss) => (iss.code === 'invalid_type' ? 'Missing required value' : 'Invalid UUID value'),
-  }),
-  ```
-  
 ---
 
 ## Business Logic
@@ -191,8 +137,9 @@ Busines logic lives in `src/modules` and follows *Domain Driven Design* conventi
 ORM: `drizzle-orm/node-postgres`; engine: PostgreSQL via a `pg` `Pool`.
 Connection-lifecycle conventions are owned by `node-express-typescript` §3.
 
-**`DatabaseClient<DatabaseSchema>`** (`src/logic/shared/database/DatabaseClient.ts`)
-wraps a lazily-created `Pool` and returns a Drizzle connection typed to its schema:
+**`DatabaseClient<DatabaseSchema>`**
+(`src/modules/shared/infrastructure/database/DatabaseClient.ts`) wraps a
+lazily-created `Pool` and returns a Drizzle connection typed to its schema:
 
 ```ts
 const client = new DatabaseClient(config, schema); // schema inferred
@@ -200,19 +147,23 @@ const db = client.connect();  // DatabaseConnection<typeof schema>, reuses Pool
 await client.close();         // ends Pool, idempotent / no-op if never connected
 ```
 
-- Use the exported `DatabaseConnection` type alias for any `db` param/return —
-  **never** hand-write `NodePgDatabase<Record<string, unknown>>`.
+- Use the exported `DatabaseConnection` type alias (from
+  `src/modules/shared/services.ts`) for any `db` param/return — **never**
+  hand-write `NodePgDatabase<Record<string, unknown>>`.
 - Repositories take a `DatabaseConnection`, so wire them with
   `new DrizzlePromptRepository(databaseClient.connect())` in `services.ts`.
-- Schema is aggregated in `config.ts` by spreading each context's schema into one
-  flat `{ tableName: table }` object Drizzle expects.
+- Config is split into two units: `src/config/config.ts` (env vars + fixed
+  params, no schema) and `src/config/drizzle-schema.ts` (the aggregated
+  Drizzle schema, default-exported, spread from each context's schema file
+  into one flat `{ tableName: table }` object). Every schema consumer imports
+  from `src/config/drizzle-schema.ts`, never off `config.database`.
 - `id` (uuid) is **app-provided on insert** — no `defaultRandom()` /
   `gen_random_uuid()` defaults.
 
-**Tests** get their own `databaseClient` in `tests/lib/config.ts` (kept separate
-from the app's per the `testing-practices` rule that `lib` resources stay in
-`tests` scope). Use its `TestDatabaseConnection` type for `db` params in DB
-helpers and integration tests.
+**Tests** construct their own `DatabaseClient<DatabaseSchema>` inline in each
+integration test file, from `config` (`@src/config/config.js`) and `schema`
+(`@src/config/drizzle-schema.js`) — see `DrizzlePromptRepository.test.ts` for
+the pattern. `tests/lib/config.ts` holds only the singleton model factories.
 
 ---
 
@@ -234,10 +185,7 @@ isolated-vs-real distinction):
   DB/HTTP.
 
 **Test helpers (`tests/lib`):**
-- `tests/lib/config.ts` exports the test `databaseClient`, the
-  `TestDatabaseConnection` type, and singleton model factories — kept separate
-  from the app's `@logic/shared/services.ts` client (lib resources stay in `tests`
-  scope).
+- `tests/lib/config.ts` exports the singleton model factories.
 - `tests/lib/database/*.ts` — one file per table with direct insert/select/delete
   helpers (e.g. `selectPromptsByIds`). Use these to verify writes, not the
   repository's own read method or another route.
@@ -245,45 +193,11 @@ isolated-vs-real distinction):
 **Example files to copy from:** `ListPromptsUseCase.test.ts` (unit, local
 `buildPrompt` builder), `DrizzlePromptRepository.test.ts` /
 `DrizzlePromptCategoryRepository.test.ts` (integration DB lifecycle + shared
-reference categories), `GetPromptsHandler.test.ts` (route + `fixturesInResponse`
-filtering), `DeletePromptHandler.test.ts` (write verified via direct query).
+reference categories, inline `DatabaseClient` construction), `app.test.ts`
+(route + not-found contract).
 
 **Schema** is managed outside test scope — migrations must be applied before
 running the suite (`npm run db:migrate`).
-
-### Request-validation tests
-
-For a handler whose route is wired with `validateRequestMiddleware` (responds
-`400 { message, errors: { field, error }[] }` on invalid input), nest a
-`describe('Request Validation', ...)` inside the handler's top-level `describe`:
-
-- One test sending an empty payload/query, asserting an error for every required
-  field.
-- One additional test per other meaningful validation case (e.g. a malformed UUID).
-
-Assert the `errors` array with exact `{ field, error }` object literals (including
-the literal message text) — not `expect.objectContaining`, which lets an unrelated
-message change pass silently. Don't re-assert the top-level `message` string in
-each handler test — the middleware's own unit test
-(`tests/unit/middleware/validateRequest/*.test.ts`) already covers it once. If a
-schema has no field that can actually fail (e.g. a route param that's always a
-non-empty string), omit the block entirely rather than fabricating a failing case.
-
-```ts
-describe('Request Validation', () => {
-    it('returns missing required value errors for all required fields', async () => {
-        const response = await request(app).post('/prompts').send({});
-
-        expect(response.status).toBe(400);
-        expect(response.body).toMatchObject({
-            errors: expect.arrayContaining([
-                { field: 'body.title', error: 'Missing required value' },
-                { field: 'body.category_id', error: 'Missing required value' },
-            ]),
-        });
-    });
-});
-```
 
 ---
 
