@@ -54,7 +54,7 @@ integration test. T9 is the whole-repo verification gate.
     `TestDatabaseConnection` to `NodePgDatabase<Record<string, unknown>>`.
   - Covers: AC3 "no legacy business-logic tree remains and nothing imports it"
 
-- [ ] T4. Repoint the migration tooling at the modules schema
+- [x] T4. Repoint the migration tooling at the modules schema
   - Type: infrastructure
   - Depends on: T3
   - Red: none — build-tooling config; verified by `npx drizzle-kit generate` resolving the
