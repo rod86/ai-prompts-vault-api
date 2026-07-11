@@ -8,7 +8,7 @@ Plan: specs/20260711163948-list-prompt-categories/plan.md
   - Green: create `src/handlers/prompts/listPromptCategoriesHandler.ts` (`export const listPromptCategoriesHandler: RequestHandler` → `res.status(200).json(await listPromptCategoriesUseCase.invoke())`, importing from `@src/modules/prompt/services.js`); `src/routes/prompts.routes.ts` (`promptsRouter.get('/prompt-categories', listPromptCategoriesHandler)` — the prompt context's router); `src/routes/index.ts` (`apiRouter.use(promptsRouter)`); mount `app.use(apiRouter)` in `src/app.ts` after `/health`.
   - Covers: AC1 "Given one or more categories exist, When the client requests the list of categories, Then the system returns all of them, each with its id and name, ordered alphabetically by name ascending."
 
-- [ ] T3. Unknown path returns the not-found contract
+- [x] T3. Unknown path returns the not-found contract
   - Type: middleware
   - Depends on: T1
   - Red: add a case to `tests/integration/app.test.ts` — `request(app).get('/does-not-exist')` asserts status `404` and body equals `{ error: 'NotFound', message: 'Cannot GET /does-not-exist' }`. Fails first because Express returns its built-in 404, not this envelope.
