@@ -31,8 +31,8 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
 6. **When in doubt, guidelines win — then ask.** When comparing two ways to write
    or organize code, or unsure which pattern to follow, prefer whichever option
    more closely follows this file and its skills (`spec-driven-development`,
-   `domain-driven-design`, `coding-style`, `testing-practices`,
-   `database-schema-design`, `clean-code`) — even if the other option looks more
+   `domain-driven-design`, `node-express-typescript`, `coding-style`,
+   `testing-practices`, `database-schema-design`, `clean-code`) — even if the other option looks more
    familiar, shorter, or already appears elsewhere in the codebase (including
    legacy `src/logic/*` code). If it's still unclear which option follows the
    guidelines more closely, or the guidelines themselves conflict, don't guess —
@@ -47,6 +47,7 @@ underlying principles are owned by skills — read them for anything deeper:
 | --- | --- |
 | `spec-driven-development` | The spec → plan → tasks → implement workflow |
 | `domain-driven-design` | Bounded contexts, entities, use cases, repositories, domain errors |
+| `node-express-typescript` | Express 5 HTTP layer: app/server boot, routers, middleware ordering, request validation, centralized error handling, custom `req` typing |
 | `coding-style` | TypeScript strictness, naming, error handling, imports |
 | `testing-practices` | TDD loop, unit vs integration, factories, mocking, DB lifecycle |
 | `database-schema-design` | Table/column naming, keys, UTC datetimes, constraints |
@@ -100,6 +101,7 @@ src/
   handlers/             # one Express handler per file, default export
   middleware/           # Express middleware (Suffix: *Middleware)
   schemas/              # Zod RequestSchemas, one per handler
+  express.d.ts          # ambient req augmentation (req.parsedRequest)
   config.ts             # env vars + aggregated Drizzle schema
   app.ts                # HTTP app: middleware + routes (no listen)
   index.ts              # server bootstrap + graceful shutdown
@@ -119,11 +121,22 @@ Use aliases instead of long relative chains.
 
 ## Express Application
 
-**`app.ts` order:** leading global middleware (e.g. JWT) → routes + per-route
-middleware (schema validation) → trailing global middleware (404, error handler).
+Express 5 conventions — app/server boot, routers, middleware ordering, request
+validation, centralized error handling + 404, and custom `req` typing — are owned
+by the **`node-express-typescript` skill**. Only this project's concrete contracts
+are recorded here.
 
-**Handlers (`src/handlers`)** — one function per file, default export, never
-inlined in `app.ts`. Read validated input from `req.parsedRequest`, never raw
+**Validation contract.** `validateRequestMiddleware(schema)` takes a `RequestSchema`
+(`{ params?, query?, body? }` of Zod schemas) and parses it via `validate()` (a thin
+wrapper around `z.object(schema).safeParse`):
+
+- **failure** → responds `400 { message, errors: { field, error }[] }`, does not
+  call `next()`.
+- **success** → assigns the parsed, typed result to `req.parsedRequest` (a single
+  prop holding `{ params, query, body }`, ambient-augmented in `src/express.d.ts`),
+  then calls `next()`.
+
+Handlers read validated input from `req.parsedRequest`, never raw
 `req.params`/`query`/`body`:
 
 ```typescript
@@ -133,26 +146,9 @@ import GetPromptSchema from '@src/schemas/GetPromptSchema.js';
 const { id } = req.parsedRequest?.params as z.infer<typeof GetPromptSchema.params>;
 ```
 
-**Middleware (`src/middleware`)** — one function per file, suffixed `Middleware`.
-Always call `next()` (forgetting it hangs the request).
-
-### Request validation
-
-`validateRequestMiddleware(schema)` is a factory taking a `RequestSchema`
-(`{ params?, query?, body? }` of Zod schemas). It parses the request via
-`validate()` (a thin wrapper around `z.object(schema).safeParse`):
-
-- **failure** → responds `400 { message, errors: { field, error }[] }`, does not
-  call `next()`.
-- **success** → assigns the parsed, typed result to `req.parsedRequest`, calls
-  `next()`.
-
-`req.parsedRequest` is an ambient augmentation in `src/express.d.ts` (kept out of
-the middleware file so it only exports runtime logic).
-
 **Schemas (`src/schemas/*Schema.ts`)** — one per handler, default-exporting a
-`RequestSchema`-shaped object via `satisfies RequestSchema` (not `as`, which
-widens each field to `ZodTypeAny` and breaks `z.infer`):
+`RequestSchema`-shaped object via `satisfies RequestSchema` (not `as`, which widens
+each field to `ZodTypeAny` and breaks `z.infer`):
 
 ```typescript
 import { z } from 'zod';
@@ -165,6 +161,10 @@ export default {
     }),
 } satisfies RequestSchema;
 ```
+
+**Naming.** Handlers (`src/handlers`): one function per file, default export, never
+inlined in `app.ts`. Middleware (`src/middleware`): one function per file, suffixed
+`Middleware`.
 
 **Zod v4 notes (this project is on Zod v4):**
 - Use the unified `error` param for custom messages (replaces v3's
@@ -189,6 +189,7 @@ Busines logic lives in `src/modules` and follows *Domain Driven Design* conventi
 ## Persistence (Drizzle ORM + pg)
 
 ORM: `drizzle-orm/node-postgres`; engine: PostgreSQL via a `pg` `Pool`.
+Connection-lifecycle conventions are owned by `node-express-typescript` §3.
 
 **`DatabaseClient<DatabaseSchema>`** (`src/logic/shared/database/DatabaseClient.ts`)
 wraps a lazily-created `Pool` and returns a Drizzle connection typed to its schema:
