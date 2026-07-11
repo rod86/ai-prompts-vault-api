@@ -63,7 +63,7 @@ Risks:
 ## 8. Edge cases
 | Case | Input / state | Expected behavior | Covers |
 |--|--|--|--|
-| Empty catalogue | No categories exist | `200` with `[]` | AC2 |
+| Empty catalogue | No categories exist | `200` with `[]` | AC2 — no dedicated integration case: the seeded reference categories (`drizzle/0001_seed_prompt_categories.sql`) make a truly empty table unreachable in this environment without deleting shared fixture data other integration suites depend on. The handler is an unconditional pass-through with no branch on result size, and the empty-array case is already proven at the unit level (`ListPromptCategoriesUseCase.test.ts`), so AC2 is accepted as covered without a new integration test. |
 | Case-differing names | e.g. `apple`, `Banana`, `cherry` | Case-insensitive ascending order | AC1 |
 | Unknown path | `GET /does-not-exist` | `404` `{ error: 'NotFound', message: 'Cannot GET /does-not-exist' }` | none (HTTP not-found contract, not a domain AC) |
 
@@ -71,6 +71,6 @@ Risks:
 | Spec item (V#/E#/AC#/field) | Plan element(s) |
 | --------------------------- | --------------- |
 | AC1 (all categories, id+name, name-ascending) | Handler `list` (§2/§3) → existing `listPromptCategoriesUseCase` → `DrizzlePromptCategoryRepository.findAll` (`lower(name), id`); endpoint test asserts order (§8) |
-| AC2 (empty → empty list) | Handler returns the use case's `[]` unchanged (§3); empty-catalogue edge case (§8) |
+| AC2 (empty → empty list) | Handler returns the use case's `[]` unchanged (§3); proven at unit level, not by a new integration case — empty-catalogue edge case (§8) |
 | Field `id` | `PromptCategoryResponse.id` in the JSON array element (§3) |
 | Field `name` | `PromptCategoryResponse.name` in the JSON array element (§3) |
