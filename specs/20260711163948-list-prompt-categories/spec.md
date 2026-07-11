@@ -1,5 +1,5 @@
 # Spec: List prompt categories
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want to list all prompt categories so that I can browse and filter prompts by category.
 
 ## 1. Behavior
