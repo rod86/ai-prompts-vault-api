@@ -1,7 +1,7 @@
 # Tasks: List prompt categories
 Plan: specs/20260711163948-list-prompt-categories/plan.md
 
-- [ ] T1. `GET /prompt-categories` returns all categories sorted by name
+- [x] T1. `GET /prompt-categories` returns all categories sorted by name
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/promptCategories.test.ts` — construct a `DatabaseClient` inline from `@src/config/config.js` + `@src/config/drizzle-schema.js` (mirroring `DrizzlePromptCategoryRepository.test.ts`), seed categories whose names are inserted out of order (e.g. `Banana`, `apple`, `cherry`) via the `tests/lib/database` category helper, then `request(app).get('/prompt-categories')` and assert status `200` and body equals `[{ id, name }]` in case-insensitive name-ascending order. Fails first because no such route exists (Express returns 404).
