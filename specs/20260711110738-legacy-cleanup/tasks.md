@@ -73,7 +73,7 @@ integration test. T9 is the whole-repo verification gate.
     element patterns and the `src/logic/shared` shared element from `.eslintrc.json`.
   - Covers: AC7 "the type-check, lint, and full test suite all pass" (tooling portion)
 
-- [ ] T6. Uninstall the request-validation library
+- [x] T6. Uninstall the request-validation library
   - Type: infrastructure
   - Depends on: T2
   - Red: none — dependency removal; verified by `npm run typecheck` and a grep showing no
