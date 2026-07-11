@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listPromptCategoriesHandler } from '@src/handlers/prompts/listPromptCategoriesHandler.js';
+import listPromptCategoriesHandler from '@src/handlers/prompts/listPromptCategoriesHandler.js';
 
 export const promptsRouter = Router();
 
