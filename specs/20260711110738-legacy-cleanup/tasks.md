@@ -92,7 +92,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC9 "the project guide documentation no longer references the removed legacy
     tree, the removed validation library, or the removed validation layer"
 
-- [ ] T8. Delete the old-format spec folders
+- [x] T8. Delete the old-format spec folders
   - Type: infrastructure
   - Depends on: none
   - Red: none — housekeeping deletion; verified by listing `specs/` (only timestamp-format
