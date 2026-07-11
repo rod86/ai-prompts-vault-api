@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { type User } from '@logic/user/domain/User.js';
+import { type User } from '@src/modules/user/domain/User.js';
 import { AbstractModelFactory } from '@tests/lib/modelFactories/AbstractModelFactory.js';
 
 export class UserModelFactory extends AbstractModelFactory<User> {

@@ -40,7 +40,7 @@ integration test. T9 is the whole-repo verification gate.
     endpoint (e.g. the prompt-list endpoint), Then it receives the not-found response";
     AC5; E1
 
-- [ ] T3. Remove the legacy business-logic tree and repoint surviving references
+- [x] T3. Remove the legacy business-logic tree and repoint surviving references
   - Type: infrastructure
   - Depends on: T1, T2
   - Red: none — deletion + import repoint; verified by `npm run typecheck && npm test`.
