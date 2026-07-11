@@ -22,23 +22,22 @@
         "boundaries/elements": [
             {
                 "type": "domain",
-                "pattern": ["src/logic/*/domain", "src/modules/*/domain"],
+                "pattern": ["src/modules/*/domain"],
                 "mode": "folder",
                 "capture": ["context"]
             },
             {
                 "type": "application",
-                "pattern": ["src/logic/*/application", "src/modules/*/application"],
+                "pattern": ["src/modules/*/application"],
                 "mode": "folder",
                 "capture": ["context"]
             },
             {
                 "type": "infrastructure",
-                "pattern": ["src/logic/*/infrastructure", "src/modules/*/infrastructure"],
+                "pattern": ["src/modules/*/infrastructure"],
                 "mode": "folder",
                 "capture": ["context"]
             },
-            { "type": "shared", "pattern": "src/logic/shared", "mode": "folder" },
             { "type": "shared", "pattern": "src/modules/shared", "mode": "folder" }
         ]
     },

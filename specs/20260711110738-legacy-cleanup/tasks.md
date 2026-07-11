@@ -65,7 +65,7 @@ integration test. T9 is the whole-repo verification gate.
   - Covers: AC8 "the migration tooling reads the schema from the surviving modules source,
     not the removed legacy tree"
 
-- [ ] T5. Clean tooling configs of legacy references
+- [x] T5. Clean tooling configs of legacy references
   - Type: infrastructure
   - Depends on: T3
   - Red: none — tooling config; verified by `npm run lint && npm run typecheck`.
