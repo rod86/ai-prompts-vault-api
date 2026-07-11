@@ -195,8 +195,8 @@ export const closeDatabase = (): Promise<void> => pool.end();                   
 ```typescript
 // routes/users.routes.ts
 import { Router } from 'express';
-import { validateMiddleware } from '../middleware/validateMiddleware.js';
-import { requireAuthMiddleware } from '../middleware/requireAuthMiddleware.js';
+import validateMiddleware from '../middleware/validateMiddleware.js';
+import requireAuthMiddleware from '../middleware/requireAuthMiddleware.js';
 import { listUsersHandler, createUserHandler, getUserHandler } from '../handlers/users.js';
 import { CreateUserSchema, UserParamsSchema } from './users.schema.js'; // schema co-located with the router
 
@@ -247,7 +247,9 @@ Runs top-to-bottom. Correct order, and **why cheap-before-expensive matters**:
 
 ## 6. Custom middleware
 
-**Naming — the `Middleware` suffix.** A middleware's exported identifier ends with `Middleware` (`requireAuthMiddleware`, `validateMiddleware`, `notFoundMiddleware`, `errorMiddleware`) — this includes factories that *return* a middleware. Name a single-middleware file for its export (`middleware/requireAuthMiddleware.ts`); a module grouping closely related middleware may take a domain name (e.g. `middleware/error.ts` exporting `notFoundMiddleware` + `errorMiddleware`). This mirrors the `Handler` suffix on handlers (§4), so the two HTTP layers stay distinguishable by name alone.
+**Naming — the `Middleware` suffix.** A middleware's identifier ends with `Middleware` (`requireAuthMiddleware`, `validateMiddleware`, `notFoundMiddleware`, `errorMiddleware`) — this includes factories that *return* a middleware. Name a single-middleware file for its export (`middleware/requireAuthMiddleware.ts`); a module grouping closely related middleware may take a domain name (e.g. `middleware/error.ts` exporting `notFoundMiddleware` + `errorMiddleware`). This mirrors the `Handler` suffix on handlers (§4), so the two HTTP layers stay distinguishable by name alone.
+
+**Export form mirrors handlers (§4).** A single-middleware file (`middleware/requireAuthMiddleware.ts`, `middleware/validateMiddleware.ts`) uses `export default` — declare the const/function, then `export default requireAuthMiddleware`. A file grouping several middleware (`middleware/error.ts` exporting `notFoundMiddleware` + `errorMiddleware`) keeps named exports, since a module allows only one default export.
 
 ### Validation factory — writes validated data onto a custom prop
 
@@ -261,7 +263,7 @@ import { BadRequestError } from '../shared/errors.js';
 
 type Target = 'body' | 'params' | 'query';
 
-export function validateMiddleware(schema: ZodType, target: Target = 'body'): RequestHandler {
+function validateMiddleware(schema: ZodType, target: Target = 'body'): RequestHandler {
     return (req: Request, _res: Response, next: NextFunction): void => {
         const result = schema.safeParse(req[target]);
         if (!result.success) return next(new BadRequestError('Validation failed', result.error.issues));
@@ -270,6 +272,8 @@ export function validateMiddleware(schema: ZodType, target: Target = 'body'): Re
         next();
     };
 }
+
+export default validateMiddleware;
 ```
 
 ### Centralized error handler — the ONLY place that shapes error responses
@@ -319,12 +323,14 @@ Attaching data in middleware (auth user, request id, validated payload) is idiom
 
 ```typescript
 // middleware/requireAuthMiddleware.ts
-export const requireAuthMiddleware: RequestHandler = (req, _res, next) => {
+const requireAuthMiddleware: RequestHandler = (req, _res, next) => {
     const header = req.get('authorization');
     if (!header?.startsWith('Bearer ')) throw new UnauthorizedError('Missing token');
     req.user = verifyToken(header.slice(7)); // typed via declaration merge (§8)
     next();
 };
+
+export default requireAuthMiddleware;
 ```
 
 ## 8. TypeScript — typing custom props & handlers
