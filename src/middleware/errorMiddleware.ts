@@ -6,6 +6,8 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
         res.status(400).json({ error: err.name, message: err.message, details: err.details });
         return;
     }
+
+    res.status(500).json({ error: 'InternalServerError', message: 'Internal server error' });
 }
 
 export default errorMiddleware;

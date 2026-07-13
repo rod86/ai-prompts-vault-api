@@ -29,4 +29,20 @@ describe('errorMiddleware', () => {
         });
         expect(handlerReached).toBe(false);
     });
+
+    it('renders a generic internal error for a non-validation failure', async () => {
+        const app = express();
+        app.get('/boom', () => {
+            throw new Error('unexpected');
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/boom');
+
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({
+            error: 'InternalServerError',
+            message: 'Internal server error',
+        });
+    });
 });
