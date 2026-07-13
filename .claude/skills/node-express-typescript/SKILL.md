@@ -253,20 +253,26 @@ Runs top-to-bottom. Correct order, and **why cheap-before-expensive matters**:
 
 ### Validation factory — writes validated data onto a custom prop
 
-Because `req.query` is read-only in v5, don't overwrite it; put parsed query on `req.validatedQuery`. On failure, `next(err)` — let the one error handler own the wire format.
+Because `req.query` is read-only in v5, don't overwrite it; put parsed query on `req.validatedQuery`. On failure, `next(err)` — let the one error handler own the wire format. Map the schema issues to flat, source-namespaced field errors so the error handler can render them (`ValidationError` below).
 
 ```typescript
 // middleware/validateMiddleware.ts
 import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { ZodType } from 'zod';
-import { BadRequestError } from '../shared/errors.js';
+import { ValidationError } from '../shared/errors.js';
 
 type Target = 'body' | 'params' | 'query';
 
 function validateMiddleware(schema: ZodType, target: Target = 'body'): RequestHandler {
     return (req: Request, _res: Response, next: NextFunction): void => {
         const result = schema.safeParse(req[target]);
-        if (!result.success) return next(new BadRequestError('Validation failed', result.error.issues));
+        if (!result.success) {
+            const errors = result.error.issues.map((issue) => ({
+                field: `${target}.${issue.path.join('.')}`, // e.g. body.email, params.id
+                error: issue.message,                       // the schema's own message
+            }));
+            return next(new ValidationError(errors));
+        }
         if (target === 'query') req.validatedQuery = result.data; // query is read-only
         else req[target] = result.data;                          // body/params writable
         next();
@@ -278,12 +284,12 @@ export default validateMiddleware;
 
 ### Centralized error handler — the ONLY place that shapes error responses
 
-Identified by having **exactly four params** `(err, req, res, next)` — TS needs all four even if `next` is unused. Type `err` as `unknown` and narrow with `instanceof`. Known operational errors → clean client message; unknown → log full detail, return generic 500 (never leak a stack trace in prod).
+Identified by having **exactly four params** `(err, req, res, next)` — TS needs all four even if `next` is unused. Type `err` as `unknown` and narrow with `instanceof`. Known operational errors → clean client message; unknown → log full detail, return generic 500 (never leak a stack trace in prod). Every error gets the uniform `{ error, message, details }` body, with **one deliberate exception**: request-validation failures return `{ errors: [{ field, error }] }` (a flat, field-level list the client can map to form fields), handled by the first branch below.
 
 ```typescript
 // middleware/error.ts
 import type { Request, Response, NextFunction } from 'express';
-import { AppError } from '../shared/errors.js';
+import { AppError, ValidationError } from '../shared/errors.js';
 import { logger } from '../shared/logger.js';
 import { config } from '../config/index.js';
 
@@ -292,6 +298,10 @@ export function notFoundMiddleware(req: Request, res: Response): void {
 }
 
 export function errorMiddleware(err: unknown, req: Request, res: Response, _next: NextFunction): void {
+    if (err instanceof ValidationError) {                    // the one exception to the envelope
+        res.status(err.status).json({ errors: err.errors }); // { errors: [{ field, error }] }
+        return;
+    }
     if (err instanceof AppError) {
         res.status(err.status).json({ error: err.name, message: err.message, details: err.details });
         return;
@@ -313,6 +323,15 @@ export abstract class AppError extends Error {
 export class BadRequestError extends AppError { readonly status = 400; }
 export class NotFoundError extends AppError { readonly status = 404; }
 export class UnauthorizedError extends AppError { readonly status = 401; }
+
+// Validation is the one error with a bespoke body: a flat list of field-level messages.
+export type FieldError = { field: string; error: string };
+export class ValidationError extends AppError {
+    readonly status = 400;
+    constructor(public readonly errors: FieldError[]) {
+        super('Validation failed');
+    }
+}
 ```
 
 This is why handlers don't need `try/catch`: they `throw new NotFoundError(...)` and the mapping to a status code + response shape happens in one place. Adding a domain-error→status branch means editing the error handler, not every handler.
@@ -325,7 +344,8 @@ Attaching data in middleware (auth user, request id, validated payload) is idiom
 // middleware/requireAuthMiddleware.ts
 const requireAuthMiddleware: RequestHandler = (req, _res, next) => {
     const header = req.get('authorization');
-    if (!header?.startsWith('Bearer ')) throw new UnauthorizedError('Missing token');
+    // sync middleware: forward with next(err), don't throw (v5 only auto-forwards async throws — see gotchas)
+    if (!header?.startsWith('Bearer ')) return next(new UnauthorizedError('Missing token'));
     req.user = verifyToken(header.slice(7)); // typed via declaration merge (§8)
     next();
 };
@@ -369,9 +389,13 @@ export const createUserHandler: RequestHandler<unknown, UserResponse, CreateUser
 };
 ```
 
+**Wire casing is a project convention.** Pick one wire field casing (this project uses snake_case — `created_at`, `category_id`) and apply it to both request schemas and responses. When it differs from the domain object's shape, the handler maps domain→wire while shaping the response (the example above passes the object straight through only because the two happen to match). Response shaping is the handler's job (§4).
+
 Type errors as `unknown` in the error handler and narrow with `instanceof` — never assume `err` is an `Error`.
 
-## 9. Testing the HTTP layer
+## 9. Testing
+
+### HTTP layer
 
 The `createApp()`-vs-listen split (§1) is what makes this cheap: import the app object into an HTTP-assertion library and drive real requests without binding a port. A few generic pointers:
 
@@ -380,6 +404,107 @@ The `createApp()`-vs-listen split (§1) is what makes this cheap: import the app
 - **Cover the error paths explicitly.** Add cases for validation failures (400), not-found (404), and auth failures (401) — these exercise the middleware and central error handler, the parts most likely to regress.
 - **Keep the app pure and inject dependencies.** Because `createApp()` takes its collaborators (DB, clients) as arguments, tests supply fakes/in-memory versions instead of reaching for real infrastructure — fast, deterministic, no network.
 - **Don't leak state between tests.** Reset or isolate any shared state (in-memory stores, mocks) between cases so order can't affect outcomes.
+
+### Custom Middleware
+
+Drive a middleware through a **real app instance + HTTP-assertion library**, not mocked
+`req`/`res`/`next`. Build a throwaway app inline, mount the middleware on a route with a
+terminal handler, and assert on the HTTP result — no hand-rolled request/response doubles,
+no calling the middleware directly with a fake `next`.
+
+- **Success — assert the effect, not that `next()` fired.** A middleware that enriches the
+  request (validated data, auth user, request id) proves it worked by the terminal handler
+  seeing that data: echo the prop back and assert the body; reaching the handler *is* the
+  "next() was called" check.
+- **Failure — assert the whole response through the error handler, and that the handler is
+  never reached.** Mount the error handler after the route and assert the complete wire result
+  (status **and** full error body) in one exact match. Flip a `handlerReached` flag in the
+  terminal handler and assert it stayed `false`, proving the chain short-circuited (§6).
+- **Unit-test the pure core separately.** When the middleware delegates to a pure function,
+  test that function directly (no app, no HTTP) and assert its full result there; the
+  integration tests then need only one representative success and one failure.
+- Build the app and inputs **inline per test** — no shared fixtures, no `beforeEach`.
+- `describe` names the middleware; `it` states the guarantee as a sentence.
+- Split by concern, mirroring `src/`: HTTP behavior in integration tests, pure logic in unit tests.
+
+### Handlers
+
+Test a handler **through the full app** (§1), one test file per handler, so routing, the
+middleware chain, and the central error handler all run — never by calling the handler
+directly (§9 `### HTTP layer`). A handler is thin (delegates to a use case/service, then
+shapes the response — §4), so assert the *observable HTTP contract*, not internals. Seed and
+clean fixtures per the DB lifecycle.
+
+- **Success — assert status and the whole resource envelope.** Return the full resource with
+  relations **assembled as nested objects**, not raw foreign-key ids; assert timestamp
+  semantics (created timestamp preserved, updated timestamp bumped).
+- **Every domain error path — assert the mapped status and message.** The handler throws
+  typed domain errors (§6) that the central error handler maps to a status + error body
+  (e.g. not-found → 404, invalid reference → 4xx). Test each — the error handler is the most
+  regression-prone seam.
+- **Error precedence when several things are wrong.** Pin the deterministic order: when
+  multiple inputs are invalid, only the first/most-significant error surfaces (e.g. a missing
+  target wins over an invalid reference) — existence is checked before references.
+- **No partial writes on failure.** After a rejected write, verify the row is untouched with a
+  direct table read (not the resource's own read endpoint), proving the operation was atomic.
+- **Optional/nullable fields — cover each distinct state.** Distinguish `null` (clears → absent
+  from the response) from `''` (sets empty → present); test them separately — different states.
+- **Assert the exact response, not a partial one.** Use `toEqual` on the full body, not
+  `toMatchObject`; an exact match proves both the fields present *and* the absence of others
+  (a cleared field, a leaked internal field) in one assertion — never pair a partial match with
+  a follow-up "does not have prop X" check. For nondeterministic values (a generated timestamp),
+  keep the match exact with an asymmetric matcher (`expect.any(...)`).
+- One integration file per handler, mirroring `src/`; assert status **and** full body — never
+  status alone. Request-validation cases belong in the request-validation section below, not here.
+
+### Handler request validation
+
+Add a nested `Request Validation` describe block to the **handler's own** test file — the
+validation boundary is part of that route's contract.
+
+- **Assert only the fields and messages** for this route's schema, with a partial matcher
+  (`toMatchObject` + `arrayContaining`). The status code and the full error envelope are
+  already pinned by the middleware's own test (`### Custom Middleware`), so don't re-assert
+  them here.
+- **Cover every request part the route validates** — `body`, `params`, `query`. Fields are
+  namespaced by source (`body.<field>`, `params.<field>`, `query.<field>`), so a case names
+  exactly which part failed.
+- **One test for all required-field messages.** Send an empty/incomplete payload and assert
+  every required field's "missing required value" message together, in a single case.
+- **One test per specific rule, in isolation.** Give each format/constraint rule (UUID, email,
+  min length, …) its own case that triggers only that rule — send just the field that violates
+  it and assert only that field's error, ignoring all other fields in both the request and the
+  response (the partial matcher makes this safe).
+- These cases short-circuit before the handler runs — no fixtures or side-effect checks needed.
+
+```typescript
+describe('POST /order', () => {
+    // ...success + domain-error cases (see `### Handlers`)
+
+    describe('Request Validation', () => {
+        it('returns missing-required errors for every required field', async () => {
+            const response = await request(app).post('/order').send({});
+
+            expect(response.body).toMatchObject({
+                errors: expect.arrayContaining([
+                    { field: 'body.product_id', error: 'Missing required value' },
+                    { field: 'body.customer_id', error: 'Missing required value' },
+                ]),
+            });
+        });
+
+        it('rejects a non-uuid customer_id with an invalid-value error', async () => {
+            const response = await request(app).post('/order').send({ customer_id: '12345' });
+
+            expect(response.body).toMatchObject({
+                errors: expect.arrayContaining([
+                    { field: 'body.customer_id', error: 'Invalid UUID value' },
+                ]),
+            });
+        });
+    });
+});
+```
 
 ## Common Mistakes
 
