@@ -4,7 +4,7 @@ Spec: specs/20260713094250-request-validation-middleware/spec.md
 ## 1. Approach
 
 Add a reusable Express middleware factory that validates a request's `params`,
-`query`, and `body` against a single valibot schema declared per route, and
+`query`, and `body` against a single zod schema declared per route, and
 exposes the parsed result on `req.parsedRequest`. Validation lives in a small pure
 `validator` function (kept out of the middleware file) that **returns a result** —
 parsed data on success, grouped `{part:{field:reason}}` errors on failure — and
@@ -30,24 +30,24 @@ schema vs. per-target calls; `req.parsedRequest` vs. in-place write + `req.valid
 
 | Component | New/existing | File path | Change |
 | --------- | ------------ | --------- | ------ |
-| `validateRequestMiddleware` | New | `src/middleware/validateRequest/validateRequestMiddleware.ts` | Factory `validateRequestMiddleware(schema)` → `RequestHandler`; builds `{ params, query, body }`, calls `validator`; on a failed result throws `RequestValidationError`, else assigns `req.parsedRequest = result.data` and calls `next()`. No valibot logic. `export default`. |
-| `validator` + types | New | `src/middleware/validateRequest/validator.ts` | Pure `validator(schema, input)` → `ValidatorResult` (`{success:true,data}` \| `{success:false,errors}`); **never throws**. Owns the valibot `safeParse` and the issues→`{part:{field:reason}}` grouping. Exports the `RequestSchema` / `ValidatorResult` / `ValidationDetails` types. |
+| `validateRequestMiddleware` | New | `src/middleware/validateRequest/validateRequestMiddleware.ts` | Factory `validateRequestMiddleware(schema)` → `RequestHandler`; builds `{ params, query, body }`, calls `validator`; on a failed result throws `RequestValidationError`, else assigns `req.parsedRequest = result.data` and calls `next()`. No zod logic. `export default`. |
+| `validator` + types | New | `src/middleware/validateRequest/validator.ts` | Pure `validator(schema, input)` → `ValidatorResult` (`{success:true,data}` \| `{success:false,errors}`); **never throws**. Owns the zod `safeParse` and the issues→`{part:{field:reason}}` grouping. Exports the `RequestSchema` / `ValidatorResult` / `ValidationDetails` types. |
 | `RequestValidationError` | New | `src/middleware/validateRequest/RequestValidationError.ts` | `extends Error`; `name = 'RequestValidationError'`; carries `details: ValidationDetails`. Thrown by the middleware (from a failed result), caught by `errorMiddleware`. |
 | `errorMiddleware` | New | `src/middleware/errorMiddleware.ts` | 4-arg `(err, req, res, next)`. `RequestValidationError` → `400` contract; else → `500` generic. `export default`. |
 | `Express.Request` augmentation | New | `src/types/express.d.ts` | `declare global` adds `parsedRequest?: unknown` to `Express.Request`. Picked up via tsconfig `include: ["src"]`. |
 | App wiring | Existing | `src/app.ts` | Mount `express.json()` before routes; mount `errorMiddleware` last (after `notFoundMiddleware`). |
-| Package manifest | Existing | `package.json` | Add `valibot` (latest stable). |
+| Package manifest | Existing | `package.json` | Add `zod` (latest stable). |
 
 ## 3. Interfaces & contracts
 
-Signatures (valibot imported as `import * as v from 'valibot'`):
+Signatures (zod imported as `import { z, type ZodType } from 'zod'`):
 
 ```
 // validator.ts
-type RequestSchema = v.GenericSchema<{ params?: unknown; query?: unknown; body?: unknown }>
+type RequestSchema = ZodType<{ params?: unknown; query?: unknown; body?: unknown }>
 type ValidationDetails = Partial<Record<'params' | 'query' | 'body', Record<string, string>>>
 type ValidatorResult<S extends RequestSchema> =
-    | { success: true; data: v.InferOutput<S> }     // data holds only the declared parts
+    | { success: true; data: z.infer<S> }           // data holds only the declared parts
     | { success: false; errors: ValidationDetails } // grouped {part:{field:reason}}
 function validator<S extends RequestSchema>(schema: S, input: unknown): ValidatorResult<S>
 //   never throws — always returns a discriminated result
@@ -64,18 +64,18 @@ class RequestValidationError extends Error {   // name = 'RequestValidationError
 }
 ```
 
-Details mapping (in `validator`): run one `v.safeParse(schema, input)`. On success
-return `{ success: true, data: result.output }`. On failure, group
-`result.issues` by part = `issue.path[0]` (`params`/`query`/`body`); within a
+Details mapping (in `validator`): run one `schema.safeParse(input)`. On success
+return `{ success: true, data: result.data }`. On failure, group
+`result.error.issues` by part = `issue.path[0]` (`params`/`query`/`body`); within a
 part, key = the remaining path segments dot-joined (or the part name if nothing
 remains), value = `issue.message`; first issue per (part, key) wins; parts with no
 issues are omitted. Return `{ success: false, errors: grouped }`. The middleware
 turns a failed result into `throw new RequestValidationError(result.errors)`.
-valibot aggregates all part issues in the one parse, so a single failure lists
-every offending field under its part.
+zod's composed object schema aggregates all part issues in the one parse, so a
+single failure lists every offending field under its part.
 
-Success write: `v.object(...)` strips keys not in the schema, so
-`v.InferOutput<S>` (and thus `req.parsedRequest`) holds exactly the declared
+Success write: zod's `z.object(...)` strips keys not in the schema by default,
+so `z.infer<S>` (and thus `req.parsedRequest`) holds exactly the declared
 parts (V2).
 
 Wire contracts:
@@ -115,7 +115,7 @@ None — this feature touches no storage.
 
 | Dependency | Version | Action | Reason |
 |--|--|--|--|
-| valibot | latest stable | install | Schema definition + parsing/coercion + issue reporting for request validation |
+| zod | latest stable | install | Schema definition + parsing/coercion + issue reporting for request validation |
 
 ## 7. Assumptions & risks
 
@@ -131,10 +131,10 @@ Assumptions (trivial, silent):
    `errorMiddleware`) rather than the real `src/app.ts`. This matches "test the
    shipped chain end to end" for a middleware with no consumer route. Consequence
    if wrong: tests restructured to use a demo route on the real app.
-3. Test schemas use valibot custom messages (e.g. `v.string('name invalid')`) so
-   `details` reasons are deterministic to assert; production reasons are whatever
-   valibot/each endpoint's schema yields. Consequence if wrong: assertions loosen
-   to "reason is a non-empty string".
+3. Test schemas use zod custom messages (e.g. `z.string().min(1, 'name invalid')`)
+   so `details` reasons are deterministic to assert; production reasons are
+   whatever zod/each endpoint's schema yields. Consequence if wrong: assertions
+   loosen to "reason is a non-empty string".
 4. The E2 generic message is the literal `'Internal server error'`. Consequence
    if wrong: string differs — no structural change.
 
@@ -142,7 +142,7 @@ Risks:
 | # | Risk | Likelihood | Impact | Mitigation |
 |--|--|--|--|--|
 | R1 | Within a single part, one field raises multiple issues, so only the first reason is shown | low | A field with several problems reports just one reason at a time | First-issue-wins is deterministic; grouping by part already removes cross-part collisions (D6) |
-| R2 | valibot's issue `path`/`message` shape differs from assumed | low | mapping breaks | A unit test asserts the mapped `details` shape against the installed version |
+| R2 | zod's issue `path`/`message` shape differs from assumed | low | mapping breaks | A unit test asserts the mapped `details` shape against the installed version |
 
 ## 8. Edge cases
 
@@ -168,5 +168,5 @@ Risks:
 | AC3 | §2 `errorMiddleware` E2 branch; §3 E2 contract; §8 non-validation throw |
 | Normalized request (field) | §3 `ValidatorResult.data` / `req.parsedRequest` |
 | Field reason (field) | §3 details mapping |
-| valibot dependency | §6 |
+| zod dependency | §6 |
 | App wiring (express.json + errorMiddleware) | §2 app.ts row |

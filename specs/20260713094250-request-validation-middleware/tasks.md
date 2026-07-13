@@ -1,11 +1,11 @@
 # Tasks: Request validation middleware
 Plan: specs/20260713094250-request-validation-middleware/plan.md
 
-- [ ] T1. Install valibot (latest stable)
+- [ ] T1. Install zod (latest stable)
   - Type: dependency
   - Depends on: none
   - Red: none — dependency change (plan §6); no behavior to test yet.
-  - Green: install the latest stable `valibot` (e.g. `npm install valibot`) so `package.json` records the resolved version.
+  - Green: install the latest stable `zod` (e.g. `npm install zod`) so `package.json` records the resolved version.
   - Covers: enables V1/V2/V3 tooling; no AC directly.
 
 - [ ] T2. validator returns a success result with the normalized, declared-only parts
