@@ -10,7 +10,11 @@ import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
-import { deletePromptsByIds, insertPrompts, selectPromptsByIds } from '@tests/lib/database/prompts.js';
+import {
+    deletePromptsByIds,
+    insertPrompts,
+    selectPromptsByIds,
+} from '@tests/lib/database/prompts.js';
 
 describe('PUT /prompts/:id', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -115,7 +119,10 @@ describe('PUT /prompts/:id', () => {
             const response = await request(app).put(`/prompts/${existingPrompt.id}`).send(body);
 
             expect(response.status).toBe(200);
-            expect(response.body.category).toEqual({ id: secondCategory.id, name: secondCategory.name });
+            expect(response.body.category).toEqual({
+                id: secondCategory.id,
+                name: secondCategory.name,
+            });
 
             const [persisted] = await selectPromptsByIds(db, [existingPrompt.id]);
             expect(persisted?.promptCategoryId).toBe(secondCategory.id);

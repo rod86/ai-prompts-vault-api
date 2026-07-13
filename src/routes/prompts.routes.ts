@@ -9,4 +9,8 @@ export const promptsRouter = Router();
 
 promptsRouter.get('/prompt-categories', listPromptCategoriesHandler);
 promptsRouter.post('/prompts', validateRequestMiddleware(CreatePromptSchema), createPromptHandler);
-promptsRouter.put('/prompts/:id', validateRequestMiddleware(UpdatePromptSchema), updatePromptHandler);
+promptsRouter.put(
+    '/prompts/:id',
+    validateRequestMiddleware(UpdatePromptSchema),
+    updatePromptHandler,
+);
