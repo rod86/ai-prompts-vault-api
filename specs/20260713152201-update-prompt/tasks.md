@@ -113,7 +113,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     request is rejected as a validation failure whose reasons name each offending field ...
     grouped under its request part, and nothing is updated." (V2, V3, E1)
 
-- [ ] T6. Malformed category_id is rejected as 400 before the existence checks
+- [x] T6. Malformed category_id is rejected as 400 before the existence checks
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a valid uuid path `id` with a

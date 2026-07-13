@@ -156,5 +156,23 @@ describe('PUT /prompts/:id', () => {
                 details: { body: { title: expect.any(String) } },
             });
         });
+
+        it('rejects a malformed category_id as a validation failure before any lookup', async () => {
+            const promptId = '00000000-0000-0000-0000-000000000000';
+            const body = {
+                title: 'Some title',
+                prompt: 'Some prompt text',
+                category_id: 'not-a-uuid',
+            };
+
+            const response = await request(app).put(`/prompts/${promptId}`).send(body);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual({
+                error: 'RequestValidationError',
+                message: 'Request Validation data failed',
+                details: { body: { category_id: expect.any(String) } },
+            });
+        });
     });
 });
