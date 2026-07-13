@@ -1,7 +1,7 @@
 # Tasks: Request validation middleware
 Plan: specs/20260713094250-request-validation-middleware/plan.md
 
-- [ ] T1. Install zod (latest stable)
+- [x] T1. Install zod (latest stable)
   - Type: dependency
   - Depends on: none
   - Red: none — dependency change (plan §6); no behavior to test yet.
