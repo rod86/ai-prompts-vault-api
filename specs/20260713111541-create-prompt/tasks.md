@@ -7,7 +7,7 @@ and is unit-tested; this feature is the HTTP layer only. Tasks are integration t
 precedent. New POST tests all live in
 tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
 
-- [ ] T1. `POST /prompts` creates a prompt and returns 201 with the stored prompt
+- [x] T1. `POST /prompts` creates a prompt and returns 201 with the stored prompt
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/prompts/createPromptHandler.test.ts`
