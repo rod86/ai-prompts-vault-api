@@ -60,10 +60,6 @@ describe('POST /prompts', () => {
                 created_at: expect.any(String),
                 updated_at: expect.any(String),
             });
-            expect(response.body).not.toHaveProperty('categoryId');
-            expect(response.body).not.toHaveProperty('createdAt');
-            expect(response.body).not.toHaveProperty('updatedAt');
-
             const [persisted] = await selectPromptsByIds(db, [response.body.id]);
             expect(persisted).toMatchObject({
                 id: response.body.id,
@@ -86,7 +82,14 @@ describe('POST /prompts', () => {
             const response = await request(app).post('/prompts').send(body);
 
             expect(response.status).toBe(201);
-            expect(response.body).not.toHaveProperty('description');
+            expect(response.body).toEqual({
+                id: expect.any(String),
+                title: body.title,
+                prompt: body.prompt,
+                category: { id: category.id, name: category.name },
+                created_at: expect.any(String),
+                updated_at: expect.any(String),
+            });
 
             const [persisted] = await selectPromptsByIds(db, [response.body.id]);
             expect(persisted?.description).toBeNull();
