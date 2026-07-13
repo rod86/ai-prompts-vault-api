@@ -1,5 +1,5 @@
 # Spec: Update prompt
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want to update an existing prompt by submitting its new details so that the stored prompt is replaced with the new values and returned to me.
 
 ## 1. Behavior
