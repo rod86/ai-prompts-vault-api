@@ -1,8 +1,11 @@
 import express, { type Request, type Response } from 'express';
+import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import notFoundMiddleware from '@src/middleware/notFoundMiddleware.js';
 import { apiRouter } from '@src/routes/index.js';
 
 const app = express();
+
+app.use(express.json());
 
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });
@@ -10,5 +13,6 @@ app.get('/health', (_req: Request, res: Response) => {
 
 app.use(apiRouter);
 app.use(notFoundMiddleware);
+app.use(errorMiddleware);
 
 export default app;
