@@ -9,8 +9,12 @@ PostgreSQL 18 + Drizzle ORM, Vitest.
 ## Golden rules
 
 1. **No code before an approved spec.** New features/endpoints/behavior changes
-   start with the `spec-driven-development` skill (spec → plan → tasks), even if
-   the request is phrased as "just add X".
+   need an approved spec authored via the `/spec-plan` command — never start the
+   planning workflow or write code on your own initiative. Talking through and
+   defining a feature in conversation is fine and expected: that is not planning,
+   needs no spec, and should not trigger a "run /spec-plan" nag. When the user is
+   ready they run `/spec-plan`, which turns the preceding discussion (plus any
+   argument) into the `spec.md`/`plan.md`/`tasks.md` artifacts.
 2. **Test-first.** Write the failing test before the implementation (see the
    `testing-practices` skill).
 3. **Respect the layers.** Business logic lives in bounded contexts under

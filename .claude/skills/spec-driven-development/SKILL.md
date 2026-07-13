@@ -1,6 +1,6 @@
 ---
 name: spec-driven-development
-description: The project's spec-driven development (SDD) workflow, split into a PLANNING stage (author spec.md, plan.md, tasks.md) and an IMPLEMENTATION stage (test-first code). Use before writing any code for a new feature, endpoint, or behavior change — even when the user just says "let's build/add X" without mentioning specs or planning; this project requires an approved spec before implementation.
+description: The project's spec-driven development (SDD) workflow, split into a PLANNING stage (author spec.md, plan.md, tasks.md) and an IMPLEMENTATION stage (test-first code). Entered only through the `/spec-plan` (PLANNING) and `/spec-implement` (IMPLEMENTATION) commands — do NOT invoke this skill autonomously. Discussing or defining a feature conversationally is fine and is not planning; do not author any spec artifacts or nag the user to run a command during that discussion. Only `/spec-plan` starts the PLANNING stage.
 ---
 
 # Spec-Driven Development (SDD)

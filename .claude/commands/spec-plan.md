@@ -6,6 +6,11 @@ model: opus
 
 Request: $ARGUMENTS
 
+When `$ARGUMENTS` is empty or brief, the **preceding conversation in this session
+is the feature definition** — synthesize the story and design from what was
+already discussed rather than making the user restate everything. Any argument
+given refines or overrides that discussion.
+
 Invoke the `spec-driven-development` skill and execute **only its PLANNING stage
 (steps 1–4)** for the request above. This command **plans only**: it NEVER writes
 production code, tests, or migrations, and never crosses into the IMPLEMENTATION
@@ -49,7 +54,10 @@ traceability rather than starting from a blank page.
 
 1. **Story** — restate the feature as a single "As a `<user>`, I want `<X>` so that
    `<Y>`" user story (no solutions). This becomes the `Story:` line of `spec.md`.
-   In UPDATE mode, keep the existing story unless the request changes it.
+   When the argument doesn't fully specify the feature, derive the story from the
+   prior discussion in this session, then confirm that one-line story with me via
+   the interview step. In UPDATE mode, keep the existing story unless the request
+   changes it.
 2. **Explore** — read the relevant code before planning; never plan against code you
    have not read; prefer reusing existing functions/patterns and cite their paths.
 3. **Interview (live)** — ask me every design-changing question **one at a time** via
