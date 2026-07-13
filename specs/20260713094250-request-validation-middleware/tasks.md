@@ -15,7 +15,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: `src/middleware/validateRequest/validator.ts` — `v.safeParse(schema, input)`, return `{ success: true, data: result.output }` on success; export `RequestSchema` / `ValidatorResult` / `ValidationDetails` types.
   - Covers: AC1 "Given an endpoint declaring rules for one or more request parts, When a request satisfies every declared rule, Then the endpoint runs and receives a normalized request containing exactly the declared parts with their normalized values, and nothing for undeclared parts"; V2.
 
-- [ ] T3. validator returns a grouped-errors failure result for an invalid request (no throw)
+- [x] T3. validator returns a grouped-errors failure result for an invalid request (no throw)
   - Type: middleware helper (unit)
   - Depends on: T1, T2
   - Red: extend `validator.test.ts` — given a schema (custom messages) and an input with an invalid `body` field and an invalid `query` value, `validator` returns `{ success: false, errors }` where `errors` groups reasons by part — `{ body: { <field>: reason }, query: { <field>: reason } }` — with no `params` key, and it does not throw. Fails: validator has no failure branch.

@@ -37,4 +37,19 @@ describe('validator', () => {
         expect(result.success).toBe(true);
         expect(result.success && 'query' in result.data).toBe(false);
     });
+
+    it('returns a grouped-errors failure result without throwing', () => {
+        const schema = z.object({
+            body: z.object({ name: z.string().min(1, 'name invalid') }),
+            query: z.object({ page: z.coerce.number().min(1, 'page invalid') }),
+        });
+        const input = { body: { name: '' }, query: { page: '0' } };
+
+        const result = validator(schema, input);
+
+        expect(result).toEqual({
+            success: false,
+            errors: { body: { name: 'name invalid' }, query: { page: 'page invalid' } },
+        });
+    });
 });
