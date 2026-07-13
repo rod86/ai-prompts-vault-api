@@ -1,8 +1,10 @@
+import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import config from '@src/config/config.js';
 import schema from '@src/config/drizzle-schema.js';
+import { prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
 import { promptCategoryModelFactory } from '@tests/lib/config.js';
@@ -89,6 +91,39 @@ describe('POST /prompts', () => {
             expect(persisted?.description).toBeNull();
 
             await deletePromptsByIds(db, [response.body.id]);
+        });
+    });
+
+    describe('when a required field is missing', () => {
+        const category = promptCategoryModelFactory.create();
+
+        beforeAll(async () => {
+            await insertPromptCategories(db, [category]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [category.id]);
+        });
+
+        it('rejects the request as a 400 validation failure and stores nothing', async () => {
+            const body = {
+                prompt: 'My prompt text',
+                category_id: category.id,
+            };
+
+            const response = await request(app).post('/prompts').send(body);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('RequestValidationError');
+            expect(response.body.message).toBe('Request Validation data failed');
+            expect(typeof response.body.details.body.title).toBe('string');
+            expect(response.body.details.body.title.length).toBeGreaterThan(0);
+
+            const stored = await db
+                .select()
+                .from(prompts)
+                .where(eq(prompts.promptCategoryId, category.id));
+            expect(stored).toEqual([]);
         });
     });
 });

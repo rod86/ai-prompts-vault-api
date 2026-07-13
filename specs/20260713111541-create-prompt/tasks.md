@@ -65,7 +65,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     request whose category exists, When the client creates a prompt, Then ... contains
     the stored prompt: ... description (only when submitted) ..."
 
-- [ ] T3. Missing required field is rejected as a 400 validation failure
+- [x] T3. Missing required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a body omitting `title`
