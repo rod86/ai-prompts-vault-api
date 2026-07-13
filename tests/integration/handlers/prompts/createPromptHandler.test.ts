@@ -72,5 +72,23 @@ describe('POST /prompts', () => {
 
             await deletePromptsByIds(db, [response.body.id]);
         });
+
+        it('omits the description key and stores it as null when not submitted', async () => {
+            const body = {
+                title: 'My prompt title',
+                prompt: 'My prompt text',
+                category_id: category.id,
+            };
+
+            const response = await request(app).post('/prompts').send(body);
+
+            expect(response.status).toBe(201);
+            expect(response.body).not.toHaveProperty('description');
+
+            const [persisted] = await selectPromptsByIds(db, [response.body.id]);
+            expect(persisted?.description).toBeNull();
+
+            await deletePromptsByIds(db, [response.body.id]);
+        });
     });
 });

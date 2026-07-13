@@ -46,7 +46,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     submitted), the category as id and name, created_at and updated_at." (V1, V2, V3, V4,
     V5 happy path)
 
-- [ ] T2. Omitting description returns 201 without a description key and stores null
+- [x] T2. Omitting description returns 201 without a description key and stores null
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — seed a category, POST a body
