@@ -128,6 +128,19 @@ are no handlers, schemas, or request-validation middleware yet — they were
 removed as legacy scaffolding and are reintroduced, per the skill's conventions,
 as routes/handlers get migrated onto `src/modules/`.
 
+**Wire params are `snake_case`.** Every client-facing endpoint parameter uses
+`snake_case`, not `camelCase`:
+
+- **Input** — applies to `query`, `params`, and `body` (e.g. `category_id`,
+  not `categoryId`). Request-validation schemas declare the `snake_case` names.
+- **Output** — response bodies use `snake_case` (e.g. `created_at`, `updated_at`).
+
+The domain stays `camelCase` (entities, use-case queries, repositories). The
+`snake_case` ⇄ `camelCase` translation is a **boundary concern owned by the HTTP
+layer** (handlers/middleware) — **never** inside the business-logic layer
+(`src/modules/<context>/{domain,application}`). Use cases receive and return
+`camelCase`; the handler maps to/from the `snake_case` wire shape.
+
 ---
 
 ## Business Logic
