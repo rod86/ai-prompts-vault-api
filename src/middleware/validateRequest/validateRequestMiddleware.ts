@@ -1,4 +1,5 @@
 import { type RequestHandler } from 'express';
+import { RequestValidationError } from '@src/middleware/validateRequest/RequestValidationError.js';
 import { type RequestSchema, validator } from '@src/middleware/validateRequest/validator.js';
 
 const validateRequestMiddleware = (schema: RequestSchema): RequestHandler => {
@@ -10,8 +11,7 @@ const validateRequestMiddleware = (schema: RequestSchema): RequestHandler => {
         });
 
         if (!result.success) {
-            next();
-            return;
+            throw new RequestValidationError(result.errors);
         }
 
         req.parsedRequest = result.data;
