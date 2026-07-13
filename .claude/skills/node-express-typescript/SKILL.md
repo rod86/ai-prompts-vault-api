@@ -462,49 +462,26 @@ clean fixtures per the DB lifecycle.
 Add a nested `Request Validation` describe block to the **handler's own** test file — the
 validation boundary is part of that route's contract.
 
-- **Assert only the fields and messages** for this route's schema, with a partial matcher
-  (`toMatchObject` + `arrayContaining`). The status code and the full error envelope are
-  already pinned by the middleware's own test (`### Custom Middleware`), so don't re-assert
-  them here.
-- **Cover every request part the route validates** — `body`, `params`, `query`. Fields are
-  namespaced by source (`body.<field>`, `params.<field>`, `query.<field>`), so a case names
-  exactly which part failed.
+The single aim of these cases: **assert only the field(s) the test exercises and their error
+message(s) — nothing else.** Use a partial matcher so any field not under test (in both the
+request and the response) is ignored, and don't re-assert the status code or the full error
+envelope — those are pinned once by the middleware's own test (`### Custom Middleware`),
+whatever wire shape your project uses for validation errors.
+
+- **Cover every request part the route validates** — `body`, `params`, `query` — and make
+  each case identify which part the failing field belongs to.
 - **One test for all required-field messages.** Send an empty/incomplete payload and assert
-  every required field's "missing required value" message together, in a single case.
+  every required field's missing-value message together, in a single case.
 - **One test per specific rule, in isolation.** Give each format/constraint rule (UUID, email,
   min length, …) its own case that triggers only that rule — send just the field that violates
-  it and assert only that field's error, ignoring all other fields in both the request and the
-  response (the partial matcher makes this safe).
+  it and assert only that field's message, ignoring every other field.
 - These cases short-circuit before the handler runs — no fixtures or side-effect checks needed.
 
-```typescript
-describe('POST /order', () => {
-    // ...success + domain-error cases (see `### Handlers`)
-
-    describe('Request Validation', () => {
-        it('returns missing-required errors for every required field', async () => {
-            const response = await request(app).post('/order').send({});
-
-            expect(response.body).toMatchObject({
-                errors: expect.arrayContaining([
-                    { field: 'body.product_id', error: 'Missing required value' },
-                    { field: 'body.customer_id', error: 'Missing required value' },
-                ]),
-            });
-        });
-
-        it('rejects a non-uuid customer_id with an invalid-value error', async () => {
-            const response = await request(app).post('/order').send({ customer_id: '12345' });
-
-            expect(response.body).toMatchObject({
-                errors: expect.arrayContaining([
-                    { field: 'body.customer_id', error: 'Invalid UUID value' },
-                ]),
-            });
-        });
-    });
-});
-```
+The matcher and key path depend on your validation-error wire shape — match against just the
+field(s) under test within it and never assert the whole envelope here. The shape is a project
+choice, not prescribed by this skill: e.g. one entry of a `{ errors: [{ field, error }] }` list,
+or one key of a grouped `{ details: { body: { <field>: <message> } } }` object — the guidance
+above holds identically either way.
 
 ## Common Mistakes
 

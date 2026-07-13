@@ -115,6 +115,18 @@ None. `zod`, `express`, `supertest`, and all middleware/use cases are already pr
 | — | — | — | none |
 
 ## 7. Assumptions & risks
+Test structure follows the **updated** `testing-practices` and `node-express-typescript`
+skills (spec D9): the integration file seeds the shared parent category once
+(`fixtureCategory` in `beforeAll`/`afterAll`) and the per-test prompt inside each `it`
+(`fixturePrompt`, cleaned up in the same test), `fixture<Entity>` naming; handler responses
+are asserted with an exact whole-body `toEqual` (never a partial match paired with a
+follow-up `not.toHaveProperty`); and validation cases live in a nested `Request Validation`
+describe. The request-validation **wire envelope is unchanged** — it stays the shipped
+`{ error, message, details: { <part>: { <field>: <reason> } } }` (per D9, for consistency
+with the already-IMPLEMENTED create-prompt endpoint). The flat `{ errors: [...] }` shape in
+the updated skill is only an illustrative example of "assert the involved fields," not a
+prescribed envelope, so no shape change is warranted here.
+
 Assumptions (trivial, decided silently):
 1. Route path is `PUT /prompts/:id` on the existing `promptsRouter` (mounted at root, no
    prefix), mirroring `POST /prompts`. — consequence if wrong: path differs; trivial to adjust.
@@ -142,12 +154,15 @@ Risks:
 |--|--|--|--|
 | Happy path, no description | `PUT /prompts/:id` `{ title, prompt, category_id }` for an existing prompt + category | `200` + prompt without a `description` key, `created_at` preserved, `updated_at` advanced; row updated, stored `description` null | AC1 |
 | Happy path, with description | as above + `description` | `200` + prompt including `description`; row updated | AC1 |
+| Description omitted (cleared) | existing prompt that has a description; body without `description` | `200`, exact body has **no** `description` key; stored `description` is `null` | AC1 |
+| Description empty string (set) | body with `description: ''` | `200`, exact body includes `description: ''` (present, not omitted); stored `description` is `''` — the distinct nullable-vs-empty state (updated `testing-practices`) | AC1 |
 | Happy path, category changed | existing prompt, `category_id` of a different existing category | `200` + prompt with the new `category` {id, name}; row's `promptCategoryId` updated | AC1 |
 | Malformed path id | `PUT /prompts/not-a-uuid` well-formed body | `400` E1, `details.params.id` reason; existence check never runs | AC2 |
 | Missing required body field | body without `title` (or `prompt`) | `400` E1, `details.body.title` reason; nothing updated | AC2 |
 | Non-text value | `title` sent as a number | `400` E1, `details.body.title` reason | AC2 |
 | Malformed category_id | valid path id, `category_id: "not-a-uuid"` | `400` E1, `details.body.category_id` reason; existence checks never run | AC2 |
 | Well-formed unknown prompt id | valid uuid path id matching no prompt | `404` E2, `{ error: 'PromptNotFoundError', message: 'Prompt not found: <id>' }`; nothing updated | AC3 |
+| Precedence: prompt **and** category both missing | valid uuid path id matching no prompt, `category_id` also matching no category | `404` E2 (prompt-not-found wins — existence checked before the category reference); **not** `422` | AC3 |
 | Well-formed unknown category_id | existing prompt, `category_id` a valid uuid matching no category | `422` E3, `{ error: 'CategoryNotFoundError', message: 'Category not found: <id>' }`; nothing updated | AC4 |
 | Storage failure | prompt + category exist but repository `update` throws | `500` E4 generic internal error | AC5 |
 
@@ -165,9 +180,9 @@ Risks:
 | E2 prompt not found | §3 table — new `errorMiddleware` 404 branch |
 | E3 category not found | §3 table — existing `errorMiddleware` 422 branch |
 | E4 internal failure | §3 table — existing `errorMiddleware` default branch |
-| AC1 update success | §2 handler + route; §8 happy-path rows |
+| AC1 update success | §2 handler + route; §8 happy-path rows incl. description omitted (null) vs empty-string (present) states |
 | AC2 validation failure | §5 V1–V5; §8 malformed-id/missing/non-text/malformed-category rows |
-| AC3 prompt not found | §3 E2; §8 unknown-prompt-id row |
+| AC3 prompt not found | §3 E2; §8 unknown-prompt-id row + precedence row (both missing → E2 wins) |
 | AC4 category not found | §3 E3; §8 unknown-category_id row |
 | AC5 internal failure | §3 E4; §8 storage-failure row |
 | Fields id/title/prompt/category_id/description | §3 request contract; §2 schema |
