@@ -1,5 +1,5 @@
 # Spec: Request validation middleware
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API developer, I want a reusable way to validate an endpoint's incoming request inputs (path parameters, query values, and body) against declared rules before the endpoint runs, so that endpoint logic only ever sees valid, normalized input and callers get a clear, consistent message when their request is malformed.
 
 ## 1. Behavior
