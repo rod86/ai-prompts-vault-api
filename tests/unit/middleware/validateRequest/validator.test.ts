@@ -49,4 +49,27 @@ describe('validator', () => {
         });
         expect(result.success && 'query' in result.data).toBe(false);
     });
+
+    it('returns a grouped-errors failure result for an invalid request, without throwing', () => {
+        const schema = v.object({
+            params: v.object({ id: v.string() }),
+            query: v.object({ page: v.string('page invalid') }),
+            body: v.object({ name: v.string('name invalid') }),
+        });
+        const input = {
+            params: { id: 'abc-123' },
+            query: { page: 123 },
+            body: { name: 456 },
+        };
+
+        const result = validator(schema, input);
+
+        expect(result).toEqual({
+            success: false,
+            errors: {
+                query: { page: 'page invalid' },
+                body: { name: 'name invalid' },
+            },
+        });
+    });
 });
