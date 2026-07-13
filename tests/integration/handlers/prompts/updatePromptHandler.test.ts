@@ -175,4 +175,36 @@ describe('PUT /prompts/:id', () => {
             });
         });
     });
+
+    describe('when the prompt does not exist', () => {
+        const category = promptCategoryModelFactory.create();
+
+        beforeAll(async () => {
+            await insertPromptCategories(db, [category]);
+        });
+
+        afterAll(async () => {
+            await deletePromptCategoriesByIds(db, [category.id]);
+        });
+
+        it('returns 404 prompt-not-found', async () => {
+            const unknownPromptId = '00000000-0000-0000-0000-000000000000';
+            const body = {
+                title: 'Some title',
+                prompt: 'Some prompt text',
+                category_id: category.id,
+            };
+
+            const response = await request(app).put(`/prompts/${unknownPromptId}`).send(body);
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual({
+                error: 'PromptNotFoundError',
+                message: `Prompt not found: ${unknownPromptId}`,
+            });
+
+            const persisted = await selectPromptsByIds(db, [unknownPromptId]);
+            expect(persisted).toEqual([]);
+        });
+    });
 });
