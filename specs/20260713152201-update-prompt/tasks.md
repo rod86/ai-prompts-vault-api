@@ -82,7 +82,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     text, category, and description are replaced with the submitted values ... contains the
     stored prompt: ... the category as id and name ..."
 
-- [ ] T4. Malformed path id is rejected as a 400 validation failure before any lookup
+- [x] T4. Malformed path id is rejected as a 400 validation failure before any lookup
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — `PUT /prompts/not-a-uuid` with an

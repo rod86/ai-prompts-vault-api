@@ -121,4 +121,23 @@ describe('PUT /prompts/:id', () => {
             expect(persisted?.promptCategoryId).toBe(secondCategory.id);
         });
     });
+
+    describe('Request Validation', () => {
+        it('rejects a malformed path id as a validation failure before any lookup', async () => {
+            const body = {
+                title: 'Some title',
+                prompt: 'Some prompt text',
+                category_id: '00000000-0000-0000-0000-000000000000',
+            };
+
+            const response = await request(app).put('/prompts/not-a-uuid').send(body);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual({
+                error: 'RequestValidationError',
+                message: 'Request Validation data failed',
+                details: { params: { id: expect.any(String) } },
+            });
+        });
+    });
 });
