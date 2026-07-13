@@ -36,7 +36,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: `src/middleware/validateRequest/RequestValidationError.ts` (`extends Error`, `name`, `details: ValidationDetails`); add the failed-result throw branch to `validateRequestMiddleware` (`if (!result.success) throw new RequestValidationError(result.errors)`); `src/middleware/errorMiddleware.ts` — `instanceof RequestValidationError` branch returning the 400 contract (`error` from `err.name`).
   - Covers: AC2 "Given an endpoint declaring rules, When a request has invalid values in one or more declared parts, Then the request is rejected as a validation failure whose reasons name each invalid field with a human-readable reason grouped under its request part (path parameters / query / body), omitting parts with no failures, and the endpoint logic does not run"; V1, E1.
 
-- [ ] T6. errorMiddleware renders a generic internal error for a non-validation failure
+- [x] T6. errorMiddleware renders a generic internal error for a non-validation failure
   - Type: middleware (integration)
   - Depends on: T5
   - Red: extend `errorMiddleware.test.ts` — throwaway app with a route that throws a plain `Error` + `errorMiddleware`; the request returns 500 `{ error: 'InternalServerError', message: 'Internal server error' }` with no `details`. Fails: else branch missing.
