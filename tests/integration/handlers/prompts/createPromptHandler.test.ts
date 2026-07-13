@@ -126,4 +126,21 @@ describe('POST /prompts', () => {
             expect(stored).toEqual([]);
         });
     });
+
+    describe('when category_id is not a well-formed identifier', () => {
+        it('rejects the request as a 400 validation failure, not a category-not-found failure', async () => {
+            const body = {
+                title: 'My prompt title',
+                prompt: 'My prompt text',
+                category_id: 'not-a-uuid',
+            };
+
+            const response = await request(app).post('/prompts').send(body);
+
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('RequestValidationError');
+            expect(typeof response.body.details.body.category_id).toBe('string');
+            expect(response.body.details.body.category_id.length).toBeGreaterThan(0);
+        });
+    });
 });

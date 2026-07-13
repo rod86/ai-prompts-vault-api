@@ -83,7 +83,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     reasons name each offending field with a human-readable reason grouped under the
     body, and no prompt is stored." (V1, V2, E1)
 
-- [ ] T4. Malformed category_id is rejected as 400 before the existence check
+- [x] T4. Malformed category_id is rejected as 400 before the existence check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a well-formed body whose
