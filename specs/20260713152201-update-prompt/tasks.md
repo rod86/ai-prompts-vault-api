@@ -9,7 +9,7 @@ tests/integration/handlers/prompts/updatePromptHandler.test.ts, seeding an exist
 prompt via the tests/lib/database/prompts helper (insertPrompts) + promptModelFactory and
 a category via insertPromptCategories + promptCategoryModelFactory. -->
 
-- [ ] T1. `PUT /prompts/:id` updates a prompt and returns 200 with the stored prompt
+- [x] T1. `PUT /prompts/:id` updates a prompt and returns 200 with the stored prompt
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/prompts/updatePromptHandler.test.ts`
