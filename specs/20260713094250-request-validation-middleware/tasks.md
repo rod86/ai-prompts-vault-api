@@ -43,7 +43,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: add the fallback branch to `src/middleware/errorMiddleware.ts`.
   - Covers: AC3 "Given a request whose handling raises an unexpected, non-validation error, When it is processed, Then the caller is told a generic internal error occurred, distinct from a validation failure and without per-field reasons"; E2.
 
-- [ ] T7. Wire body parsing and the error handler into the app
+- [x] T7. Wire body parsing and the error handler into the app
   - Type: composition
   - Depends on: T4, T5, T6
   - Red: none — `src/app.ts` is pure composition; the existing `tests/integration/app.test.ts` (health + not-found contract) must still pass and typecheck stays clean (see testing-practices).
