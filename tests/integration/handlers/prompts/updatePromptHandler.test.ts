@@ -89,4 +89,36 @@ describe('PUT /prompts/:id', () => {
             expect(persisted?.description).toBeNull();
         });
     });
+
+    describe('when the category_id changes to a different existing category', () => {
+        const firstCategory = promptCategoryModelFactory.create();
+        const secondCategory = promptCategoryModelFactory.create();
+        const existingPrompt = promptModelFactory.create({ categoryId: firstCategory.id });
+
+        beforeAll(async () => {
+            await insertPromptCategories(db, [firstCategory, secondCategory]);
+            await insertPrompts(db, [existingPrompt]);
+        });
+
+        afterAll(async () => {
+            await deletePromptsByIds(db, [existingPrompt.id]);
+            await deletePromptCategoriesByIds(db, [firstCategory.id, secondCategory.id]);
+        });
+
+        it('updates and echoes the new category', async () => {
+            const body = {
+                title: 'Moved title',
+                prompt: 'Moved prompt text',
+                category_id: secondCategory.id,
+            };
+
+            const response = await request(app).put(`/prompts/${existingPrompt.id}`).send(body);
+
+            expect(response.status).toBe(200);
+            expect(response.body.category).toEqual({ id: secondCategory.id, name: secondCategory.name });
+
+            const [persisted] = await selectPromptsByIds(db, [existingPrompt.id]);
+            expect(persisted?.promptCategoryId).toBe(secondCategory.id);
+        });
+    });
 });

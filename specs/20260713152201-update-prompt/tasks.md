@@ -68,7 +68,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     whose prompt and category both exist, When the client updates the prompt, Then ...
     contains the stored prompt: ... description (only when submitted) ..."
 
-- [ ] T3. Changing the category updates and echoes the new category
+- [x] T3. Changing the category updates and echoes the new category
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — seed **two** categories and a prompt
