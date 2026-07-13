@@ -8,7 +8,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: install the latest stable `zod` (e.g. `npm install zod`) so `package.json` records the resolved version.
   - Covers: enables V1/V2/V3 tooling; no AC directly.
 
-- [ ] T2. validator returns a success result with the normalized, declared-only parts
+- [x] T2. validator returns a success result with the normalized, declared-only parts
   - Type: middleware helper (unit)
   - Depends on: T1
   - Red: unit test `validator.test.ts` — given a composed schema declaring `params`, `query`, and `body` and a matching valid input, `validator(schema, input)` returns `{ success: true, data }` where `data` contains exactly those parts (coerced values), and given a schema that omits `query`, `data` has no `query` key even when the input supplies one. Fails: `validator` does not exist.
