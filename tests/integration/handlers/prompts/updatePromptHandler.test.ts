@@ -139,5 +139,22 @@ describe('PUT /prompts/:id', () => {
                 details: { params: { id: expect.any(String) } },
             });
         });
+
+        it('rejects a missing required body field as a validation failure', async () => {
+            const promptId = '00000000-0000-0000-0000-000000000000';
+            const body = {
+                prompt: 'Some prompt text',
+                category_id: '00000000-0000-0000-0000-000000000000',
+            };
+
+            const response = await request(app).put(`/prompts/${promptId}`).send(body);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual({
+                error: 'RequestValidationError',
+                message: 'Request Validation data failed',
+                details: { body: { title: expect.any(String) } },
+            });
+        });
     });
 });

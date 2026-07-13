@@ -98,7 +98,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     validation failure whose reasons name each offending field (by its snake_case name) with
     a human-readable reason grouped under its request part, and nothing is updated." (V1, E1)
 
-- [ ] T5. Missing required body field is rejected as a 400 validation failure
+- [x] T5. Missing required body field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a valid uuid path `id` with a
