@@ -1,5 +1,5 @@
 # Spec: Create prompt
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want to create a prompt by submitting its details so that it is saved and returned to me as a stored prompt.
 
 ## 1. Behavior

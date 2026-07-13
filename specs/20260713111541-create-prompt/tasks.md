@@ -7,7 +7,7 @@ and is unit-tested; this feature is the HTTP layer only. Tasks are integration t
 precedent. New POST tests all live in
 tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
 
-- [ ] T1. `POST /prompts` creates a prompt and returns 201 with the stored prompt
+- [x] T1. `POST /prompts` creates a prompt and returns 201 with the stored prompt
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/prompts/createPromptHandler.test.ts`
@@ -46,7 +46,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     submitted), the category as id and name, created_at and updated_at." (V1, V2, V3, V4,
     V5 happy path)
 
-- [ ] T2. Omitting description returns 201 without a description key and stores null
+- [x] T2. Omitting description returns 201 without a description key and stores null
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — seed a category, POST a body
@@ -65,7 +65,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     request whose category exists, When the client creates a prompt, Then ... contains
     the stored prompt: ... description (only when submitted) ..."
 
-- [ ] T3. Missing required field is rejected as a 400 validation failure
+- [x] T3. Missing required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a body omitting `title`
@@ -83,7 +83,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     reasons name each offending field with a human-readable reason grouped under the
     body, and no prompt is stored." (V1, V2, E1)
 
-- [ ] T4. Malformed category_id is rejected as 400 before the existence check
+- [x] T4. Malformed category_id is rejected as 400 before the existence check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a well-formed body whose
@@ -96,7 +96,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     not a well-formed identifier, ... Then the request is rejected as a validation
     failure ... and no prompt is stored." (V3, E1)
 
-- [ ] T5. Well-formed but unknown category_id returns 422 category-not-found
+- [x] T5. Well-formed but unknown category_id returns 422 category-not-found
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a well-formed body whose
