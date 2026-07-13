@@ -207,4 +207,44 @@ describe('PUT /prompts/:id', () => {
             expect(persisted).toEqual([]);
         });
     });
+
+    describe('when the prompt exists but the category_id matches no category', () => {
+        const category = promptCategoryModelFactory.create();
+        const existingPrompt = promptModelFactory.create({ categoryId: category.id });
+
+        beforeAll(async () => {
+            await insertPromptCategories(db, [category]);
+            await insertPrompts(db, [existingPrompt]);
+        });
+
+        afterAll(async () => {
+            await deletePromptsByIds(db, [existingPrompt.id]);
+            await deletePromptCategoriesByIds(db, [category.id]);
+        });
+
+        it('returns 422 category-not-found and leaves the prompt unchanged', async () => {
+            const unknownCategoryId = '00000000-0000-0000-0000-000000000000';
+            const body = {
+                title: 'Some title',
+                prompt: 'Some prompt text',
+                category_id: unknownCategoryId,
+            };
+
+            const response = await request(app).put(`/prompts/${existingPrompt.id}`).send(body);
+
+            expect(response.status).toBe(422);
+            expect(response.body).toEqual({
+                error: 'CategoryNotFoundError',
+                message: `Category not found: ${unknownCategoryId}`,
+            });
+
+            const [persisted] = await selectPromptsByIds(db, [existingPrompt.id]);
+            expect(persisted).toMatchObject({
+                id: existingPrompt.id,
+                promptCategoryId: category.id,
+                title: existingPrompt.title,
+                prompt: existingPrompt.prompt,
+            });
+        });
+    });
 });

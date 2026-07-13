@@ -145,7 +145,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     is rejected as a prompt-not-found failure that names the missing prompt, distinct from a
     validation failure and without per-field reasons, and nothing is updated." (V6, E2)
 
-- [ ] T8. Well-formed but unknown category_id (existing prompt) returns 422 category-not-found
+- [x] T8. Well-formed but unknown category_id (existing prompt) returns 422 category-not-found
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — seed a category and a prompt in it;
