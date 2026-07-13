@@ -1,6 +1,6 @@
 ---
 name: testing-practices
-description: Testing conventions for TypeScript apps — the TDD loop, test file structure and placement, unit vs integration tests, model factories, mocking strategy, error assertions, and the database test lifecycle. Use when writing, reviewing, or structuring any test, adding a model factory, deciding unit vs integration, or mocking a dependency.
+description: Testing conventions for TypeScript apps — the TDD loop, test file structure and placement, unit vs integration tests, model factories, database fixtures across related tables, mocking strategy, error assertions, and the database test lifecycle. Use when writing, reviewing, or structuring any test, adding a model factory, setting up or cleaning up fixtures across foreign-key tables, deciding unit vs integration, or mocking a dependency.
 ---
 
 # Testing Practices
@@ -152,6 +152,75 @@ per domain type, and a singleton instance of each is exported from
 - After adding a new domain type, add its factory to `tests/lib/modelFactories/`
   and export a singleton instance from `tests/lib/config.ts`, following the
   existing factories.
+
+## Fixtures
+
+A **fixture** is a model-factory object persisted to the database for an integration
+test. Always build it from a model factory (`tests/lib/modelFactories/`, imported as a
+singleton from `tests/lib/config.ts`) — never hand-roll the row — and persist/clean it
+with the per-table helpers in `tests/lib/database/<entity>.ts`. Never write raw SQL or
+truncate a table in a test.
+
+### Per-table database helpers
+
+One file per table (e.g. `tests/lib/database/prompts.ts`), each taking the `db`
+connection as its first argument and early-returning on an empty array:
+
+- `insert<Entities>(db, fixtures)` — persists the factory objects, mapping domain fields
+  to columns inside the helper (e.g. `categoryId` → `promptCategoryId`) so tests stay in
+  domain terms.
+- `delete<Entities>ByIds(db, ids)` — `db.delete(...).where(inArray(id, ids))`.
+- `select<Entities>ByIds(db, ids)` — reads rows back for a direct-query assertion (verify
+  a write landed, or that a related row was left unchanged).
+
+### Insert in the same test; scope cleanup to your own ids
+
+Generate and insert the entity-under-test fixture **inside the `it` that uses it**, and
+delete it at the end of that same test — not in a shared hook:
+
+```ts
+it('updates and returns the prompt', async () => {
+    const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+    await insertPrompts(db, [fixturePrompt]);
+
+    // ...act + assert...
+
+    await deletePromptsByIds(db, [fixturePrompt.id]); // clean up only this test's row
+});
+```
+
+Delete only the ids the test inserted — never truncate. Sibling integration files run in
+parallel against the same tables (see the Integration lifecycle below).
+
+### Related tables (foreign keys)
+
+When a fixture references a parent row, split the two by lifetime and respect the FK
+ordering:
+
+- **Shared parent / reference rows** (the FK target, read-only across the file's tests):
+  build the factory object once as a describe-scope `const`, insert it in `beforeAll`,
+  delete it in `afterAll`.
+- **Per-test child rows** (the entity under test): generate and insert inside each test,
+  as above.
+- **Order:** insert parent-before-child; delete child-before-parent — matching the FK
+  constraint. The parent lives across the whole suite (`beforeAll` → `afterAll`) while
+  each child is created and torn down within its own test.
+
+```ts
+const fixtureCategory = promptCategoryModelFactory.create({ name: '...' });
+
+beforeAll(async () => {
+    db = databaseClient.connect();
+    await insertPromptCategories(db, [fixtureCategory]); // parent first
+});
+
+afterAll(async () => {
+    await deletePromptCategoriesByIds(db, [fixtureCategory.id]); // parent last
+    await databaseClient.close();
+});
+```
+
+Name fixture variables `fixture<Entity>` (a second one `otherFixture<Entity>`).
 
 ## Mocking
 
