@@ -22,7 +22,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: in `validator`, on `!result.success` group `result.issues` → `{ part: { field: message } }` (part = `issue.path[0]`, omit empty parts, first issue per (part,field) wins) and return `{ success: false, errors: grouped }`.
   - Covers: V3 (contributes to AC2/E1 via T5).
 
-- [ ] T4. validateRequestMiddleware exposes the normalized request to the handler
+- [x] T4. validateRequestMiddleware exposes the normalized request to the handler
   - Type: middleware (integration)
   - Depends on: T2
   - Red: integration test `validateRequestMiddleware.test.ts` — a throwaway Express app (`express.json()` + a route wired with `validateRequestMiddleware(schema)` + a handler that echoes `req.parsedRequest`); a valid request returns 200 with the parsed, declared-only parts. Fails: middleware does not exist.
