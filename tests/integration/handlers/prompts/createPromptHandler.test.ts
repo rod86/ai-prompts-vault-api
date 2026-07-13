@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -141,6 +142,31 @@ describe('POST /prompts', () => {
             expect(response.body.error).toBe('RequestValidationError');
             expect(typeof response.body.details.body.category_id).toBe('string');
             expect(response.body.details.body.category_id.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe('when category_id is well-formed but matches no category', () => {
+        it('rejects the request as a 422 category-not-found failure and stores nothing', async () => {
+            const unknownCategoryId = faker.string.uuid();
+            const body = {
+                title: 'My prompt title',
+                prompt: 'My prompt text',
+                category_id: unknownCategoryId,
+            };
+
+            const response = await request(app).post('/prompts').send(body);
+
+            expect(response.status).toBe(422);
+            expect(response.body).toEqual({
+                error: 'CategoryNotFoundError',
+                message: `Category not found: ${unknownCategoryId}`,
+            });
+
+            const stored = await db
+                .select()
+                .from(prompts)
+                .where(eq(prompts.promptCategoryId, unknownCategoryId));
+            expect(stored).toEqual([]);
         });
     });
 });

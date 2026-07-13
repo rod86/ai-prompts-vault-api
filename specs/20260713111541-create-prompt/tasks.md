@@ -96,7 +96,7 @@ tests/integration/handlers/prompts/createPromptHandler.test.ts. -->
     not a well-formed identifier, ... Then the request is rejected as a validation
     failure ... and no prompt is stored." (V3, E1)
 
-- [ ] T5. Well-formed but unknown category_id returns 422 category-not-found
+- [x] T5. Well-formed but unknown category_id returns 422 category-not-found
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `createPromptHandler.test.ts` — POST a well-formed body whose
