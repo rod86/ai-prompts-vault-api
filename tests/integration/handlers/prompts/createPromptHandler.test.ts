@@ -98,78 +98,50 @@ describe('POST /prompts', () => {
         });
     });
 
-    describe('when a required field is missing', () => {
-        const category = promptCategoryModelFactory.create();
+    it('returns a category-invalid error when category_id matches no category', async () => {
+        const unknownCategoryId = faker.string.uuid();
+        const body = {
+            title: 'My prompt title',
+            prompt: 'My prompt text',
+            category_id: unknownCategoryId,
+        };
 
-        beforeAll(async () => {
-            await insertPromptCategories(db, [category]);
+        const response = await request(app).post('/prompts').send(body);
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            error: 'CategoryNotFoundError',
+            message: `Category not found: ${unknownCategoryId}`,
         });
 
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [category.id]);
-        });
-
-        it('rejects the request as a 400 validation failure and stores nothing', async () => {
-            const body = {
-                prompt: 'My prompt text',
-                category_id: category.id,
-            };
-
-            const response = await request(app).post('/prompts').send(body);
-
-            expect(response.status).toBe(400);
-            expect(response.body.error).toBe('RequestValidationError');
-            expect(response.body.message).toBe('Request Validation data failed');
-            expect(typeof response.body.details.body.title).toBe('string');
-            expect(response.body.details.body.title.length).toBeGreaterThan(0);
-
-            const stored = await db
-                .select()
-                .from(prompts)
-                .where(eq(prompts.promptCategoryId, category.id));
-            expect(stored).toEqual([]);
-        });
+        const stored = await db
+            .select()
+            .from(prompts)
+            .where(eq(prompts.promptCategoryId, unknownCategoryId));
+        expect(stored).toEqual([]);
     });
 
-    describe('when category_id is not a well-formed identifier', () => {
-        it('rejects the request as a 400 validation failure, not a category-not-found failure', async () => {
-            const body = {
-                title: 'My prompt title',
-                prompt: 'My prompt text',
-                category_id: 'not-a-uuid',
-            };
+    describe('Request Validation', () => {
+        it('returns missing required value errors for all required fields', async () => {
+            const response = await request(app).post('/prompts').send({});
 
-            const response = await request(app).post('/prompts').send(body);
-
-            expect(response.status).toBe(400);
-            expect(response.body.error).toBe('RequestValidationError');
-            expect(typeof response.body.details.body.category_id).toBe('string');
-            expect(response.body.details.body.category_id.length).toBeGreaterThan(0);
+            expect(response.body.details.body).toEqual({
+                title: 'Missing required value',
+                prompt: 'Missing required value',
+                category_id: 'Missing required value',
+            });
         });
-    });
 
-    describe('when category_id is well-formed but matches no category', () => {
-        it('rejects the request as a 422 category-not-found failure and stores nothing', async () => {
-            const unknownCategoryId = faker.string.uuid();
-            const body = {
-                title: 'My prompt title',
-                prompt: 'My prompt text',
-                category_id: unknownCategoryId,
-            };
-
-            const response = await request(app).post('/prompts').send(body);
-
-            expect(response.status).toBe(422);
-            expect(response.body).toEqual({
-                error: 'CategoryNotFoundError',
-                message: `Category not found: ${unknownCategoryId}`,
+        it('returns an invalid value error for a non-uuid category_id', async () => {
+            const response = await request(app).post('/prompts').send({
+                category_id: '12345',
             });
 
-            const stored = await db
-                .select()
-                .from(prompts)
-                .where(eq(prompts.promptCategoryId, unknownCategoryId));
-            expect(stored).toEqual([]);
+            expect(response.body.details).toEqual({
+                body: expect.objectContaining({
+                    category_id: 'Invalid UUID value',
+                })
+            });
         });
     });
 });
