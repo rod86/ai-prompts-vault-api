@@ -29,7 +29,7 @@ Plan: specs/20260713094250-request-validation-middleware/plan.md
   - Green: `src/middleware/validateRequest/validateRequestMiddleware.ts` (build `{params,query,body}`, call `validator`, on success set `req.parsedRequest = result.data` and `next()`); `src/types/express.d.ts` augmenting `Express.Request` with `parsedRequest?: unknown`.
   - Covers: AC1 "Given an endpoint declaring rules for one or more request parts, When a request satisfies every declared rule, Then the endpoint runs and receives a normalized request containing exactly the declared parts with their normalized values, and nothing for undeclared parts".
 
-- [ ] T5. errorMiddleware renders the RequestValidationError contract on an invalid request
+- [x] T5. errorMiddleware renders the RequestValidationError contract on an invalid request
   - Type: middleware (integration)
   - Depends on: T3, T4
   - Red: integration test `errorMiddleware.test.ts` — throwaway app (`express.json()` + route with `validateRequestMiddleware(schema)` + handler + `errorMiddleware` mounted last); an invalid request returns 400 `{ error: 'RequestValidationError', message: 'Request Validation data failed', details: { <part>: { field: reason } } }` (only failing parts present) and the handler is never reached. Fails: no error handler → default 500/HTML.
