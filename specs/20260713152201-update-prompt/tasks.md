@@ -52,7 +52,7 @@ a category via insertPromptCategories + promptCategoryModelFactory. -->
     text, description (only when submitted), the category as id and name, created_at and
     updated_at." (V1, V2, V3, V4, V5, V6, V7 happy path)
 
-- [ ] T2. Omitting description clears it: 200 without a description key, stored null
+- [x] T2. Omitting description clears it: 200 without a description key, stored null
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — seed a category and a prompt that

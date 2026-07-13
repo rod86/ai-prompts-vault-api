@@ -72,5 +72,21 @@ describe('PUT /prompts/:id', () => {
                 description: body.description,
             });
         });
+
+        it('omits the description key and clears it when not submitted', async () => {
+            const body = {
+                title: 'Title without description',
+                prompt: 'Prompt without description',
+                category_id: category.id,
+            };
+
+            const response = await request(app).put(`/prompts/${existingPrompt.id}`).send(body);
+
+            expect(response.status).toBe(200);
+            expect(response.body).not.toHaveProperty('description');
+
+            const [persisted] = await selectPromptsByIds(db, [existingPrompt.id]);
+            expect(persisted?.description).toBeNull();
+        });
     });
 });
