@@ -45,7 +45,7 @@ deleteUsersByIds) with userModelFactory. -->
     response indicates a new resource was created and contains the stored user: id, name,
     email, created_at and updated_at, and never the password." (V1, V2, V3, V4 happy path)
 
-- [ ] T2. Missing required field is rejected as a 400 validation failure
+- [x] T2. Missing required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — POST a body omitting `name` (valid
