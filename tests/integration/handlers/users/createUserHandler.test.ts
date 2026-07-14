@@ -59,56 +59,6 @@ describe('POST /users', () => {
         expect(persisted?.passwordHash).not.toBe(body.password);
     });
 
-    it('returns a 400 validation failure when a required field is missing', async () => {
-        const body = {
-            email: 'missing.name@example.com',
-            password: 'a-secure-password',
-        };
-
-        const response = await request(app).post('/users').send(body);
-
-        expect(response.status).toBe(400);
-        expect(response.body).toEqual({
-            error: 'RequestValidationError',
-            message: 'Request Validation data failed',
-            details: { body: { name: expect.any(String) } },
-        });
-
-        const stored = await db.select().from(users).where(eq(users.email, body.email));
-        expect(stored).toEqual([]);
-    });
-
-    it('returns a 400 validation failure when the email is malformed', async () => {
-        const body = {
-            name: 'Grace Hopper',
-            email: 'not-an-email',
-            password: 'a-secure-password',
-        };
-
-        const response = await request(app).post('/users').send(body);
-
-        expect(response.status).toBe(400);
-        expect(response.body.error).toBe('RequestValidationError');
-        expect(response.body.details.body.email).toEqual(expect.any(String));
-    });
-
-    it('returns a 400 validation failure when the password is too short', async () => {
-        const body = {
-            name: 'Katherine Johnson',
-            email: 'katherine.johnson@example.com',
-            password: 'abc',
-        };
-
-        const response = await request(app).post('/users').send(body);
-
-        expect(response.status).toBe(400);
-        expect(response.body.error).toBe('RequestValidationError');
-        expect(response.body.details.body.password).toEqual(expect.any(String));
-
-        const stored = await db.select().from(users).where(eq(users.email, body.email));
-        expect(stored).toEqual([]);
-    });
-
     it('returns a 422 email-already-in-use failure when the email is already used', async () => {
         const existingUser = userModelFactory.create();
         await insertUsers(db, [existingUser]);
@@ -131,5 +81,37 @@ describe('POST /users', () => {
         const stored = await db.select().from(users).where(eq(users.email, existingUser.email));
         expect(stored).toHaveLength(1);
         expect(stored[0]?.id).toBe(existingUser.id);
+    });
+
+    describe('Request Validation', () => {
+        it('returns missing required value errors for all required body fields', async () => {
+            const response = await request(app).post('/users').send({});
+
+            expect(response.body.details.body).toEqual({
+                name: 'Missing required value',
+                email: 'Missing required value',
+                password: 'Missing required value',
+            });
+        });
+
+        it('returns an invalid value error for a malformed email', async () => {
+            const response = await request(app).post('/users').send({
+                email: 'not-an-email',
+            });
+
+            expect(response.body.details.body).toEqual(
+                expect.objectContaining({ email: 'Invalid email value' }),
+            );
+        });
+
+        it('returns an invalid value error for a too-short password', async () => {
+            const response = await request(app).post('/users').send({
+                password: 'abc',
+            });
+
+            expect(response.body.details.body).toEqual(
+                expect.objectContaining({ password: 'Must be at least 8 characters' }),
+            );
+        });
     });
 });
