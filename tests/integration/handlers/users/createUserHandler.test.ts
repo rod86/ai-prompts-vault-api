@@ -7,7 +7,8 @@ import schema from '@src/config/drizzle-schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { users } from '@src/modules/user/infrastructure/database/schema.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
-import { deleteUsersByIds, selectUsersByIds } from '@tests/lib/database/users.js';
+import { userModelFactory } from '@tests/lib/config.js';
+import { deleteUsersByIds, insertUsers, selectUsersByIds } from '@tests/lib/database/users.js';
 
 describe('POST /users', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -106,5 +107,29 @@ describe('POST /users', () => {
 
         const stored = await db.select().from(users).where(eq(users.email, body.email));
         expect(stored).toEqual([]);
+    });
+
+    it('returns a 422 email-already-in-use failure when the email is already used', async () => {
+        const existingUser = userModelFactory.create();
+        await insertUsers(db, [existingUser]);
+        createdIds.push(existingUser.id);
+
+        const body = {
+            name: 'Margaret Hamilton',
+            email: existingUser.email,
+            password: 'a-secure-password',
+        };
+
+        const response = await request(app).post('/users').send(body);
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            error: 'EmailAlreadyInUseError',
+            message: `Email already in use: ${existingUser.email}`,
+        });
+
+        const stored = await db.select().from(users).where(eq(users.email, existingUser.email));
+        expect(stored).toHaveLength(1);
+        expect(stored[0]?.id).toBe(existingUser.id);
     });
 });

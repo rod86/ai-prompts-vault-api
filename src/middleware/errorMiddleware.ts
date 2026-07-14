@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 import RequestValidationError from '@src/middleware/validateRequest/RequestValidationError.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof RequestValidationError) {
@@ -15,6 +16,11 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
     }
 
     if (err instanceof CategoryNotFoundError) {
+        res.status(422).json({ error: err.name, message: err.message });
+        return;
+    }
+
+    if (err instanceof EmailAlreadyInUseError) {
         res.status(422).json({ error: err.name, message: err.message });
         return;
     }

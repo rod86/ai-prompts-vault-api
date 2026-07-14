@@ -87,7 +87,7 @@ deleteUsersByIds) with userModelFactory. -->
     minimum length ... Then the request is rejected as a validation failure ... and no
     user is stored." (V3, E1)
 
-- [ ] T5. Already-used email returns 422 email-already-in-use
+- [x] T5. Already-used email returns 422 email-already-in-use
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — seed one user via `insertUsers`
