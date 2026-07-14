@@ -205,7 +205,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     is rejected as a prompt-not-found failure that names the missing prompt, distinct from a
     validation failure and without per-field reasons, and nothing is updated." (V6, E2)
 
-- [ ] T9. Precedence: prompt AND category both missing returns 404 prompt-not-found (E2 wins)
+- [x] T9. Precedence: prompt AND category both missing returns 404 prompt-not-found (E2 wins)
   - Type: route handler
   - Depends on: T8
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a well-formed body to a valid uuid
