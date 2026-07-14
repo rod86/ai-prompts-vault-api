@@ -33,3 +33,14 @@ export const UpdatePromptSchema = z.object({
 });
 
 export type UpdatePromptRequest = z.infer<typeof UpdatePromptSchema>;
+
+export const DeletePromptSchema = z.object({
+    params: z.object({
+        id: z.uuid({
+            error: (issue) =>
+                issue.code === 'invalid_type' ? 'Missing required value' : 'Invalid UUID value',
+        }),
+    }),
+});
+
+export type DeletePromptRequest = z.infer<typeof DeletePromptSchema>;

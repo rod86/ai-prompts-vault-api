@@ -1,7 +1,7 @@
 # Tasks: Delete a prompt
 Plan: specs/20260714093226-delete-prompt/plan.md
 
-- [ ] T1. Delete an existing prompt returns 204 and removes it
+- [x] T1. Delete an existing prompt returns 204 and removes it
   - Type: route handler
   - Depends on: none
   - Red: Integration test `DELETE /prompts/:id` (new `tests/integration/handlers/prompts/deletePromptHandler.test.ts`): insert a category + prompt, call `DELETE /prompts/<id>`, assert `status === 204` and empty body, then assert `selectPromptsByIds(db, [id])` returns no row. Fails because the route/handler/schema don't exist yet.
