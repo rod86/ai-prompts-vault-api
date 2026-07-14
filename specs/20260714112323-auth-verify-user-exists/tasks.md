@@ -8,7 +8,7 @@ Plan: specs/20260714112323-auth-verify-user-exists/plan.md
   - Green: add `findById(id: string): Promise<UserCredentials | undefined>` to `src/modules/auth/domain/interfaces/UserCredentialsRepositoryInterface.ts`; implement it in `DrizzleUserCredentialsRepository` mirroring `findByEmail` but filtering `users.id` (no `lower()`/case-insensitivity needed — ids are uuids).
   - Covers: V1 (persistence half)
 
-- [ ] T2. ValidateTokenUseCase resolves the identity only when the user still exists
+- [x] T2. ValidateTokenUseCase resolves the identity only when the user still exists
   - Type: application
   - Depends on: T1
   - Red: `tests/unit/modules/auth/application/ValidateTokenUseCase.test.ts` — update the constructor call to also pass a mocked `UserCredentialsRepositoryInterface` (`vitest-mock-extended`); update the existing "resolves the caller identity" test so `userCredentialsRepository.findById` mocks resolve a `UserCredentials` record for `'U'`, and additionally assert `findById` was called with `'U'`. Fails: constructor only takes one dependency / `invoke` never calls `findById`.
