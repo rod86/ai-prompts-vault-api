@@ -177,5 +177,17 @@ describe('PUT /prompts/:id', () => {
                 id: 'Invalid UUID value',
             });
         });
+
+        it('returns an invalid value error for a malformed category_id', async () => {
+            const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({
+                title: 'Updated title',
+                prompt: 'Updated prompt text',
+                category_id: 'not-a-uuid',
+            });
+
+            expect(response.body.details.body).toEqual({
+                category_id: 'Invalid UUID value',
+            });
+        });
     });
 });

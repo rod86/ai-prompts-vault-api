@@ -171,7 +171,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     validation failure whose reasons name each offending field (by its snake_case name) with
     a human-readable reason grouped under its request part, and nothing is updated." (V1, E1)
 
-- [ ] T7. Request Validation — malformed category_id surfaces under details.body.category_id
+- [x] T7. Request Validation — malformed category_id surfaces under details.body.category_id
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to the `Request Validation` describe — `PUT /prompts/<valid-uuid>` with a
