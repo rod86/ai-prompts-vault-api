@@ -10,8 +10,6 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
   <img height="30" alt="claude-badge" src="https://github.com/user-attachments/assets/ab5deb13-e3a0-4574-825b-989112284e90" />
 </p>
 
-## Contents
-
 - [Tech stack](#tech-stack)
 - [API endpoints](#api-endpoints)
 - [Requirements](#requirements)
