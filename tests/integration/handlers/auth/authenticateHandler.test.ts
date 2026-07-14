@@ -46,4 +46,30 @@ describe('POST /authenticate', () => {
         expect(response.body.password).toBeUndefined();
         expect(Object.keys(response.body)).toEqual(['token']);
     });
+
+    it('returns a 400 validation failure when email is missing', async () => {
+        const response = await request(app).post('/authenticate').send({ password: knownPassword });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+            error: 'RequestValidationError',
+            message: 'Request Validation data failed',
+            details: { body: { email: expect.any(String) } },
+        });
+        expect(response.body.details.body.email).not.toHaveLength(0);
+        expect(response.body.token).toBeUndefined();
+    });
+
+    it('returns a 400 validation failure when password is missing', async () => {
+        const response = await request(app).post('/authenticate').send({ email: knownUser.email });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+            error: 'RequestValidationError',
+            message: 'Request Validation data failed',
+            details: { body: { password: expect.any(String) } },
+        });
+        expect(response.body.details.body.password).not.toHaveLength(0);
+        expect(response.body.token).toBeUndefined();
+    });
 });

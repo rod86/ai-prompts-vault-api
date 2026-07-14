@@ -47,7 +47,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     Then an access token identifying the account is issued and returned as { token }, and
     no other data (and never the password) is returned." (V1, V2 happy path)
 
-- [ ] T2. Missing or empty required field is rejected as a 400 validation failure
+- [x] T2. Missing or empty required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add `it`s to `authenticateHandler.test.ts` — (a) POST a body omitting `email`
