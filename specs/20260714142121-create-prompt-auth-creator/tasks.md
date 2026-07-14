@@ -29,7 +29,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `src/modules/prompt/application/CreatePromptUseCase.ts` — add `userId` to `CreatePromptQuery`, pass it to `create`, and return `findById(id)` (throw `PromptCreationError` if unexpectedly absent) instead of the in-memory object.
   - Covers: AC1 (application); V2
 
-- [ ] T5. Require authentication on the create route
+- [x] T5. Require authentication on the create route
   - Type: route handler
   - Depends on: none
   - Red: extend `tests/integration/handlers/prompts/createPromptHandler.test.ts` — `POST /prompts` with a valid body but **no** `Authorization` header returns `401` and writes no row. Fails because the route is currently public. (Green-keeping: add a valid `Authorization: Bearer <jwt>` + seeded user to the existing happy-path, category-not-found, and validation tests so they still reach the handler.)
