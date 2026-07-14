@@ -57,7 +57,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/middleware/requireAuthMiddleware.ts` (async default export) that parses `Bearer <token>`, sets `req.auth = await validateTokenUseCase.invoke(token)` (from `@src/modules/auth/services.js`), then `next()`.
   - Covers: AC1 "Given a protected action and a valid, unexpired token identifying user U, When the request is made with that token, Then the action proceeds and the caller identity carrying user id U is available to it."; V1 (happy path)
 
-- [ ] T9. Guard rejects a request with no token
+- [x] T9. Guard rejects a request with no token
   - Type: middleware
   - Depends on: T8
   - Red: same test file — send a request with no `Authorization` header; assert 401 with `{ error: 'MissingTokenError' }`. Fails: no missing-token handling / mapping → 500.

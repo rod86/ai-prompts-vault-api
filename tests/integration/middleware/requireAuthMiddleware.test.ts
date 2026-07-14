@@ -29,4 +29,13 @@ describe('requireAuthMiddleware', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ userId: 'fixture-user-id' });
     });
+
+    it('rejects a request with no Authorization header', async () => {
+        const app = buildApp();
+
+        const response = await request(app).get('/protected');
+
+        expect(response.status).toBe(401);
+        expect(response.body).toMatchObject({ error: 'MissingTokenError' });
+    });
 });
