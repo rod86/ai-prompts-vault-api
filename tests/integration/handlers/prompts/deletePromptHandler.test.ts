@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
@@ -40,5 +41,17 @@ describe('DELETE /prompts/:id', () => {
 
         const persisted = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted).toHaveLength(0);
+    });
+
+    it('returns a prompt-not-found error when the path id matches no prompt', async () => {
+        const unknownId = faker.string.uuid();
+
+        const response = await request(app).delete(`/prompts/${unknownId}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({
+            error: 'PromptNotFoundError',
+            message: `Prompt not found: ${unknownId}`,
+        });
     });
 });

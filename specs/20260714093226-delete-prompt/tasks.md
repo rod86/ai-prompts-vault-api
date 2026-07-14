@@ -8,7 +8,7 @@ Plan: specs/20260714093226-delete-prompt/plan.md
   - Green: Add `DeletePromptSchema` (params `id` UUID) + `DeletePromptRequest` to `src/routes/prompts.schema.ts`; add `src/handlers/prompts/deletePromptHandler.ts` invoking `deletePromptUseCase.invoke({ id: params.id })` and responding `res.status(204).send()`; register `promptsRouter.delete('/prompts/:id', validateRequestMiddleware(DeletePromptSchema), deletePromptHandler)` in `src/routes/prompts.routes.ts`.
   - Covers: AC1 "Given a prompt exists with a known identifier, When the user deletes it by that identifier, Then the prompt is removed from the vault and a success-with-no-content result is returned."; field `id`
 
-- [ ] T2. Deleting an unknown prompt returns prompt-not-found
+- [x] T2. Deleting an unknown prompt returns prompt-not-found
   - Type: route handler
   - Depends on: T1
   - Red: In the same integration test file, call `DELETE /prompts/<random-uuid>` for an id matching no prompt; assert `status === 404` and body `{ error: 'PromptNotFoundError', message: 'Prompt not found: <id>' }`.
