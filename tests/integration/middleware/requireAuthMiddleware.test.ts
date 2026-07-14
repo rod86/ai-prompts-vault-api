@@ -1,12 +1,37 @@
+import { faker } from '@faker-js/faker';
 import express, { type Express, type Request, type Response } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
+import schema from '@src/config/drizzle-schema.js';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import requireAuthMiddleware from '@src/middleware/requireAuthMiddleware.js';
+import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
+import { userModelFactory } from '@tests/lib/config.js';
+import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
 
 describe('requireAuthMiddleware', () => {
+    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
+    let db: ReturnType<typeof client.getConnection>;
+    let insertedIds: string[] = [];
+
+    beforeAll(() => {
+        client.connect();
+        db = client.getConnection();
+        databaseClient.connect();
+    });
+
+    afterEach(async () => {
+        await deleteUsersByIds(db, insertedIds);
+        insertedIds = [];
+    });
+
+    afterAll(async () => {
+        await client.close();
+    });
+
     function buildApp(): Express {
         const app = express();
         app.get('/protected', requireAuthMiddleware, (req: Request, res: Response) => {
@@ -17,8 +42,11 @@ describe('requireAuthMiddleware', () => {
     }
 
     it('attaches the caller identity for a valid, unexpired token', async () => {
+        const fixture = userModelFactory.create();
+        insertedIds = [fixture.id];
+        await insertUsers(db, [fixture]);
         const token = jwt.sign(
-            { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) + 3600 },
+            { sub: fixture.id, exp: Math.floor(Date.now() / 1000) + 3600 },
             config.jwtSecret,
             { algorithm: 'HS256' },
         );
@@ -27,7 +55,21 @@ describe('requireAuthMiddleware', () => {
         const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
-        expect(response.body).toEqual({ userId: 'fixture-user-id' });
+        expect(response.body).toEqual({ userId: fixture.id });
+    });
+
+    it('rejects a token whose user id matches no existing account', async () => {
+        const token = jwt.sign(
+            { sub: faker.string.uuid(), exp: Math.floor(Date.now() / 1000) + 3600 },
+            config.jwtSecret,
+            { algorithm: 'HS256' },
+        );
+        const app = buildApp();
+
+        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body).toMatchObject({ error: 'InvalidTokenError' });
     });
 
     it('rejects a request with no Authorization header', async () => {

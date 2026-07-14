@@ -51,4 +51,26 @@ describe('DrizzleUserCredentialsRepository', () => {
             expect(result).toBeUndefined();
         });
     });
+
+    describe('findById', () => {
+        it('resolves the credentials for a matching id', async () => {
+            const fixture = userModelFactory.create();
+            insertedIds = [fixture.id];
+            await insertUsers(db, [fixture]);
+
+            const result = await repository.findById(fixture.id);
+
+            expect(result).toEqual({
+                id: fixture.id,
+                email: fixture.email,
+                passwordHash: fixture.passwordHash,
+            });
+        });
+
+        it('resolves undefined for an id with no matching account', async () => {
+            const result = await repository.findById(faker.string.uuid());
+
+            expect(result).toBeUndefined();
+        });
+    });
 });
