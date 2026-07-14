@@ -1,9 +1,14 @@
 import { Router } from 'express';
 import createPromptHandler from '@src/handlers/prompts/createPromptHandler.js';
+import deletePromptHandler from '@src/handlers/prompts/deletePromptHandler.js';
 import listPromptCategoriesHandler from '@src/handlers/prompts/listPromptCategoriesHandler.js';
 import updatePromptHandler from '@src/handlers/prompts/updatePromptHandler.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
-import { CreatePromptSchema, UpdatePromptSchema } from '@src/routes/prompts.schema.js';
+import {
+    CreatePromptSchema,
+    DeletePromptSchema,
+    UpdatePromptSchema,
+} from '@src/routes/prompts.schema.js';
 
 export const promptsRouter = Router();
 
@@ -13,4 +18,9 @@ promptsRouter.put(
     '/prompts/:id',
     validateRequestMiddleware(UpdatePromptSchema),
     updatePromptHandler,
+);
+promptsRouter.delete(
+    '/prompts/:id',
+    validateRequestMiddleware(DeletePromptSchema),
+    deletePromptHandler,
 );

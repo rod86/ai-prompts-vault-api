@@ -1,5 +1,5 @@
 # Spec: Delete a prompt
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a user, I want to delete a prompt by its identifier so that prompts I no longer need stop appearing in my vault.
 
 ## 1. Behavior
