@@ -108,7 +108,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     invalid-credentials failure with a generic message, distinct from a validation failure
     and without per-field reasons, and no token is issued." (E2, unknown email)
 
-- [ ] T6. Wrong password is rejected as 401, identical to the unknown-email response
+- [x] T6. Wrong password is rejected as 401, identical to the unknown-email response
   - Type: route handler
   - Depends on: T5
   - Red: add an `it` to `authenticateHandler.test.ts` — reusing the seeded user from T1

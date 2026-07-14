@@ -109,4 +109,17 @@ describe('POST /authenticate', () => {
         });
         expect(response.body.token).toBeUndefined();
     });
+
+    it('returns a 401 invalid-credentials failure identical to the unknown-email case when the password is wrong', async () => {
+        const response = await request(app)
+            .post('/authenticate')
+            .send({ email: knownUser.email, password: 'wrong-password' });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toEqual({
+            error: 'InvalidCredentialsError',
+            message: 'Invalid authentication credentials',
+        });
+        expect(response.body.token).toBeUndefined();
+    });
 });
