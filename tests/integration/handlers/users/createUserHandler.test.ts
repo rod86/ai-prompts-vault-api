@@ -76,4 +76,18 @@ describe('POST /users', () => {
         const stored = await db.select().from(users).where(eq(users.email, body.email));
         expect(stored).toEqual([]);
     });
+
+    it('returns a 400 validation failure when the email is malformed', async () => {
+        const body = {
+            name: 'Grace Hopper',
+            email: 'not-an-email',
+            password: 'a-secure-password',
+        };
+
+        const response = await request(app).post('/users').send(body);
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('RequestValidationError');
+        expect(response.body.details.body.email).toEqual(expect.any(String));
+    });
 });

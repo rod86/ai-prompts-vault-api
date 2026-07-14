@@ -63,7 +63,7 @@ deleteUsersByIds) with userModelFactory. -->
     failure whose reasons name each offending field with a human-readable reason grouped
     under the body, and no user is stored." (V1, E1)
 
-- [ ] T3. Malformed email is rejected as 400 before the uniqueness check
+- [x] T3. Malformed email is rejected as 400 before the uniqueness check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — POST a well-formed body whose
