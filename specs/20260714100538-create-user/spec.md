@@ -1,5 +1,5 @@
 # Spec: Create user
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want to create a user by submitting their name, email, and password so that the user is registered and returned to me as a stored user.
 
 ## 1. Behavior
