@@ -36,7 +36,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: in `JwtTokenVerifier`, when the decoded `sub` is absent throw `InvalidTokenError`.
   - Covers: AC5 "Given a protected action, When the request is made with an otherwise-valid token that identifies no user, Then the request is rejected as invalid and the action does not run."; V4 → E3
 
-- [ ] T6. Wire the verifier and validation use case in the auth composition root
+- [x] T6. Wire the verifier and validation use case in the auth composition root
   - Type: application (composition root)
   - Depends on: T1, T2, T3, T4, T5
   - Red: none — `src/modules/auth/services.ts` is pure composition/DI wiring; see testing-practices. Verified by typecheck.
