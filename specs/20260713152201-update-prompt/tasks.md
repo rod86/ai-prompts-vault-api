@@ -100,7 +100,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     whose prompt and category both exist, When the client updates the prompt, Then ...
     contains the stored prompt: ... description (only when submitted) ..."
 
-- [ ] T3. Empty-string description is set (not cleared): 200 with description '', stored ''
+- [x] T3. Empty-string description is set (not cleared): 200 with description '', stored ''
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — generate and insert a `fixturePrompt`;

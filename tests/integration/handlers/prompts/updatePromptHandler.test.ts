@@ -97,4 +97,34 @@ describe('PUT /prompts/:id', () => {
 
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
+
+    it('sets the description to an empty string when submitted as one, instead of clearing it', async () => {
+        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        await insertPrompts(db, [fixturePrompt]);
+
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: fixtureCategory.id,
+            description: '',
+        };
+
+        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+            id: fixturePrompt.id,
+            title: body.title,
+            prompt: body.prompt,
+            description: '',
+            category: { id: fixtureCategory.id, name: fixtureCategory.name },
+            created_at: expect.any(String),
+            updated_at: expect.any(String),
+        });
+
+        const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(persisted?.description).toBe('');
+
+        await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
 });
