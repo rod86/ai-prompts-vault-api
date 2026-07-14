@@ -192,6 +192,37 @@ describe('PUT /prompts/:id', () => {
         });
     });
 
+    it('returns a category-not-found error when the existing prompt references an unknown category_id', async () => {
+        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        await insertPrompts(db, [fixturePrompt]);
+
+        const unknownCategoryId = faker.string.uuid();
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: unknownCategoryId,
+        };
+
+        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            error: 'CategoryNotFoundError',
+            message: `Category not found: ${unknownCategoryId}`,
+        });
+
+        const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(persisted).toMatchObject({
+            id: fixturePrompt.id,
+            promptCategoryId: fixtureCategory.id,
+            title: fixturePrompt.title,
+            prompt: fixturePrompt.prompt,
+            description: fixturePrompt.description,
+        });
+
+        await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
+
     describe('Request Validation', () => {
         it('returns missing required value errors for all required body fields', async () => {
             const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({});
