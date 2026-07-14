@@ -38,7 +38,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     `description: prompt.description || null`.
   - Covers: AC3 "Given an update request that omits the description, When the client updates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`)."
 
-- [ ] T4. Update response returns `description: null` for an empty-string description
+- [x] T4. Update response returns `description: null` for an empty-string description
   - Type: route handler
   - Depends on: T3
   - Red: In the same update test file, change the existing "sets the description to an
