@@ -2,13 +2,17 @@ import { faker } from '@faker-js/faker';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import { AbstractModelFactory } from '@tests/lib/modelFactories/AbstractModelFactory.js';
 
-export type PromptModel = Omit<Prompt, 'category'> & { categoryId: string };
+export type PromptModel = Omit<Prompt, 'category' | 'user'> & {
+    categoryId: string;
+    userId: string;
+};
 
 export class PromptModelFactory extends AbstractModelFactory<PromptModel> {
     override create(data: Partial<PromptModel> = {}): PromptModel {
         return {
             id: data.id ?? faker.string.uuid(),
             categoryId: data.categoryId ?? faker.string.uuid(),
+            userId: data.userId ?? faker.string.uuid(),
             title: data.title ?? faker.lorem.sentence(),
             prompt: data.prompt ?? faker.lorem.paragraph(),
             description: data.description ?? faker.lorem.sentence(),

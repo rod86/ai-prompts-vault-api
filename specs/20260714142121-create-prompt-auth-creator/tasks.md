@@ -15,7 +15,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `npx drizzle-kit generate` to emit `drizzle/<generated>.sql`; apply with `npm run db:migrate`.
   - Covers: §4 migration
 
-- [ ] T3. Repository persists and returns the creator
+- [x] T3. Repository persists and returns the creator
   - Type: infrastructure
   - Depends on: T2
   - Red: extend `tests/integration/modules/prompt/infrastructure/database/DrizzlePromptRepository.test.ts` — seed a `users` row, `create` a prompt with a `userId`, then assert `selectPromptsByIds` shows the persisted `user_id` and `findById`/`findAll` return `user: { id, name }`. Fails because `Prompt` has no `user` and `create` ignores `userId`.

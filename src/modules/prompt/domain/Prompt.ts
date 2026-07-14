@@ -1,6 +1,7 @@
 export type Prompt = {
     id: string;
     category: { id: string; name: string };
+    user: { id: string; name: string };
     title: string;
     prompt: string;
     description?: string;
@@ -11,6 +12,7 @@ export type Prompt = {
 export type CreatePrompt = {
     id: string;
     categoryId: string;
+    userId: string;
     title: string;
     prompt: string;
     description?: string;

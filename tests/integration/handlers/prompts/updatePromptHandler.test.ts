@@ -6,33 +6,40 @@ import config from '@src/config/config.js';
 import schema from '@src/config/drizzle-schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
-import { promptCategoryModelFactory, promptModelFactory } from '@tests/lib/config.js';
+import { promptCategoryModelFactory, promptModelFactory, userModelFactory } from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
 import { deletePromptsByIds, insertPrompts, selectPromptsByIds } from '@tests/lib/database/prompts.js';
+import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
 
 describe('PUT /prompts/:id', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
     let db: ReturnType<typeof client.getConnection>;
     const fixtureCategory = promptCategoryModelFactory.create();
     const otherFixtureCategory = promptCategoryModelFactory.create();
+    const creatorUser = userModelFactory.create();
 
     beforeAll(async () => {
         client.connect();
         db = client.getConnection();
         databaseClient.connect();
         await insertPromptCategories(db, [fixtureCategory, otherFixtureCategory]);
+        await insertUsers(db, [creatorUser]);
     });
 
     afterAll(async () => {
         await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherFixtureCategory.id]);
+        await deleteUsersByIds(db, [creatorUser.id]);
         await client.close();
     });
 
     it('updates a prompt and returns 200 with the stored prompt', async () => {
-        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
         await insertPrompts(db, [fixturePrompt]);
 
         const body = {
@@ -72,6 +79,7 @@ describe('PUT /prompts/:id', () => {
     it('clears the description when it is omitted from the request', async () => {
         const fixturePrompt = promptModelFactory.create({
             categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
             description: 'An existing description',
         });
         await insertPrompts(db, [fixturePrompt]);
@@ -93,7 +101,10 @@ describe('PUT /prompts/:id', () => {
     });
 
     it('sets the description to an empty string when submitted as one, instead of clearing it', async () => {
-        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
         await insertPrompts(db, [fixturePrompt]);
 
         const body = {
@@ -114,7 +125,10 @@ describe('PUT /prompts/:id', () => {
     });
 
     it('updates the category and echoes the new category when category_id changes', async () => {
-        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
         await insertPrompts(db, [fixturePrompt]);
 
         const body = {
@@ -172,7 +186,10 @@ describe('PUT /prompts/:id', () => {
     });
 
     it('returns a category-not-found error when the existing prompt references an unknown category_id', async () => {
-        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
         await insertPrompts(db, [fixturePrompt]);
 
         const unknownCategoryId = faker.string.uuid();

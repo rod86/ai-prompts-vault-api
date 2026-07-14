@@ -9,6 +9,7 @@ import {
 import { promptCategories, prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 import { type DatabaseConnection } from '@src/modules/shared/services.js';
+import { users } from '@src/modules/user/infrastructure/database/schema.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
     constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
@@ -32,15 +33,19 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
                 updatedAt: prompts.updatedAt,
                 categoryId: promptCategories.id,
                 categoryName: promptCategories.name,
+                userId: users.id,
+                userName: users.name,
             })
             .from(prompts)
             .innerJoin(promptCategories, eq(prompts.promptCategoryId, promptCategories.id))
+            .innerJoin(users, eq(prompts.userId, users.id))
             .where(whereClause)
             .orderBy(desc(prompts.createdAt), prompts.id);
 
         return rows.map((row) => ({
             id: row.id,
             category: { id: row.categoryId, name: row.categoryName },
+            user: { id: row.userId, name: row.userName },
             title: row.title,
             prompt: row.prompt,
             description: row.description ?? undefined,
@@ -62,9 +67,12 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
                 updatedAt: prompts.updatedAt,
                 categoryId: promptCategories.id,
                 categoryName: promptCategories.name,
+                userId: users.id,
+                userName: users.name,
             })
             .from(prompts)
             .innerJoin(promptCategories, eq(prompts.promptCategoryId, promptCategories.id))
+            .innerJoin(users, eq(prompts.userId, users.id))
             .where(eq(sql`${prompts.id}::text`, id))
             .limit(1);
 
@@ -77,6 +85,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
         return {
             id: row.id,
             category: { id: row.categoryId, name: row.categoryName },
+            user: { id: row.userId, name: row.userName },
             title: row.title,
             prompt: row.prompt,
             description: row.description ?? undefined,
@@ -91,6 +100,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
         await db.insert(prompts).values({
             id: prompt.id,
             promptCategoryId: prompt.categoryId,
+            userId: prompt.userId,
             title: prompt.title,
             prompt: prompt.prompt,
             description: prompt.description ?? null,

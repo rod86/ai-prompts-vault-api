@@ -15,6 +15,7 @@ export async function insertPrompts(
         fixtures.map((fixture) => ({
             id: fixture.id,
             promptCategoryId: fixture.categoryId,
+            userId: fixture.userId,
             title: fixture.title,
             prompt: fixture.prompt,
             description: fixture.description ?? null,

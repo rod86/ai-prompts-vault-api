@@ -7,8 +7,12 @@ import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import { promptModelFactory, promptCategoryModelFactory } from '@tests/lib/config.js';
 
 const buildPrompt = (): Prompt => {
-    const { categoryId: _, ...prompt } = promptModelFactory.create();
-    return { ...prompt, category: promptCategoryModelFactory.create() };
+    const { categoryId: _categoryId, userId: _userId, ...prompt } = promptModelFactory.create();
+    return {
+        ...prompt,
+        category: promptCategoryModelFactory.create(),
+        user: { id: faker.string.uuid(), name: faker.person.fullName() },
+    };
 };
 
 describe('ListPromptsUseCase', () => {
