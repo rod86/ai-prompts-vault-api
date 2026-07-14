@@ -15,7 +15,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/modules/auth/infrastructure/security/JwtTokenVerifier.ts` implementing `TokenVerifierInterface` via `jwt.verify(token, secret, { algorithms: ['HS256'] })`, mapping `sub` → `userId`.
   - Covers: AC1 "Given a protected action and a valid, unexpired token identifying user U, When the request is made with that token, Then the action proceeds and the caller identity carrying user id U is available to it."; V2, V4
 
-- [ ] T3. Verifier rejects an expired token distinctly
+- [x] T3. Verifier rejects an expired token distinctly
   - Type: infrastructure
   - Depends on: T2
   - Red: same test file — sign a token whose `exp` is in the past; assert `verifyToken` rejects with `TokenExpiredError`. Fails: expired path not handled / error type missing.

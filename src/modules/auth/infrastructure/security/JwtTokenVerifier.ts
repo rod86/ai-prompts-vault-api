@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import type TokenVerifierInterface from '@src/modules/auth/domain/interfaces/TokenVerifierInterface.js';
 
 export class JwtTokenVerifier implements TokenVerifierInterface {
@@ -7,8 +8,16 @@ export class JwtTokenVerifier implements TokenVerifierInterface {
     constructor(private readonly secret: string) {}
 
     public async verifyToken(token: string): Promise<{ userId: string }> {
-        const decoded = jwt.verify(token, this.secret, { algorithms: [JwtTokenVerifier.ALGORITHM] });
+        try {
+            const decoded = jwt.verify(token, this.secret, { algorithms: [JwtTokenVerifier.ALGORITHM] });
 
-        return { userId: (decoded as jwt.JwtPayload).sub as string };
+            return { userId: (decoded as jwt.JwtPayload).sub as string };
+        } catch (err) {
+            if (err instanceof jwt.TokenExpiredError) {
+                throw new TokenExpiredError();
+            }
+
+            throw err;
+        }
     }
 }

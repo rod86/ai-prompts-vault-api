@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { beforeEach, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
+import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { JwtTokenVerifier } from '@src/modules/auth/infrastructure/security/JwtTokenVerifier.js';
 
 describe('JwtTokenVerifier', () => {
@@ -21,6 +22,16 @@ describe('JwtTokenVerifier', () => {
             const result = await verifier.verifyToken(token);
 
             expect(result).toEqual({ userId: 'fixture-user-id' });
+        });
+
+        it('rejects with TokenExpiredError when the token has expired', async () => {
+            const token = jwt.sign(
+                { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) - 10 },
+                config.jwtSecret,
+                { algorithm: 'HS256' },
+            );
+
+            await expect(verifier.verifyToken(token)).rejects.toThrow(TokenExpiredError);
         });
     });
 });
