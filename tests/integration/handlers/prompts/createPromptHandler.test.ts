@@ -58,6 +58,12 @@ describe('POST /prompts', () => {
         await deletePromptCategoriesByIds(db, [category.id]);
     });
 
+    it('rejects an unauthenticated request with an invalid body as unauthorized, not as invalid input', async () => {
+        const response = await request(app).post('/prompts').send({});
+
+        expect(response.status).toBe(401);
+    });
+
     describe('when the category exists', () => {
         const category = promptCategoryModelFactory.create();
 

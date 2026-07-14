@@ -36,7 +36,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `src/routes/prompts.routes.ts` — mount `requireAuthMiddleware` before `validateRequestMiddleware(CreatePromptSchema)` on `POST /prompts`.
   - Covers: AC2; V1, E1
 
-- [ ] T6. Authentication is checked before body validation
+- [x] T6. Authentication is checked before body validation
   - Type: route handler
   - Depends on: T5
   - Red: add to `createPromptHandler.test.ts` — a request with **no** `Authorization` header **and** an invalid body returns `401` (not `400`) and writes no row. Fails only if the guard runs after validation.
