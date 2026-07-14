@@ -1,5 +1,5 @@
 # Spec: Authenticated create-prompt with recorded creator
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a registered user, I want creating a prompt to require me to be authenticated and to record me as its creator, so that only authenticated users can create prompts and every prompt is attributed to the person who created it.
 
 ## 1. Behavior
