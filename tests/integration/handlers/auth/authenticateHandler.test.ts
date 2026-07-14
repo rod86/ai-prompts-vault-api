@@ -84,4 +84,16 @@ describe('POST /authenticate', () => {
         expect(response.body.details.body.email).not.toHaveLength(0);
         expect(response.body.token).toBeUndefined();
     });
+
+    it('returns a 400 validation failure when password is too short', async () => {
+        const response = await request(app)
+            .post('/authenticate')
+            .send({ email: knownUser.email, password: 'abc' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('RequestValidationError');
+        expect(response.body.details.body.password).toEqual(expect.any(String));
+        expect(response.body.details.body.password).not.toHaveLength(0);
+        expect(response.body.token).toBeUndefined();
+    });
 });

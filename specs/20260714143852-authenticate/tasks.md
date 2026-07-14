@@ -77,7 +77,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     `email` ... Then the request is rejected as a validation failure ... and no token is
     issued." (V1, E1)
 
-- [ ] T4. Too-short password is rejected as a 400 validation failure
+- [x] T4. Too-short password is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a body whose `password` is
