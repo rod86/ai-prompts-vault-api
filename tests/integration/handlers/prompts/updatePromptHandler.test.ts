@@ -165,5 +165,17 @@ describe('PUT /prompts/:id', () => {
                 category_id: 'Missing required value',
             });
         });
+
+        it('returns an invalid value error for a malformed path id', async () => {
+            const response = await request(app).put('/prompts/not-a-uuid').send({
+                title: 'Updated title',
+                prompt: 'Updated prompt text',
+                category_id: faker.string.uuid(),
+            });
+
+            expect(response.body.details.params).toEqual({
+                id: 'Invalid UUID value',
+            });
+        });
     });
 });

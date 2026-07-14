@@ -155,7 +155,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     Then the request is rejected as a validation failure whose reasons name each offending
     field ... grouped under its request part, and nothing is updated." (V2, V3, V4-required, E1)
 
-- [ ] T6. Request Validation — malformed path id surfaces under details.params.id, before any lookup
+- [x] T6. Request Validation — malformed path id surfaces under details.params.id, before any lookup
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to the `Request Validation` describe — `PUT /prompts/not-a-uuid` with an
