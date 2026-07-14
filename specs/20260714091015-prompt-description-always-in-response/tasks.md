@@ -14,7 +14,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     `description: prompt.description || null`.
   - Covers: AC1 "Given a create request that omits the description, When the client creates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`)."
 
-- [ ] T2. Create response returns `description: null` for an empty-string description
+- [x] T2. Create response returns `description: null` for an empty-string description
   - Type: route handler
   - Depends on: T1
   - Red: In the same create test file, add a test that submits `description: ''`, asserts

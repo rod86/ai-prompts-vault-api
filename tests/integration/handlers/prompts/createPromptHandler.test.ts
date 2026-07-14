@@ -88,6 +88,24 @@ describe('POST /prompts', () => {
 
             await deletePromptsByIds(db, [response.body.id]);
         });
+
+        it('returns description: null and stores it as empty text when submitted as empty', async () => {
+            const body = {
+                title: 'My prompt title',
+                prompt: 'My prompt text',
+                category_id: category.id,
+                description: '',
+            };
+
+            const response = await request(app).post('/prompts').send(body);
+
+            expect(response.body.description).toBeNull();
+
+            const [persisted] = await selectPromptsByIds(db, [response.body.id]);
+            expect(persisted?.description).toBe('');
+
+            await deletePromptsByIds(db, [response.body.id]);
+        });
     });
 
     it('returns a category-invalid error when category_id matches no category', async () => {
