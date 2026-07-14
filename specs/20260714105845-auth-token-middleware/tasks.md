@@ -8,7 +8,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/modules/auth/domain/interfaces/TokenVerifierInterface.ts` (port) and `src/modules/auth/application/ValidateTokenUseCase.ts` exporting `ValidateTokenResponse { userId: string }`.
   - Covers: contributes to AC1 (identity extraction step); field "caller identity"
 
-- [ ] T2. Verifier resolves the user id for a valid token
+- [x] T2. Verifier resolves the user id for a valid token
   - Type: infrastructure
   - Depends on: T1
   - Red: `tests/integration/modules/auth/infrastructure/security/JwtTokenVerifier.test.ts` — sign a valid, unexpired token for user `U` (via `JwtTokenIssuer` / `jwt.sign` with `config.jwtSecret`); assert `new JwtTokenVerifier(secret).verifyToken(token)` resolves `{ userId: 'U' }`. Fails: verifier does not exist.
