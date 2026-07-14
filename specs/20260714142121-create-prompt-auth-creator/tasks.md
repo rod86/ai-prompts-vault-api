@@ -8,7 +8,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `src/modules/prompt/infrastructure/database/schema.ts` — import `users` and add `userId: uuid('user_id').notNull().references(() => users.id)`; `.eslintrc.json` — add the file-scoped `schema` boundaries element (before `infrastructure`) and allow `infrastructure`→`schema` and `schema`→`schema` across contexts (plan §3).
   - Covers: enables §4 persistence; V3
 
-- [ ] T2. Generate & apply the `user_id` migration
+- [x] T2. Generate & apply the `user_id` migration
   - Type: migration
   - Depends on: T1
   - Red: none — migration artifact; verified by `npm run db:migrate` applying cleanly and the `prompts.user_id` column + FK existing.
