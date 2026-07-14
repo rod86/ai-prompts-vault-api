@@ -16,7 +16,7 @@ factory's default passwordHash is random and would never match. Clean up seeded 
 deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
 (Decision D3). -->
 
-- [ ] T1. `POST /authenticate` issues a token and returns 200 for valid credentials
+- [x] T1. `POST /authenticate` issues a token and returns 200 for valid credentials
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/auth/authenticateHandler.test.ts`
@@ -47,7 +47,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     Then an access token identifying the account is issued and returned as { token }, and
     no other data (and never the password) is returned." (V1, V2 happy path)
 
-- [ ] T2. Missing or empty required field is rejected as a 400 validation failure
+- [x] T2. Missing or empty required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add `it`s to `authenticateHandler.test.ts` — (a) POST a body omitting `email`
@@ -63,7 +63,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     ... `password` ... Then the request is rejected as a validation failure whose reasons
     name each offending field ... and no token is issued." (V1, V2, E1)
 
-- [ ] T3. Malformed email is rejected as a 400 validation failure before any credential check
+- [x] T3. Malformed email is rejected as a 400 validation failure before any credential check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a body whose `email` is not
@@ -77,7 +77,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     `email` ... Then the request is rejected as a validation failure ... and no token is
     issued." (V1, E1)
 
-- [ ] T4. Too-short password is rejected as a 400 validation failure
+- [x] T4. Too-short password is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a body whose `password` is
@@ -89,7 +89,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     shorter-than-minimum-length `password` ... Then the request is rejected as a
     validation failure ... and no token is issued." (V2, E1)
 
-- [ ] T5. Unknown email is rejected as 401 invalid credentials
+- [x] T5. Unknown email is rejected as 401 invalid credentials
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a well-formed body whose
@@ -108,7 +108,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     invalid-credentials failure with a generic message, distinct from a validation failure
     and without per-field reasons, and no token is issued." (E2, unknown email)
 
-- [ ] T6. Wrong password is rejected as 401, identical to the unknown-email response
+- [x] T6. Wrong password is rejected as 401, identical to the unknown-email response
   - Type: route handler
   - Depends on: T5
   - Red: add an `it` to `authenticateHandler.test.ts` — reusing the seeded user from T1

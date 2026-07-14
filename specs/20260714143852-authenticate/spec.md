@@ -1,5 +1,5 @@
 # Spec: Authenticate (login and get a token)
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a user, I want to submit my email and password and receive an access token so that I can use it to authenticate my subsequent requests.
 
 ## 1. Behavior
