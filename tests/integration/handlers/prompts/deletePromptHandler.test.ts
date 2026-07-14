@@ -54,4 +54,13 @@ describe('DELETE /prompts/:id', () => {
             message: `Prompt not found: ${unknownId}`,
         });
     });
+
+    it('returns an invalid value error for a malformed path id', async () => {
+        const response = await request(app).delete('/prompts/not-a-uuid');
+
+        expect(response.status).toBe(400);
+        expect(response.body.details.params).toEqual(
+            expect.objectContaining({ id: 'Invalid UUID value' }),
+        );
+    });
 });

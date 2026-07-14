@@ -15,7 +15,7 @@ Plan: specs/20260714093226-delete-prompt/plan.md
   - Green: none — `DeletePromptUseCase` already throws `PromptNotFoundError` for a missing id and `errorMiddleware` already maps it to 404; wiring from T1 makes the test pass.
   - Covers: AC2 "Given no prompt exists with a given well-formed identifier, When the user deletes by that identifier, Then a prompt-not-found error (E1) is returned and nothing is removed."; E1
 
-- [ ] T3. Deleting with a malformed id returns invalid-identifier
+- [x] T3. Deleting with a malformed id returns invalid-identifier
   - Type: route handler
   - Depends on: T1
   - Red: In the same integration test file, call `DELETE /prompts/not-a-uuid`; assert `response.body.details.params` contains `{ id: 'Invalid UUID value' }` (status 400).
