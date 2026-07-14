@@ -185,7 +185,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     that is not a well-formed identifier, ... Then the request is rejected as a validation
     failure ... and nothing is updated." (V4, E1)
 
-- [ ] T8. Well-formed but unknown prompt id returns 404 prompt-not-found
+- [x] T8. Well-formed but unknown prompt id returns 404 prompt-not-found
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a well-formed body to a valid

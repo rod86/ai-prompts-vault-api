@@ -155,6 +155,26 @@ describe('PUT /prompts/:id', () => {
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
+    it('returns a prompt-not-found error when the path id matches no prompt', async () => {
+        const unknownId = faker.string.uuid();
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: fixtureCategory.id,
+        };
+
+        const response = await request(app).put(`/prompts/${unknownId}`).send(body);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({
+            error: 'PromptNotFoundError',
+            message: `Prompt not found: ${unknownId}`,
+        });
+
+        const persisted = await selectPromptsByIds(db, [unknownId]);
+        expect(persisted).toEqual([]);
+    });
+
     describe('Request Validation', () => {
         it('returns missing required value errors for all required body fields', async () => {
             const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({});
