@@ -22,7 +22,7 @@ Plan: specs/20260714112323-auth-verify-user-exists/plan.md
   - Green: in `ValidateTokenUseCase.invoke`, when `findById` resolves `undefined`, `throw new InvalidTokenError()` (`@src/modules/auth/domain/errors/InvalidTokenError.js`).
   - Covers: AC1; V1 → E1
 
-- [ ] T4. Wire the shared credentials repository into the token-validation use case
+- [x] T4. Wire the shared credentials repository into the token-validation use case
   - Type: application (composition root)
   - Depends on: T1, T2, T3
   - Red: none — `src/modules/auth/services.ts` is pure composition/DI wiring; see `testing-practices`. Verified by typecheck.

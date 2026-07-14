@@ -18,4 +18,7 @@ export const loginUseCase = new LoginUseCase(
     config.jwtExpirationSeconds,
 );
 
-export const validateTokenUseCase = new ValidateTokenUseCase(tokenVerifier);
+export const validateTokenUseCase = new ValidateTokenUseCase(
+    tokenVerifier,
+    userCredentialsRepository,
+);
