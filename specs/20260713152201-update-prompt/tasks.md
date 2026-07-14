@@ -32,7 +32,7 @@ The flat `{ errors: [...] }` shape in the updated skill is only an illustrative 
 
 All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.test.ts. -->
 
-- [ ] T1. `PUT /prompts/:id` updates a prompt and returns 200 with the stored prompt
+- [x] T1. `PUT /prompts/:id` updates a prompt and returns 200 with the stored prompt
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/prompts/updatePromptHandler.test.ts`
@@ -79,7 +79,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     text, description (only when submitted), the category as id and name, created_at and
     updated_at." (V1, V2, V3, V4, V5, V6, V7 happy path)
 
-- [ ] T2. Omitting description clears it: 200 whose exact body has no description key, stored null
+- [x] T2. Omitting description clears it: 200 whose exact body has no description key, stored null
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — inside the test, generate and insert
@@ -100,7 +100,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     whose prompt and category both exist, When the client updates the prompt, Then ...
     contains the stored prompt: ... description (only when submitted) ..."
 
-- [ ] T3. Empty-string description is set (not cleared): 200 with description '', stored ''
+- [x] T3. Empty-string description is set (not cleared): 200 with description '', stored ''
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — generate and insert a `fixturePrompt`;
@@ -117,7 +117,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     stored prompt's title, prompt text, category, and description are replaced with the
     submitted values ..."
 
-- [ ] T4. Changing the category updates and echoes the new category
+- [x] T4. Changing the category updates and echoes the new category
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — add a second shared parent
@@ -134,7 +134,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     text, category, and description are replaced with the submitted values ... contains the
     stored prompt: ... the category as id and name ..."
 
-- [ ] T5. Request Validation — empty body reports every required field's missing-value reason
+- [x] T5. Request Validation — empty body reports every required field's missing-value reason
   - Type: route handler
   - Depends on: T1
   - Red: in a nested `describe('Request Validation')` in `updatePromptHandler.test.ts`, add an
@@ -155,7 +155,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     Then the request is rejected as a validation failure whose reasons name each offending
     field ... grouped under its request part, and nothing is updated." (V2, V3, V4-required, E1)
 
-- [ ] T6. Request Validation — malformed path id surfaces under details.params.id, before any lookup
+- [x] T6. Request Validation — malformed path id surfaces under details.params.id, before any lookup
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to the `Request Validation` describe — `PUT /prompts/not-a-uuid` with an
@@ -171,7 +171,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     validation failure whose reasons name each offending field (by its snake_case name) with
     a human-readable reason grouped under its request part, and nothing is updated." (V1, E1)
 
-- [ ] T7. Request Validation — malformed category_id surfaces under details.body.category_id
+- [x] T7. Request Validation — malformed category_id surfaces under details.body.category_id
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to the `Request Validation` describe — `PUT /prompts/<valid-uuid>` with a
@@ -185,7 +185,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     that is not a well-formed identifier, ... Then the request is rejected as a validation
     failure ... and nothing is updated." (V4, E1)
 
-- [ ] T8. Well-formed but unknown prompt id returns 404 prompt-not-found
+- [x] T8. Well-formed but unknown prompt id returns 404 prompt-not-found
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a well-formed body to a valid
@@ -205,7 +205,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     is rejected as a prompt-not-found failure that names the missing prompt, distinct from a
     validation failure and without per-field reasons, and nothing is updated." (V6, E2)
 
-- [ ] T9. Precedence: prompt AND category both missing returns 404 prompt-not-found (E2 wins)
+- [x] T9. Precedence: prompt AND category both missing returns 404 prompt-not-found (E2 wins)
   - Type: route handler
   - Depends on: T8
   - Red: add an `it` to `updatePromptHandler.test.ts` — PUT a well-formed body to a valid uuid
@@ -221,7 +221,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     prompt-not-found failure that names the missing prompt, distinct from a validation failure
     and without per-field reasons ..." (V6 before V7, E2)
 
-- [ ] T10. Well-formed but unknown category_id (existing prompt) returns 422 category-not-found
+- [x] T10. Well-formed but unknown category_id (existing prompt) returns 422 category-not-found
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — generate and insert a `fixturePrompt`

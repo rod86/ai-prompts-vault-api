@@ -435,9 +435,10 @@ directly (§9 `### HTTP layer`). A handler is thin (delegates to a use case/serv
 shapes the response — §4), so assert the *observable HTTP contract*, not internals. Seed and
 clean fixtures per the DB lifecycle.
 
-- **Success — assert status and the whole resource envelope.** Return the full resource with
-  relations **assembled as nested objects**, not raw foreign-key ids; assert timestamp
-  semantics (created timestamp preserved, updated timestamp bumped).
+- **One representative success test pins the whole resource envelope.** In that single case
+  assert status and the full resource with relations **assembled as nested objects**, not raw
+  foreign-key ids, plus timestamp semantics (created timestamp preserved, updated timestamp
+  bumped). This is the one test that owns the complete shape; every other test leans on it.
 - **Every domain error path — assert the mapped status and message.** The handler throws
   typed domain errors (§6) that the central error handler maps to a status + error body
   (e.g. not-found → 404, invalid reference → 4xx). Test each — the error handler is the most
@@ -449,13 +450,19 @@ clean fixtures per the DB lifecycle.
   direct table read (not the resource's own read endpoint), proving the operation was atomic.
 - **Optional/nullable fields — cover each distinct state.** Distinguish `null` (clears → absent
   from the response) from `''` (sets empty → present); test them separately — different states.
-- **Assert the exact response, not a partial one.** Use `toEqual` on the full body, not
-  `toMatchObject`; an exact match proves both the fields present *and* the absence of others
-  (a cleared field, a leaked internal field) in one assertion — never pair a partial match with
-  a follow-up "does not have prop X" check. For nondeterministic values (a generated timestamp),
-  keep the match exact with an asymmetric matcher (`expect.any(...)`).
-- One integration file per handler, mirroring `src/`; assert status **and** full body — never
-  status alone. Request-validation cases belong in the request-validation section below, not here.
+- **Every other test asserts only its own delta — never re-assert what's already covered.** A
+  focused case (a single field's behavior, a category swap, an error path) checks only the
+  value(s) that distinguish it and relies on the representative success test for the rest; don't
+  restate the status, the whole envelope, or unrelated fields another test already pins. E.g. the
+  `''`-vs-`null` description case asserts just the description — in the response body and via a
+  direct row read — not the full envelope, timestamps, or category again.
+- **On the representative success test, assert the exact response, not a partial one.** Use
+  `toEqual` on the full body, not `toMatchObject`; an exact match proves both the fields present
+  *and* the absence of others (a cleared field, a leaked internal field) in one assertion — never
+  pair a partial match with a follow-up "does not have prop X" check. For nondeterministic values
+  (a generated timestamp), keep the match exact with an asymmetric matcher (`expect.any(...)`).
+- One integration file per handler, mirroring `src/`; always assert response body, never a bare
+  status code. Request-validation cases belong in the request-validation section below, not here.
 
 ### Handler request validation
 
@@ -474,7 +481,10 @@ whatever wire shape your project uses for validation errors.
   every required field's missing-value message together, in a single case.
 - **One test per specific rule, in isolation.** Give each format/constraint rule (UUID, email,
   min length, …) its own case that triggers only that rule — send just the field that violates
-  it and assert only that field's message, ignoring every other field.
+  it and assert only that field's message, ignoring every other field. Keep the request minimal:
+  include only what's needed to trigger the rule and omit every irrelevant field — when the rule
+  is on a `params`/`query` field, the body carries nothing, so send an empty one (`.send({})`)
+  rather than padding it with an otherwise-valid payload the case doesn't need.
 - These cases short-circuit before the handler runs — no fixtures or side-effect checks needed.
 
 The matcher and key path depend on your validation-error wire shape — match against just the
