@@ -10,6 +10,19 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
   <img height="30" alt="claude-badge" src="https://github.com/user-attachments/assets/ab5deb13-e3a0-4574-825b-989112284e90" />
 </p>
 
+## Contents
+
+- [Tech stack](#tech-stack)
+- [API endpoints](#api-endpoints)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Scripts](#scripts)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Git workflow](#git-workflow)
+- [Claude Code](#claude-code)
+- [Spec-Driven Development Flow](#spec-driven-development-flow)
+
 ## Tech stack
 
 - Node v24.16.0
@@ -17,6 +30,99 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
 - Express v5
 - PostgreSQL v18.4 + Drizzle ORM
 - Vitest + Supertest
+
+## API endpoints
+
+All request and response bodies are JSON with `snake_case` field names.
+
+### Health check
+
+- **Method:** `GET`
+- **URL:** `/health`
+- **Success response — `200 OK`:**
+
+```json
+{ "status": "ok" }
+```
+
+### List prompt categories
+
+- **Method:** `GET`
+- **URL:** `/prompt-categories`
+- **Success response — `200 OK`:**
+
+```json
+[
+  { "id": "3f2a6c1e-9b4d-4f0a-8c7e-1d2b3a4c5d6e", "name": "Writing" },
+  { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" }
+]
+```
+
+### Create a prompt
+
+- **Method:** `POST`
+- **URL:** `/prompts`
+- **Content-Type:** `application/json`
+- **Request body** (`description` is optional):
+
+```json
+{
+  "title": "Refactor helper",
+  "prompt": "Refactor the following function for readability: {{code}}",
+  "category_id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+  "description": "Cleans up a code snippet"
+}
+```
+
+- **Success response — `201 Created`:**
+
+```json
+{
+  "id": "c4d5e6f7-a8b9-4c0d-8e1f-2a3b4c5d6e7f",
+  "title": "Refactor helper",
+  "prompt": "Refactor the following function for readability: {{code}}",
+  "description": "Cleans up a code snippet",
+  "category": { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" },
+  "created_at": "2026-07-14T10:30:00.000Z",
+  "updated_at": "2026-07-14T10:30:00.000Z"
+}
+```
+
+### Update a prompt
+
+- **Method:** `PUT`
+- **URL:** `/prompts/:id`
+- **Content-Type:** `application/json`
+- **Request body** (`description` is optional):
+
+```json
+{
+  "title": "Refactor helper (v2)",
+  "prompt": "Refactor the following function for readability and performance: {{code}}",
+  "category_id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
+  "description": "Cleans up and optimizes a code snippet"
+}
+```
+
+- **Success response — `200 OK`:**
+
+```json
+{
+  "id": "c4d5e6f7-a8b9-4c0d-8e1f-2a3b4c5d6e7f",
+  "title": "Refactor helper (v2)",
+  "prompt": "Refactor the following function for readability and performance: {{code}}",
+  "description": "Cleans up and optimizes a code snippet",
+  "category": { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" },
+  "created_at": "2026-07-14T10:30:00.000Z",
+  "updated_at": "2026-07-14T11:15:00.000Z"
+}
+```
+
+### Delete a prompt
+
+- **Method:** `DELETE`
+- **URL:** `/prompts/:id`
+- **Success response — `204 No Content`** (empty body).
 
 ## Requirements
 
@@ -62,20 +168,26 @@ npm run dev
 
 ```
 src/
-  logic/                # legacy business logic
-  modules/              # business logic (follows conventions from skill `domain-driven-design`)
-  handlers/             # Route handlers
-  middleware/           # Global and routes middleware
-  schemas/              # validateRequestMiddleware validation schemas
-  config.ts             # Config with loaded env vars + hardcoded params
-  app.ts                # HTTP app: middleware + routes (no listen)
-  index.ts              # app server bootstrap
-tests/                  
-  lib/                  # Shared test helpers (database, mocks, builders, sample responses,...)
-  unit/                 # Unit tests
-  integration/          # Integration 
-specs/                  # Spec driven development specs
-drizzle/                # Drizzle kit migrations
+  modules/<context>/       # bounded contexts — the home for business logic (auth, prompt, user, shared)
+    domain/                # entities, domain errors, repository interfaces
+    application/           # use cases (*.UseCase.ts)
+    infrastructure/        # Adapters (rizzle repositories, Token Generators,...)
+    services.ts            # Context services setup (DI wiring)
+  handlers/                # HTTP route handler
+  middleware/              # Express middleware
+  routes/                  # Express routers + request-validation schemas
+  config/
+    config.ts              # env vars + fixed params (no schema)
+    drizzle-schema.ts      # aggregated Drizzle schema
+  types/                   # Additional TypeScript types declarations (e.g. custom req typing)
+  app.ts                   # HTTP app: middleware + routes (no listen)
+  index.ts                 # server bootstrap + graceful shutdown
+tests/
+  lib/                     # shared helpers: DB helpers, model factories
+  unit/                    
+  integration/             
+specs/                     # spec-driven development specs, one folder per feature
+drizzle/                   # generated SQL migrations
 ```
 
 ## Testing
