@@ -38,4 +38,18 @@ describe('requireAuthMiddleware', () => {
         expect(response.status).toBe(401);
         expect(response.body).toMatchObject({ error: 'MissingTokenError' });
     });
+
+    it('rejects an expired token, telling the caller it expired', async () => {
+        const token = jwt.sign(
+            { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) - 10 },
+            config.jwtSecret,
+            { algorithm: 'HS256' },
+        );
+        const app = buildApp();
+
+        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(401);
+        expect(response.body).toMatchObject({ error: 'TokenExpiredError' });
+    });
 });

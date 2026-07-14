@@ -64,7 +64,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/modules/auth/domain/errors/MissingTokenError.ts`; in `requireAuthMiddleware` `throw new MissingTokenError()` when the header is absent or not `Bearer <token>`; add a `MissingTokenError → 401` `instanceof` branch to `src/middleware/errorMiddleware.ts`.
   - Covers: AC2 "Given a protected action, When the request is made with no authentication token, Then the request is rejected as not authenticated (missing token) and the action does not run."; V1 → E1
 
-- [ ] T10. Expired token is surfaced as a 401 that says so
+- [x] T10. Expired token is surfaced as a 401 that says so
   - Type: middleware
   - Depends on: T3, T8
   - Red: same test file — send `Authorization: Bearer <expired token>`; assert 401 with `{ error: 'TokenExpiredError' }`. Fails: `TokenExpiredError` unmapped → 500.
