@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 import { ValidateTokenUseCase } from '@src/modules/auth/application/ValidateTokenUseCase.js';
@@ -9,6 +10,7 @@ describe('ValidateTokenUseCase', () => {
     let tokenVerifier: MockProxy<TokenVerifierInterface>;
     let userCredentialsRepository: MockProxy<UserCredentialsRepositoryInterface>;
     let useCase: ValidateTokenUseCase;
+    const TOKEN = 'bza1JBLJSr5tpwMCKvZIpjWpwjYggcgHRVMPYpIXAsbxwOYkM1pmRaDuwPo8ZVkb';
 
     beforeEach(() => {
         tokenVerifier = mock<TokenVerifierInterface>();
@@ -17,24 +19,26 @@ describe('ValidateTokenUseCase', () => {
     });
 
     it('resolves the caller identity for a valid token', async () => {
-        tokenVerifier.verifyToken.mockResolvedValue({ userId: 'U' });
+        const userId = faker.string.uuid();
+        tokenVerifier.verifyToken.mockResolvedValue({ userId });
         userCredentialsRepository.findById.mockResolvedValue({
-            id: 'U',
+            id: userId,
             email: 'ada@example.com',
             passwordHash: 'hash',
         });
 
-        const result = await useCase.invoke('a-token');
+        const result = await useCase.invoke(TOKEN);
 
-        expect(result).toEqual({ userId: 'U' });
-        expect(tokenVerifier.verifyToken).toHaveBeenCalledWith('a-token');
-        expect(userCredentialsRepository.findById).toHaveBeenCalledWith('U');
+        expect(result).toEqual({ userId });
+        expect(tokenVerifier.verifyToken).toHaveBeenCalledWith(TOKEN);
+        expect(userCredentialsRepository.findById).toHaveBeenCalledWith(userId);
     });
 
     it('rejects with InvalidTokenError when the token identifies no existing user', async () => {
-        tokenVerifier.verifyToken.mockResolvedValue({ userId: 'U' });
+        const userId = faker.string.uuid();
+        tokenVerifier.verifyToken.mockResolvedValue({ userId });
         userCredentialsRepository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke('a-token')).rejects.toThrow(InvalidTokenError);
+        await expect(useCase.invoke(TOKEN)).rejects.toThrow(InvalidTokenError);
     });
 });
