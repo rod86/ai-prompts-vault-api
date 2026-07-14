@@ -251,11 +251,12 @@ A typical feature goes through these steps:
 
 ### Skills
 
-- **clean-code**:  SOLID and Clean Code principles
+- **clean-code**: SOLID and Clean Code principles
 - **coding-style**: TypeScript coding style guidelines
 - **database-schema-design**: Engine-agnostic relational schema-design conventions
+- **domain-driven-design**: Domain-Driven Design guidelines for TypeScript
+- **node-express-typescript**: Express conventions for TypeScript (excludes business logic directory)
 - **spec-driven-development**: Spec-driven (SDD) workflow (agnostic to project)
-- **domain-driven-design**:  Domain-Driven Design guidelines for TypeScript
 - **testing-practices**: Testing conventions for TypeScript
 
 ### Commands
