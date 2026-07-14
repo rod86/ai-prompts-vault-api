@@ -96,4 +96,17 @@ describe('POST /authenticate', () => {
         expect(response.body.details.body.password).not.toHaveLength(0);
         expect(response.body.token).toBeUndefined();
     });
+
+    it('returns a 401 invalid-credentials failure when the email is unknown', async () => {
+        const response = await request(app)
+            .post('/authenticate')
+            .send({ email: 'unknown.user@example.com', password: knownPassword });
+
+        expect(response.status).toBe(401);
+        expect(response.body).toEqual({
+            error: 'InvalidCredentialsError',
+            message: 'Invalid authentication credentials',
+        });
+        expect(response.body.token).toBeUndefined();
+    });
 });

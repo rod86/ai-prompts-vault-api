@@ -89,7 +89,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     shorter-than-minimum-length `password` ... Then the request is rejected as a
     validation failure ... and no token is issued." (V2, E1)
 
-- [ ] T5. Unknown email is rejected as 401 invalid credentials
+- [x] T5. Unknown email is rejected as 401 invalid credentials
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a well-formed body whose
