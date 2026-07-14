@@ -1,5 +1,5 @@
 # Spec: Authentication guard for protected actions
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API consumer, I want to attach my authentication token to a request for a protected action so that the API confirms my identity and rejects any request that lacks a valid, unexpired token.
 
 ## 1. Behavior
