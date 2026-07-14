@@ -25,7 +25,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     as `null` while persistence keeps `''` (no persistence code changed).
   - Covers: AC2 "Given a create request whose description is empty text, When the client creates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`), and the stored prompt is unaffected by this change (its description is still stored as empty text)."
 
-- [ ] T3. Update response returns `description: null` when omitted
+- [x] T3. Update response returns `description: null` when omitted
   - Type: route handler
   - Depends on: none
   - Red: In `tests/integration/handlers/prompts/updatePromptHandler.test.ts`, change the
