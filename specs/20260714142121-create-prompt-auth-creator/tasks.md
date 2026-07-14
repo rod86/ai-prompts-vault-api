@@ -43,7 +43,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: none — the ordering is delivered by T5's middleware placement; this task adds the test that proves it.
   - Covers: AC3; V1
 
-- [ ] T7. Unknown category is rejected on an authenticated request
+- [x] T7. Unknown category is rejected on an authenticated request
   - Type: route handler
   - Depends on: T5
   - Red: add to `createPromptHandler.test.ts` — an authenticated request naming a non-existent `category_id` returns `422` (`CategoryNotFoundError`) and writes no row.
