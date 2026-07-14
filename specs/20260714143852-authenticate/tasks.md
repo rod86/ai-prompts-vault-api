@@ -16,7 +16,7 @@ factory's default passwordHash is random and would never match. Clean up seeded 
 deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
 (Decision D3). -->
 
-- [ ] T1. `POST /authenticate` issues a token and returns 200 for valid credentials
+- [x] T1. `POST /authenticate` issues a token and returns 200 for valid credentials
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/auth/authenticateHandler.test.ts`
