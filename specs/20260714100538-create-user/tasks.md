@@ -11,7 +11,7 @@ DatabaseClient<DatabaseSchema> inline from @src/config/config.js +
 users via the tests/lib/database/users helpers (insertUsers, selectUsersByIds,
 deleteUsersByIds) with userModelFactory. -->
 
-- [ ] T1. `POST /users` creates a user and returns 201 with the stored user
+- [x] T1. `POST /users` creates a user and returns 201 with the stored user
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/users/createUserHandler.test.ts`
@@ -45,7 +45,7 @@ deleteUsersByIds) with userModelFactory. -->
     response indicates a new resource was created and contains the stored user: id, name,
     email, created_at and updated_at, and never the password." (V1, V2, V3, V4 happy path)
 
-- [ ] T2. Missing required field is rejected as a 400 validation failure
+- [x] T2. Missing required field is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — POST a body omitting `name` (valid
@@ -63,7 +63,7 @@ deleteUsersByIds) with userModelFactory. -->
     failure whose reasons name each offending field with a human-readable reason grouped
     under the body, and no user is stored." (V1, E1)
 
-- [ ] T3. Malformed email is rejected as 400 before the uniqueness check
+- [x] T3. Malformed email is rejected as 400 before the uniqueness check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — POST a well-formed body whose
@@ -75,7 +75,7 @@ deleteUsersByIds) with userModelFactory. -->
   - Covers: AC2 (the malformed-email case) "... sends a malformed email ... Then the
     request is rejected as a validation failure ... and no user is stored." (V2, E1)
 
-- [ ] T4. Too-short password is rejected as a 400 validation failure
+- [x] T4. Too-short password is rejected as a 400 validation failure
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — POST a well-formed body whose
@@ -87,7 +87,7 @@ deleteUsersByIds) with userModelFactory. -->
     minimum length ... Then the request is rejected as a validation failure ... and no
     user is stored." (V3, E1)
 
-- [ ] T5. Already-used email returns 422 email-already-in-use
+- [x] T5. Already-used email returns 422 email-already-in-use
   - Type: middleware
   - Depends on: T1
   - Red: add an `it` to `createUserHandler.test.ts` — seed one user via `insertUsers`

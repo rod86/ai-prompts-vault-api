@@ -1,0 +1,23 @@
+import { type RequestHandler } from 'express';
+import { registerUserUseCase } from '@src/modules/user/services.js';
+import { type CreateUserRequest } from '@src/routes/users.schema.js';
+
+const createUserHandler: RequestHandler = async (req, res) => {
+    const { body } = req.parsedRequest as CreateUserRequest;
+
+    const user = await registerUserUseCase.invoke({
+        name: body.name,
+        email: body.email,
+        password: body.password,
+    });
+
+    res.status(201).json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
+    });
+};
+
+export default createUserHandler;
