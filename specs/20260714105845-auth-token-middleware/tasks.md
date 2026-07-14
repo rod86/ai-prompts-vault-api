@@ -29,7 +29,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/modules/auth/domain/errors/InvalidTokenError.ts`; in `JwtTokenVerifier` catch remaining `jsonwebtoken` `JsonWebTokenError` cases and throw the domain `InvalidTokenError`.
   - Covers: AC4 "Given a protected action, When the request is made with a token that is not authentic or is unreadable, Then the request is rejected as invalid and the action does not run." (verification half); V2 → E3
 
-- [ ] T5. Verifier rejects a valid token that identifies no user
+- [x] T5. Verifier rejects a valid token that identifies no user
   - Type: infrastructure
   - Depends on: T4
   - Red: same test file — sign a valid, unexpired token with no `sub` claim; assert `verifyToken` rejects with `InvalidTokenError`. Fails: missing-`sub` accepted.

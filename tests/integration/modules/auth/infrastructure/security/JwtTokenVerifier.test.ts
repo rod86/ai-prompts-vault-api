@@ -48,5 +48,13 @@ describe('JwtTokenVerifier', () => {
         it('rejects with InvalidTokenError when the token is unreadable', async () => {
             await expect(verifier.verifyToken('not-a-jwt')).rejects.toThrow(InvalidTokenError);
         });
+
+        it('rejects with InvalidTokenError when the token carries no sub claim', async () => {
+            const token = jwt.sign({ exp: Math.floor(Date.now() / 1000) + 3600 }, config.jwtSecret, {
+                algorithm: 'HS256',
+            });
+
+            await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
+        });
     });
 });
