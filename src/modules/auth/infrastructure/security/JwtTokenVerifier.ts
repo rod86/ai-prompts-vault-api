@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import type TokenVerifierInterface from '@src/modules/auth/domain/interfaces/TokenVerifierInterface.js';
 
@@ -15,6 +16,10 @@ export class JwtTokenVerifier implements TokenVerifierInterface {
         } catch (err) {
             if (err instanceof jwt.TokenExpiredError) {
                 throw new TokenExpiredError();
+            }
+
+            if (err instanceof jwt.JsonWebTokenError) {
+                throw new InvalidTokenError();
             }
 
             throw err;

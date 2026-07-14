@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { beforeEach, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
+import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { JwtTokenVerifier } from '@src/modules/auth/infrastructure/security/JwtTokenVerifier.js';
 
@@ -32,6 +33,20 @@ describe('JwtTokenVerifier', () => {
             );
 
             await expect(verifier.verifyToken(token)).rejects.toThrow(TokenExpiredError);
+        });
+
+        it('rejects with InvalidTokenError when the signature is not authentic', async () => {
+            const token = jwt.sign(
+                { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) + 3600 },
+                'a-different-secret',
+                { algorithm: 'HS256' },
+            );
+
+            await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
+        });
+
+        it('rejects with InvalidTokenError when the token is unreadable', async () => {
+            await expect(verifier.verifyToken('not-a-jwt')).rejects.toThrow(InvalidTokenError);
         });
     });
 });

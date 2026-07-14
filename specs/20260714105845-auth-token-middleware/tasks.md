@@ -22,7 +22,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: create `src/modules/auth/domain/errors/TokenExpiredError.ts`; in `JwtTokenVerifier` catch `jsonwebtoken`'s `TokenExpiredError` and throw the domain `TokenExpiredError`.
   - Covers: AC3 "Given a protected action, When the request is made with an expired token, Then the request is rejected, the caller is told the token has expired, and the action does not run." (verification half); V3 → E2
 
-- [ ] T4. Verifier rejects a non-authentic/unreadable token
+- [x] T4. Verifier rejects a non-authentic/unreadable token
   - Type: infrastructure
   - Depends on: T2
   - Red: same test file — verify a token signed with a different secret (bad signature); assert `verifyToken` rejects with `InvalidTokenError`. Fails: invalid path not handled / error type missing.
