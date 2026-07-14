@@ -1,5 +1,5 @@
 # Spec: Authentication guard rejects tokens for nonexistent users
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API consumer, I want the authentication guard to confirm that the user id carried by my token still corresponds to an existing user account so that a token whose user has been deleted (or never existed) is rejected as invalid rather than treated as authenticated.
 
 _Relationship to prior work: this spec extends the guard delivered by_
