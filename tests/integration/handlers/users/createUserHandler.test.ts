@@ -5,8 +5,8 @@ import app from '@src/app.js';
 import config from '@src/config/config.js';
 import schema from '@src/config/drizzle-schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { users } from '@src/modules/user/infrastructure/database/schema.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
+import { users } from '@src/modules/user/infrastructure/database/schema.js';
 import { userModelFactory } from '@tests/lib/config.js';
 import { deleteUsersByIds, insertUsers, selectUsersByIds } from '@tests/lib/database/users.js';
 
