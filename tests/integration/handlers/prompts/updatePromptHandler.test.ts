@@ -58,6 +58,7 @@ describe('PUT /prompts/:id', () => {
             prompt: body.prompt,
             description: body.description,
             category: { id: fixtureCategory.id, name: fixtureCategory.name },
+            user: { id: creatorUser.id, name: creatorUser.name },
             created_at: expect.any(String),
             updated_at: expect.any(String),
         });

@@ -57,7 +57,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `src/handlers/prompts/createPromptHandler.ts` — narrow `req.auth` (throw `MissingTokenError` if absent, satisfying `no-non-null-assertion`), pass `userId: req.auth.userId` into `createPromptUseCase.invoke`, and add `user: prompt.user` to the 201 response.
   - Covers: AC1 (end-to-end)
 
-- [ ] T9. Update-prompt response exposes the creator
+- [x] T9. Update-prompt response exposes the creator
   - Type: route handler
   - Depends on: T3
   - Red: extend the happy-path test in `tests/integration/handlers/prompts/updatePromptHandler.test.ts` — seed a `users` row and a prompt created by that user, `PUT /prompts/:id` (no `Authorization` header), and assert the `200` body's `toEqual` now includes `user: { id, name }` (the original creator, unchanged) beside `category`. Fails because the handler omits `user`.
