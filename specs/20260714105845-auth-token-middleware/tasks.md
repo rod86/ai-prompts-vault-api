@@ -50,7 +50,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: add `auth?: ValidateTokenResponse;` to the `Express.Request` declaration-merge block, type-importing `ValidateTokenResponse` from `ValidateTokenUseCase`.
   - Covers: field "caller identity" typing for AC1
 
-- [ ] T8. Guard attaches the identity for a valid token
+- [x] T8. Guard attaches the identity for a valid token
   - Type: middleware
   - Depends on: T6, T7
   - Red: `tests/integration/middleware/requireAuthMiddleware.test.ts` — build a supertest app mounting `requireAuthMiddleware` before a scratch route that returns `req.auth`, with `errorMiddleware` last; send `Authorization: Bearer <valid token for U>`; assert 200 and body user id `U`. Fails: middleware does not exist.
