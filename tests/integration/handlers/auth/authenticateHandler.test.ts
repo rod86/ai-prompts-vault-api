@@ -18,7 +18,7 @@ describe('POST /authenticate', () => {
     const createdIds: string[] = [];
 
     const knownPassword = 'a-secure-password';
-    const knownUser = userModelFactory.create({ email: 'ada.lovelace@example.com' });
+    const knownUser = userModelFactory.create();
 
     beforeAll(async () => {
         client.connect();
