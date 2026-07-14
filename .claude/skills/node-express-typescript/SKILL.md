@@ -474,7 +474,10 @@ whatever wire shape your project uses for validation errors.
   every required field's missing-value message together, in a single case.
 - **One test per specific rule, in isolation.** Give each format/constraint rule (UUID, email,
   min length, …) its own case that triggers only that rule — send just the field that violates
-  it and assert only that field's message, ignoring every other field.
+  it and assert only that field's message, ignoring every other field. Keep the request minimal:
+  include only what's needed to trigger the rule and omit every irrelevant field — when the rule
+  is on a `params`/`query` field, the body carries nothing, so send an empty one (`.send({})`)
+  rather than padding it with an otherwise-valid payload the case doesn't need.
 - These cases short-circuit before the handler runs — no fixtures or side-effect checks needed.
 
 The matcher and key path depend on your validation-error wire shape — match against just the

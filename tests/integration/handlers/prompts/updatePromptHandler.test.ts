@@ -235,15 +235,11 @@ describe('PUT /prompts/:id', () => {
         });
 
         it('returns an invalid value error for a malformed path id', async () => {
-            const response = await request(app).put('/prompts/not-a-uuid').send({
-                title: 'Updated title',
-                prompt: 'Updated prompt text',
-                category_id: faker.string.uuid(),
-            });
+            const response = await request(app).put('/prompts/not-a-uuid').send({});
 
-            expect(response.body.details.params).toEqual({
-                id: 'Invalid UUID value',
-            });
+            expect(response.body.details.params).toEqual(
+                expect.objectContaining({ id: 'Invalid UUID value' }),
+            );
         });
 
         it('returns an invalid value error for a malformed category_id', async () => {
@@ -253,9 +249,9 @@ describe('PUT /prompts/:id', () => {
                 category_id: 'not-a-uuid',
             });
 
-            expect(response.body.details.body).toEqual({
-                category_id: 'Invalid UUID value',
-            });
+            expect(response.body.details.body).toEqual(
+                expect.objectContaining({ category_id: 'Invalid UUID value' }),
+            );
         });
     });
 });
