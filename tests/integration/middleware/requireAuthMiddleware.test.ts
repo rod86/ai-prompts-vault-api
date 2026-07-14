@@ -1,6 +1,5 @@
 import { faker } from '@faker-js/faker';
 import express, { type Express, type Request, type Response } from 'express';
-import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
@@ -11,6 +10,7 @@ import DatabaseClient from '@src/modules/shared/infrastructure/database/Database
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
 import { userModelFactory } from '@tests/lib/config.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('requireAuthMiddleware', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -45,11 +45,7 @@ describe('requireAuthMiddleware', () => {
         const fixture = userModelFactory.create();
         insertedIds = [fixture.id];
         await insertUsers(db, [fixture]);
-        const token = jwt.sign(
-            { sub: fixture.id, exp: Math.floor(Date.now() / 1000) + 3600 },
-            config.jwtSecret,
-            { algorithm: 'HS256' },
-        );
+        const token = createSignedToken({ sub: fixture.id });
         const app = buildApp();
 
         const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
@@ -59,11 +55,7 @@ describe('requireAuthMiddleware', () => {
     });
 
     it('rejects a token whose user id matches no existing account', async () => {
-        const token = jwt.sign(
-            { sub: faker.string.uuid(), exp: Math.floor(Date.now() / 1000) + 3600 },
-            config.jwtSecret,
-            { algorithm: 'HS256' },
-        );
+        const token = createSignedToken({ sub: faker.string.uuid() });
         const app = buildApp();
 
         const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
@@ -82,11 +74,7 @@ describe('requireAuthMiddleware', () => {
     });
 
     it('rejects an expired token, telling the caller it expired', async () => {
-        const token = jwt.sign(
-            { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) - 10 },
-            config.jwtSecret,
-            { algorithm: 'HS256' },
-        );
+        const token = createSignedToken({ sub: 'fixture-user-id', expiresInSeconds: -10 });
         const app = buildApp();
 
         const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
@@ -96,11 +84,7 @@ describe('requireAuthMiddleware', () => {
     });
 
     it('rejects a token signed with a different secret', async () => {
-        const token = jwt.sign(
-            { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) + 3600 },
-            'a-different-secret',
-            { algorithm: 'HS256' },
-        );
+        const token = createSignedToken({ sub: 'fixture-user-id', secret: 'a-different-secret' });
         const app = buildApp();
 
         const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);

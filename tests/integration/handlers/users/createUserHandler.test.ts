@@ -1,4 +1,3 @@
-import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
@@ -6,9 +5,13 @@ import config from '@src/config/config.js';
 import schema from '@src/config/drizzle-schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
-import { users } from '@src/modules/user/infrastructure/database/schema.js';
 import { userModelFactory } from '@tests/lib/config.js';
-import { deleteUsersByIds, insertUsers, selectUsersByIds } from '@tests/lib/database/users.js';
+import {
+    deleteUsersByIds,
+    insertUsers,
+    selectUsersByEmail,
+    selectUsersByIds,
+} from '@tests/lib/database/users.js';
 
 describe('POST /users', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -78,7 +81,7 @@ describe('POST /users', () => {
             message: `Email already in use: ${existingUser.email}`,
         });
 
-        const stored = await db.select().from(users).where(eq(users.email, existingUser.email));
+        const stored = await selectUsersByEmail(db, existingUser.email);
         expect(stored).toHaveLength(1);
         expect(stored[0]?.id).toBe(existingUser.id);
     });

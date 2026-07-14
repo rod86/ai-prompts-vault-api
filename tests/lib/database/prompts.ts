@@ -1,4 +1,4 @@
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
@@ -45,4 +45,11 @@ export async function selectPromptsByIds(
     }
 
     return db.select().from(prompts).where(inArray(prompts.id, ids));
+}
+
+export async function selectPromptsByCategoryId(
+    db: NodePgDatabase<Record<string, unknown>>,
+    categoryId: string,
+): Promise<(typeof prompts.$inferSelect)[]> {
+    return db.select().from(prompts).where(eq(prompts.promptCategoryId, categoryId));
 }

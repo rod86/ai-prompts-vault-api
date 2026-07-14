@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken';
 import { beforeEach, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
 import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { JwtTokenVerifier } from '@src/modules/auth/infrastructure/security/JwtTokenVerifier.js';
+import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('JwtTokenVerifier', () => {
     let verifier: JwtTokenVerifier;
@@ -14,11 +14,7 @@ describe('JwtTokenVerifier', () => {
 
     describe('verifyToken', () => {
         it('resolves the user id for a valid, unexpired token', async () => {
-            const token = jwt.sign(
-                { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) + 3600 },
-                config.jwtSecret,
-                { algorithm: 'HS256' },
-            );
+            const token = createSignedToken({ sub: 'fixture-user-id' });
 
             const result = await verifier.verifyToken(token);
 
@@ -26,21 +22,13 @@ describe('JwtTokenVerifier', () => {
         });
 
         it('rejects with TokenExpiredError when the token has expired', async () => {
-            const token = jwt.sign(
-                { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) - 10 },
-                config.jwtSecret,
-                { algorithm: 'HS256' },
-            );
+            const token = createSignedToken({ sub: 'fixture-user-id', expiresInSeconds: -10 });
 
             await expect(verifier.verifyToken(token)).rejects.toThrow(TokenExpiredError);
         });
 
         it('rejects with InvalidTokenError when the signature is not authentic', async () => {
-            const token = jwt.sign(
-                { sub: 'fixture-user-id', exp: Math.floor(Date.now() / 1000) + 3600 },
-                'a-different-secret',
-                { algorithm: 'HS256' },
-            );
+            const token = createSignedToken({ sub: 'fixture-user-id', secret: 'a-different-secret' });
 
             await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
         });
@@ -50,9 +38,7 @@ describe('JwtTokenVerifier', () => {
         });
 
         it('rejects with InvalidTokenError when the token carries no sub claim', async () => {
-            const token = jwt.sign({ exp: Math.floor(Date.now() / 1000) + 3600 }, config.jwtSecret, {
-                algorithm: 'HS256',
-            });
+            const token = createSignedToken();
 
             await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
         });

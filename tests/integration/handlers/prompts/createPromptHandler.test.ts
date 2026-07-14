@@ -1,12 +1,9 @@
 import { faker } from '@faker-js/faker';
-import { eq } from 'drizzle-orm';
-import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import config from '@src/config/config.js';
 import schema from '@src/config/drizzle-schema.js';
-import { prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
 import { promptCategoryModelFactory, userModelFactory } from '@tests/lib/config.js';
@@ -14,8 +11,13 @@ import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
-import { deletePromptsByIds, selectPromptsByIds } from '@tests/lib/database/prompts.js';
+import {
+    deletePromptsByIds,
+    selectPromptsByCategoryId,
+    selectPromptsByIds,
+} from '@tests/lib/database/prompts.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('POST /prompts', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -28,11 +30,7 @@ describe('POST /prompts', () => {
         db = client.getConnection();
         databaseClient.connect();
         await insertUsers(db, [creatorUser]);
-        authToken = jwt.sign(
-            { sub: creatorUser.id, exp: Math.floor(Date.now() / 1000) + 3600 },
-            config.jwtSecret,
-            { algorithm: 'HS256' },
-        );
+        authToken = createSignedToken({ sub: creatorUser.id });
     });
 
     afterAll(async () => {
@@ -52,7 +50,7 @@ describe('POST /prompts', () => {
         const response = await request(app).post('/prompts').send(body);
 
         expect(response.status).toBe(401);
-        const stored = await db.select().from(prompts).where(eq(prompts.promptCategoryId, category.id));
+        const stored = await selectPromptsByCategoryId(db, category.id);
         expect(stored).toEqual([]);
 
         await deletePromptCategoriesByIds(db, [category.id]);
@@ -173,10 +171,7 @@ describe('POST /prompts', () => {
             message: `Category not found: ${unknownCategoryId}`,
         });
 
-        const stored = await db
-            .select()
-            .from(prompts)
-            .where(eq(prompts.promptCategoryId, unknownCategoryId));
+        const stored = await selectPromptsByCategoryId(db, unknownCategoryId);
         expect(stored).toEqual([]);
     });
 
