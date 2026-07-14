@@ -29,7 +29,7 @@ Plan: specs/20260714112323-auth-verify-user-exists/plan.md
   - Green: in `src/modules/auth/services.ts`, pass the existing `userCredentialsRepository` instance (already built for `loginUseCase`) as `ValidateTokenUseCase`'s second constructor argument: `new ValidateTokenUseCase(tokenVerifier, userCredentialsRepository)`.
   - Covers: wiring for V1/E1/AC1 (no direct AC)
 
-- [ ] T5. Guard rejects a request whose token identifies a deleted/nonexistent user
+- [x] T5. Guard rejects a request whose token identifies a deleted/nonexistent user
   - Type: middleware
   - Depends on: T4
   - Red: `tests/integration/middleware/requireAuthMiddleware.test.ts` — new test: sign a valid, unexpired token (`jwt.sign({ sub: <a fresh random uuid never inserted into `users`>, exp: ... }, config.jwtSecret, { algorithm: 'HS256' })`); send it as `Authorization: Bearer <token>`; assert 401 with `{ error: 'InvalidTokenError' }`. Fails (before T1–T4): the use case resolves the identity for any well-formed token regardless of the database, so this currently returns 200.
