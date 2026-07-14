@@ -117,7 +117,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     stored prompt's title, prompt text, category, and description are replaced with the
     submitted values ..."
 
-- [ ] T4. Changing the category updates and echoes the new category
+- [x] T4. Changing the category updates and echoes the new category
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — add a second shared parent

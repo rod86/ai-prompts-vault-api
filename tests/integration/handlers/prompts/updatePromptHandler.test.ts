@@ -16,16 +16,17 @@ describe('PUT /prompts/:id', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
     let db: ReturnType<typeof client.getConnection>;
     const fixtureCategory = promptCategoryModelFactory.create();
+    const otherFixtureCategory = promptCategoryModelFactory.create();
 
     beforeAll(async () => {
         client.connect();
         db = client.getConnection();
         databaseClient.connect();
-        await insertPromptCategories(db, [fixtureCategory]);
+        await insertPromptCategories(db, [fixtureCategory, otherFixtureCategory]);
     });
 
     afterAll(async () => {
-        await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
+        await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherFixtureCategory.id]);
         await client.close();
     });
 
@@ -124,6 +125,31 @@ describe('PUT /prompts/:id', () => {
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBe('');
+
+        await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
+
+    it('updates the category and echoes the new category when category_id changes', async () => {
+        const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
+        await insertPrompts(db, [fixturePrompt]);
+
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: otherFixtureCategory.id,
+            description: 'Updated description',
+        };
+
+        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+
+        expect(response.status).toBe(200);
+        expect(response.body.category).toEqual({
+            id: otherFixtureCategory.id,
+            name: otherFixtureCategory.name,
+        });
+
+        const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(persisted?.promptCategoryId).toBe(otherFixtureCategory.id);
 
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
