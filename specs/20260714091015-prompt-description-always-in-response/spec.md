@@ -1,5 +1,5 @@
 # Spec: Always return the prompt description on create and update
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want the create-prompt and update-prompt responses to always include the prompt's description — as an explicit empty value when there is none — so that I can rely on a consistent response shape without special-casing a missing field.
 
 <!--
