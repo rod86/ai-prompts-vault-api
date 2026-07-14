@@ -90,4 +90,21 @@ describe('POST /users', () => {
         expect(response.body.error).toBe('RequestValidationError');
         expect(response.body.details.body.email).toEqual(expect.any(String));
     });
+
+    it('returns a 400 validation failure when the password is too short', async () => {
+        const body = {
+            name: 'Katherine Johnson',
+            email: 'katherine.johnson@example.com',
+            password: 'abc',
+        };
+
+        const response = await request(app).post('/users').send(body);
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('RequestValidationError');
+        expect(response.body.details.body.password).toEqual(expect.any(String));
+
+        const stored = await db.select().from(users).where(eq(users.email, body.email));
+        expect(stored).toEqual([]);
+    });
 });
