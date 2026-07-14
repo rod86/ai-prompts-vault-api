@@ -1,7 +1,7 @@
 # Tasks: Always return the prompt description on create and update
 Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
 
-- [ ] T1. Create response returns `description: null` when omitted
+- [x] T1. Create response returns `description: null` when omitted
   - Type: route handler
   - Depends on: none
   - Red: In `tests/integration/handlers/prompts/createPromptHandler.test.ts`, change the
