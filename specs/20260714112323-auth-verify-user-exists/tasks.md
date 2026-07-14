@@ -15,7 +15,7 @@ Plan: specs/20260714112323-auth-verify-user-exists/plan.md
   - Green: add `userCredentialsRepository: UserCredentialsRepositoryInterface` as a second constructor parameter to `ValidateTokenUseCase`; in `invoke`, after `tokenVerifier.verifyToken(token)` resolves `{ userId }`, call `userCredentialsRepository.findById(userId)` before returning `{ userId }`.
   - Covers: V1 (happy-path continuation of the prior spec's AC1)
 
-- [ ] T3. ValidateTokenUseCase rejects a token whose user id has no matching account
+- [x] T3. ValidateTokenUseCase rejects a token whose user id has no matching account
   - Type: application
   - Depends on: T2
   - Red: same test file — new test: `tokenVerifier.verifyToken` resolves `{ userId: 'U' }`, `userCredentialsRepository.findById` resolves `undefined`; assert `useCase.invoke('a-token')` rejects with `InvalidTokenError`. Fails: `findById`'s result is never checked, so the use case still resolves the identity.
