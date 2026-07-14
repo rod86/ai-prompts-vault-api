@@ -134,7 +134,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     text, category, and description are replaced with the submitted values ... contains the
     stored prompt: ... the category as id and name ..."
 
-- [ ] T5. Request Validation — empty body reports every required field's missing-value reason
+- [x] T5. Request Validation — empty body reports every required field's missing-value reason
   - Type: route handler
   - Depends on: T1
   - Red: in a nested `describe('Request Validation')` in `updatePromptHandler.test.ts`, add an

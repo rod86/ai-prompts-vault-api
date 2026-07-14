@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
@@ -152,5 +153,17 @@ describe('PUT /prompts/:id', () => {
         expect(persisted?.promptCategoryId).toBe(otherFixtureCategory.id);
 
         await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
+
+    describe('Request Validation', () => {
+        it('returns missing required value errors for all required body fields', async () => {
+            const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({});
+
+            expect(response.body.details.body).toEqual({
+                title: 'Missing required value',
+                prompt: 'Missing required value',
+                category_id: 'Missing required value',
+            });
+        });
     });
 });
