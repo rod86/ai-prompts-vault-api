@@ -11,7 +11,7 @@ DatabaseClient<DatabaseSchema> inline from @src/config/config.js +
 users via the tests/lib/database/users helpers (insertUsers, selectUsersByIds,
 deleteUsersByIds) with userModelFactory. -->
 
-- [ ] T1. `POST /users` creates a user and returns 201 with the stored user
+- [x] T1. `POST /users` creates a user and returns 201 with the stored user
   - Type: route handler
   - Depends on: none
   - Red: new integration test `tests/integration/handlers/users/createUserHandler.test.ts`
