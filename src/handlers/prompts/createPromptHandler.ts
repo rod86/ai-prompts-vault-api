@@ -16,7 +16,7 @@ const createPromptHandler: RequestHandler = async (req, res) => {
         id: prompt.id,
         title: prompt.title,
         prompt: prompt.prompt,
-        ...(prompt.description !== undefined && { description: prompt.description }),
+        description: prompt.description || null,
         category: prompt.category,
         created_at: prompt.createdAt,
         updated_at: prompt.updatedAt,

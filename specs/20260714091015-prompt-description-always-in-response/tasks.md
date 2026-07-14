@@ -1,7 +1,7 @@
 # Tasks: Always return the prompt description on create and update
 Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
 
-- [ ] T1. Create response returns `description: null` when omitted
+- [x] T1. Create response returns `description: null` when omitted
   - Type: route handler
   - Depends on: none
   - Red: In `tests/integration/handlers/prompts/createPromptHandler.test.ts`, change the
@@ -14,7 +14,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     `description: prompt.description || null`.
   - Covers: AC1 "Given a create request that omits the description, When the client creates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`)."
 
-- [ ] T2. Create response returns `description: null` for an empty-string description
+- [x] T2. Create response returns `description: null` for an empty-string description
   - Type: route handler
   - Depends on: T1
   - Red: In the same create test file, add a test that submits `description: ''`, asserts
@@ -25,7 +25,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     as `null` while persistence keeps `''` (no persistence code changed).
   - Covers: AC2 "Given a create request whose description is empty text, When the client creates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`), and the stored prompt is unaffected by this change (its description is still stored as empty text)."
 
-- [ ] T3. Update response returns `description: null` when omitted
+- [x] T3. Update response returns `description: null` when omitted
   - Type: route handler
   - Depends on: none
   - Red: In `tests/integration/handlers/prompts/updatePromptHandler.test.ts`, change the
@@ -38,7 +38,7 @@ Plan: specs/20260714091015-prompt-description-always-in-response/plan.md
     `description: prompt.description || null`.
   - Covers: AC3 "Given an update request that omits the description, When the client updates the prompt, Then the response body includes a description field whose value is the explicit empty value (`null`)."
 
-- [ ] T4. Update response returns `description: null` for an empty-string description
+- [x] T4. Update response returns `description: null` for an empty-string description
   - Type: route handler
   - Depends on: T3
   - Red: In the same update test file, change the existing "sets the description to an

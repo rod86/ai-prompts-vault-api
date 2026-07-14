@@ -84,7 +84,7 @@ describe('PUT /prompts/:id', () => {
 
         const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
 
-        expect(response.body).not.toHaveProperty('description');
+        expect(response.body.description).toBeNull();
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBeNull();
@@ -105,7 +105,7 @@ describe('PUT /prompts/:id', () => {
 
         const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
 
-        expect(response.body.description).toBe('');
+        expect(response.body.description).toBeNull();
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBe('');
