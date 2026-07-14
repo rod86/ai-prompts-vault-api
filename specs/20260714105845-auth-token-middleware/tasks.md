@@ -43,7 +43,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: in `src/modules/auth/services.ts` instantiate `new JwtTokenVerifier(config.jwtSecret)` and export `validateTokenUseCase = new ValidateTokenUseCase(tokenVerifier)`.
   - Covers: wiring for AC1–AC5 (no direct AC)
 
-- [ ] T7. Type the attached identity on the request
+- [x] T7. Type the attached identity on the request
   - Type: route typing (HTTP layer)
   - Depends on: T1
   - Red: none — `src/types/express.d.ts` is a pure type declaration; verified by typecheck.
