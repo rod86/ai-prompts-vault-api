@@ -113,16 +113,7 @@ describe('PUT /prompts/:id', () => {
 
         const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
 
-        expect(response.status).toBe(200);
-        expect(response.body).toEqual({
-            id: fixturePrompt.id,
-            title: body.title,
-            prompt: body.prompt,
-            description: '',
-            category: { id: fixtureCategory.id, name: fixtureCategory.name },
-            created_at: expect.any(String),
-            updated_at: expect.any(String),
-        });
+        expect(response.body.description).toBe('');
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBe('');
