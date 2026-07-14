@@ -1,5 +1,6 @@
 import { type NextFunction, type Request, type Response } from 'express';
 import RequestValidationError from '@src/middleware/validateRequest/RequestValidationError.js';
+import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenError.js';
 import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
@@ -18,6 +19,11 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
     }
 
     if (err instanceof TokenExpiredError) {
+        res.status(401).json({ error: err.name, message: err.message });
+        return;
+    }
+
+    if (err instanceof InvalidTokenError) {
         res.status(401).json({ error: err.name, message: err.message });
         return;
     }

@@ -71,7 +71,7 @@ Plan: specs/20260714105845-auth-token-middleware/plan.md
   - Green: add a `TokenExpiredError → 401` `instanceof` branch to `src/middleware/errorMiddleware.ts`.
   - Covers: AC3 "Given a protected action, When the request is made with an expired token, Then the request is rejected, the caller is told the token has expired, and the action does not run." (HTTP half); E2
 
-- [ ] T11. Invalid token is surfaced as a 401
+- [x] T11. Invalid token is surfaced as a 401
   - Type: middleware
   - Depends on: T4, T8
   - Red: same test file — send `Authorization: Bearer <token signed with a different secret>`; assert 401 with `{ error: 'InvalidTokenError' }`. Fails: `InvalidTokenError` unmapped → 500.
