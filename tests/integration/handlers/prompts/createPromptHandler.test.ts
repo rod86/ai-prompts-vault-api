@@ -95,6 +95,7 @@ describe('POST /prompts', () => {
                 prompt: body.prompt,
                 description: body.description,
                 category: { id: category.id, name: category.name },
+                user: { id: creatorUser.id, name: creatorUser.name },
                 created_at: expect.any(String),
                 updated_at: expect.any(String),
             });
@@ -102,6 +103,7 @@ describe('POST /prompts', () => {
             expect(persisted).toMatchObject({
                 id: response.body.id,
                 promptCategoryId: category.id,
+                userId: creatorUser.id,
                 title: body.title,
                 prompt: body.prompt,
                 description: body.description,

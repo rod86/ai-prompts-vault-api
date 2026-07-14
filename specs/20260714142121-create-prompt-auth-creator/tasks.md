@@ -50,7 +50,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: none — `CategoryNotFoundError`→422 already exists; the test authenticates to reach the category check behind the guard.
   - Covers: AC4; E2
 
-- [ ] T8. Handler stamps the authenticated user and exposes the creator
+- [x] T8. Handler stamps the authenticated user and exposes the creator
   - Type: route handler
   - Depends on: T4, T5
   - Red: extend the happy-path test in `createPromptHandler.test.ts` — an authenticated request with a valid body returns `201` whose body includes `user: { id, name }` (the token's user) beside `category`, and `selectPromptsByIds` shows the matching `user_id`. Fails because the handler neither passes the caller nor returns `user`.
