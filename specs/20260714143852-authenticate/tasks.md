@@ -63,7 +63,7 @@ deleteUsersByIds in afterAll. Validation is the same shape as CreateUserSchema
     ... `password` ... Then the request is rejected as a validation failure whose reasons
     name each offending field ... and no token is issued." (V1, V2, E1)
 
-- [ ] T3. Malformed email is rejected as a 400 validation failure before any credential check
+- [x] T3. Malformed email is rejected as a 400 validation failure before any credential check
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `authenticateHandler.test.ts` — POST a body whose `email` is not
