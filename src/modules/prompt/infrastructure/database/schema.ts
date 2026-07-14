@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { users } from '@src/modules/user/infrastructure/database/schema.js';
 
 export const promptCategories = pgTable('prompt_categories', {
     id: uuid('id').primaryKey(),
@@ -10,6 +11,9 @@ export const prompts = pgTable('prompts', {
     promptCategoryId: uuid('prompt_category_id')
         .notNull()
         .references(() => promptCategories.id),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id),
     title: text('title').notNull(),
     prompt: text('prompt').notNull(),
     description: text('description'),

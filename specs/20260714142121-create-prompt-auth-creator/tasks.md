@@ -1,7 +1,7 @@
 # Tasks: Authenticated create-prompt with recorded creator
 Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
 
-- [ ] T1. Add `user_id` to the prompts schema + allow schema-only cross-context imports
+- [x] T1. Add `user_id` to the prompts schema + allow schema-only cross-context imports
   - Type: infrastructure (schema) + tooling
   - Depends on: none
   - Red: none — schema/boundaries config change; verified by `npm run lint` (the new cross-context `users` import in the prompts schema passes, and a probe non-schema cross-context import still fails) and `npm run typecheck`.

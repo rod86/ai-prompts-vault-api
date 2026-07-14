@@ -33,6 +33,12 @@
                 "capture": ["context"]
             },
             {
+                "type": "schema",
+                "pattern": "src/modules/*/infrastructure/database/schema.*",
+                "mode": "full",
+                "capture": ["context"]
+            },
+            {
                 "type": "infrastructure",
                 "pattern": ["src/modules/*/infrastructure"],
                 "mode": "folder",
@@ -110,6 +116,7 @@
                         "allow": [
                             { "to": { "type": "shared" } },
                             { "to": { "type": "config" } },
+                            { "to": { "type": "schema" } },
                             {
                                 "to": {
                                     "type": ["domain", "application", "infrastructure"],
@@ -135,6 +142,10 @@
                                 }
                             }
                         ]
+                    },
+                    {
+                        "from": { "type": "schema" },
+                        "allow": [{ "to": { "type": "schema" } }]
                     },
                     {
                         "from": { "type": "shared" },
