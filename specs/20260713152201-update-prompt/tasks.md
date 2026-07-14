@@ -79,7 +79,7 @@ All PUT tests live in tests/integration/handlers/prompts/updatePromptHandler.tes
     text, description (only when submitted), the category as id and name, created_at and
     updated_at." (V1, V2, V3, V4, V5, V6, V7 happy path)
 
-- [ ] T2. Omitting description clears it: 200 whose exact body has no description key, stored null
+- [x] T2. Omitting description clears it: 200 whose exact body has no description key, stored null
   - Type: route handler
   - Depends on: T1
   - Red: add an `it` to `updatePromptHandler.test.ts` — inside the test, generate and insert

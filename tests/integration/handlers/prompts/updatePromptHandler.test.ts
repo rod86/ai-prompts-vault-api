@@ -66,4 +66,35 @@ describe('PUT /prompts/:id', () => {
 
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
+
+    it('clears the description when it is omitted from the request', async () => {
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            description: 'An existing description',
+        });
+        await insertPrompts(db, [fixturePrompt]);
+
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: fixtureCategory.id,
+        };
+
+        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+            id: fixturePrompt.id,
+            title: body.title,
+            prompt: body.prompt,
+            category: { id: fixtureCategory.id, name: fixtureCategory.name },
+            created_at: expect.any(String),
+            updated_at: expect.any(String),
+        });
+
+        const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(persisted?.description).toBeNull();
+
+        await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
 });
