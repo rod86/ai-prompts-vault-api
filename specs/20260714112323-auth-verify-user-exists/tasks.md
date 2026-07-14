@@ -1,7 +1,7 @@
 # Tasks: Authentication guard rejects tokens for nonexistent users
 Plan: specs/20260714112323-auth-verify-user-exists/plan.md
 
-- [ ] T1. Repository can look up a user's credentials by id
+- [x] T1. Repository can look up a user's credentials by id
   - Type: infrastructure
   - Depends on: none
   - Red: `tests/integration/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.test.ts` — add a `describe('findById')` block: insert a user fixture (`userModelFactory`/`insertUsers`, as the existing `findByEmail` tests do), assert `repository.findById(fixture.id)` resolves `{ id: fixture.id, email: fixture.email, passwordHash: fixture.passwordHash }`; and assert `repository.findById(<a fresh random uuid>)` resolves `undefined`. Fails: `findById` does not exist on the interface/repository.
