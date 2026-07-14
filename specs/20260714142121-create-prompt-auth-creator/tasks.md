@@ -22,7 +22,7 @@ Plan: specs/20260714142121-create-prompt-auth-creator/plan.md
   - Green: `src/modules/prompt/domain/Prompt.ts` — add required `user: { id: string; name: string }` to `Prompt` and `userId: string` to `CreatePrompt`; `DrizzlePromptRepository` — insert `userId` in `create`, `innerJoin(users)` + map `user` in `findAll`/`findById`. Ripple (to stay compiled/green; `UpdatePromptUseCase`'s return is later consumed by T9): `UpdatePromptUseCase` returns `user: existingPrompt.user`; `PromptModelFactory`/`PromptModel` gain `userId` (omit `user`); `insertPrompts` sets `userId`; add `user`/`userId` to fixtures — and seed a `users` row for the new FK — in the existing prompt unit tests (`Get`/`Update`/`Delete`/`ListPrompts` use-case tests) and prompt-inserting integration tests.
   - Covers: AC1 (persistence + return); V2/V3
 
-- [ ] T4. Create use case records the creator and returns the resolved prompt
+- [x] T4. Create use case records the creator and returns the resolved prompt
   - Type: application
   - Depends on: T3
   - Red: extend `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts` — given a query carrying `userId`, assert `promptRepository.create` receives that `userId` and the use case returns the post-insert `findById` result (carrying `user`); keep the category-not-found path. Fails because the query/use case has no `userId` and builds its result in memory.

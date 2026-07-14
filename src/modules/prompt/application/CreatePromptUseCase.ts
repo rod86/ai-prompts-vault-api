@@ -10,6 +10,7 @@ export type CreatePromptQuery = {
     title: string;
     prompt: string;
     categoryId: string;
+    userId: string;
     description?: string;
 };
 
@@ -39,11 +40,24 @@ export class CreatePromptUseCase {
         };
 
         try {
-            await this.promptRepository.create({ ...common, categoryId: category.id });
+            await this.promptRepository.create({
+                ...common,
+                categoryId: category.id,
+                userId: query.userId,
+            });
         } catch (error) {
             throw new PromptCreationError(common.id, error);
         }
 
-        return { ...common, category };
+        const createdPrompt = await this.promptRepository.findById(common.id);
+
+        if (!createdPrompt) {
+            throw new PromptCreationError(
+                common.id,
+                new Error('Prompt not found immediately after being created'),
+            );
+        }
+
+        return createdPrompt;
     }
 }

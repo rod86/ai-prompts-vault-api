@@ -9,6 +9,7 @@ import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/Categor
 import { PromptCreationError } from '@src/modules/prompt/domain/errors/PromptCreationError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
+import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 import { promptCategoryModelFactory } from '@tests/lib/config.js';
@@ -17,6 +18,7 @@ const buildQuery = (data: Partial<CreatePromptQuery> = {}): CreatePromptQuery =>
     title: data.title ?? faker.lorem.sentence(),
     prompt: data.prompt ?? faker.lorem.paragraph(),
     categoryId: data.categoryId ?? faker.string.uuid(),
+    userId: data.userId ?? faker.string.uuid(),
     description: 'description' in data ? data.description : faker.lorem.sentence(),
 });
 
@@ -39,34 +41,38 @@ describe('CreatePromptUseCase', () => {
         useCase = new CreatePromptUseCase(promptRepository, categoryRepository, dateTime, idGenerator);
     });
 
-    it('creates and returns the assembled prompt with a self-assigned id and timestamps', async () => {
+    it('creates the prompt with the caller as creator and returns the re-read prompt', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
-        categoryRepository.findById.mockResolvedValue(fixtureCategory);
-        promptRepository.create.mockResolvedValue(undefined);
         const query = buildQuery({ categoryId: fixtureCategory.id });
-
-        const result = await useCase.invoke(query);
-
-        const expected = {
+        const resolvedPrompt: Prompt = {
             id: generatedId,
             category: fixtureCategory,
+            user: { id: query.userId, name: faker.person.fullName() },
             title: query.title,
             prompt: query.prompt,
             description: query.description,
             createdAt: now,
             updatedAt: now,
         };
-        expect(result).toEqual(expected);
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        promptRepository.create.mockResolvedValue(undefined);
+        promptRepository.findById.mockResolvedValue(resolvedPrompt);
+
+        const result = await useCase.invoke(query);
+
+        expect(result).toEqual(resolvedPrompt);
         expect(promptRepository.create).toHaveBeenCalledOnce();
         expect(promptRepository.create).toHaveBeenCalledWith({
             id: generatedId,
             categoryId: fixtureCategory.id,
+            userId: query.userId,
             title: query.title,
             prompt: query.prompt,
             description: query.description,
             createdAt: now,
             updatedAt: now,
         });
+        expect(promptRepository.findById).toHaveBeenCalledWith(generatedId);
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
@@ -81,9 +87,20 @@ describe('CreatePromptUseCase', () => {
 
     it('creates a prompt with no description unchanged', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
+        const query = buildQuery({ categoryId: fixtureCategory.id, description: undefined });
+        const resolvedPrompt: Prompt = {
+            id: generatedId,
+            category: fixtureCategory,
+            user: { id: query.userId, name: faker.person.fullName() },
+            title: query.title,
+            prompt: query.prompt,
+            description: undefined,
+            createdAt: now,
+            updatedAt: now,
+        };
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         promptRepository.create.mockResolvedValue(undefined);
-        const query = buildQuery({ categoryId: fixtureCategory.id, description: undefined });
+        promptRepository.findById.mockResolvedValue(resolvedPrompt);
 
         const result = await useCase.invoke(query);
 
