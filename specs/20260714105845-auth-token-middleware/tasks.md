@@ -1,7 +1,7 @@
 # Tasks: Authentication guard for protected actions
 Plan: specs/20260714105845-auth-token-middleware/plan.md
 
-- [ ] T1. Validation use case returns the caller identity
+- [x] T1. Validation use case returns the caller identity
   - Type: application
   - Depends on: none
   - Red: `tests/unit/modules/auth/application/ValidateTokenUseCase.test.ts` — with a mocked `TokenVerifierInterface` (`vitest-mock-extended`) whose `verifyToken` resolves `{ userId: 'U' }`, assert `invoke('a-token')` resolves `{ userId: 'U' }` and calls the verifier with the token. Fails: use case does not exist.
