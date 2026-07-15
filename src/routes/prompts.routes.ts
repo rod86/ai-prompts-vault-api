@@ -28,6 +28,7 @@ promptsRouter.put(
 );
 promptsRouter.delete(
     '/prompts/:id',
+    requireAuthMiddleware,
     validateRequestMiddleware(DeletePromptSchema),
     deletePromptHandler,
 );

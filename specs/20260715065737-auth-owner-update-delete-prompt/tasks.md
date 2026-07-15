@@ -36,7 +36,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: `src/middleware/errorMiddleware.ts` — map `PromptOwnershipError` → `403 { error, message }`.
   - Covers: AC6 "Given a prompt created by another user, When an authenticated user who is not its creator attempts to update it, Then the request is rejected as forbidden and the prompt is unchanged." (end-to-end); E2
 
-- [ ] T6. Require authentication on the delete route
+- [x] T6. Require authentication on the delete route
   - Type: route handler
   - Depends on: none
   - Red: extend `tests/integration/handlers/prompts/deletePromptHandler.test.ts` — `DELETE /prompts/:id` with **no** `Authorization` header returns `401` and the prompt is **not** removed (`selectPromptsByIds` still finds it). Fails because the route is public. Green-keeping: add a valid `Authorization: Bearer <jwt>` whose user **is the prompt's creator** to the existing happy-path (204) test so it still deletes.
