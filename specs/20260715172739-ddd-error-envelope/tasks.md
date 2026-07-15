@@ -105,7 +105,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='CATEGORY_NOT_FOUND'`, `category='Unprocessable'`) and remove its per-class branch + import.
   - Covers: AC3 "Given a category id that does not exist, When a client creates or updates a prompt referencing it, Then the response is an unprocessable outcome with `code` `CATEGORY_NOT_FOUND`."; E3
 
-- [ ] T10. Migrate `EmailAlreadyInUseError`
+- [x] T10. Migrate `EmailAlreadyInUseError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `EmailAlreadyInUseError` assertion in

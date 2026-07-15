@@ -62,7 +62,8 @@ describe('POST /users', () => {
 
         expect(response.status).toBe(422);
         expect(response.body).toEqual({
-            error: 'EmailAlreadyInUseError',
+            status: 422,
+            code: 'EMAIL_ALREADY_IN_USE',
             message: `Email already in use: ${existingUser.email}`,
         });
 

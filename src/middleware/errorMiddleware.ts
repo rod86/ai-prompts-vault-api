@@ -6,7 +6,6 @@ import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenE
 import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { DomainError } from '@src/modules/shared/domain/DomainError.js';
-import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof RequestValidationError) {
@@ -36,11 +35,6 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
 
     if (err instanceof InvalidCredentialsError) {
         res.status(401).json({ error: err.name, message: err.message });
-        return;
-    }
-
-    if (err instanceof EmailAlreadyInUseError) {
-        res.status(422).json({ error: err.name, message: err.message });
         return;
     }
 
