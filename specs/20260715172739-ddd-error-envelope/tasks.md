@@ -115,7 +115,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='EMAIL_ALREADY_IN_USE'`, `category='Unprocessable'`) and remove its per-class branch + import.
   - Covers: AC4 "Given an email already registered, When a client registers with it, Then the response is an unprocessable outcome with `code` `EMAIL_ALREADY_IN_USE`."; E4
 
-- [ ] T11. Migrate `InvalidCredentialsError`
+- [x] T11. Migrate `InvalidCredentialsError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update both `InvalidCredentialsError` assertions in
