@@ -38,7 +38,12 @@ describe('CreatePromptUseCase', () => {
         idGenerator = mock<IdGeneratorInterface>();
         dateTime.now.mockReturnValue(now);
         idGenerator.generate.mockReturnValue(generatedId);
-        useCase = new CreatePromptUseCase(promptRepository, categoryRepository, dateTime, idGenerator);
+        useCase = new CreatePromptUseCase(
+            promptRepository,
+            categoryRepository,
+            dateTime,
+            idGenerator,
+        );
     });
 
     it('creates the prompt with the caller as creator and returns the re-read prompt', async () => {
@@ -81,7 +86,9 @@ describe('CreatePromptUseCase', () => {
         const query = buildQuery();
 
         await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
-        await expect(useCase.invoke(query)).rejects.toThrow(`Category not found: ${query.categoryId}`);
+        await expect(useCase.invoke(query)).rejects.toThrow(
+            `Category not found: ${query.categoryId}`,
+        );
         expect(promptRepository.create).not.toHaveBeenCalled();
     });
 

@@ -28,7 +28,10 @@ describe('JwtTokenVerifier', () => {
         });
 
         it('rejects with InvalidTokenError when the signature is not authentic', async () => {
-            const token = createSignedToken({ sub: 'fixture-user-id', secret: 'a-different-secret' });
+            const token = createSignedToken({
+                sub: 'fixture-user-id',
+                secret: 'a-different-secret',
+            });
 
             await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
         });

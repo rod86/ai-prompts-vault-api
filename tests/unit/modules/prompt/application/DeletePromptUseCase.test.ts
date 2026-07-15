@@ -32,7 +32,10 @@ describe('DeletePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(existingPrompt);
         promptRepository.delete.mockResolvedValue(undefined);
 
-        const result = await useCase.invoke({ id: existingPrompt.id, userId: existingPrompt.user.id });
+        const result = await useCase.invoke({
+            id: existingPrompt.id,
+            userId: existingPrompt.user.id,
+        });
 
         expect(result).toBeUndefined();
         expect(promptRepository.delete).toHaveBeenCalledOnce();

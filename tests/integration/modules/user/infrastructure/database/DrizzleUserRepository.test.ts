@@ -1,37 +1,33 @@
 import { faker } from '@faker-js/faker';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { schema } from '@src/config/drizzle/index.js';
 import { DrizzleUserRepository } from '@src/modules/user/infrastructure/database/DrizzleUserRepository.js';
-import { userModelFactory } from '@tests/lib/config.js';
-import { deleteUsersByIds, insertUsers, selectUsersByIds } from '@tests/lib/database/users.js';
+import {
+    createUserFixture,
+    databaseClient,
+    type TestDatabaseConnection,
+    userModelFactory,
+} from '@tests/lib/config.js';
+import { selectUsersByIds } from '@tests/lib/database/users.js';
 
 describe('DrizzleUserRepository', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
+    let db: TestDatabaseConnection;
+    const userFixture = createUserFixture();
     let repository: DrizzleUserRepository;
-    let insertedIds: string[] = [];
 
     beforeAll(() => {
-        client.connect();
-        db = client.getConnection();
-        repository = new DrizzleUserRepository(client, schema);
+        db = databaseClient.getConnection();
+        repository = new DrizzleUserRepository(databaseClient, schema);
     });
 
     afterEach(async () => {
-        await deleteUsersByIds(db, insertedIds);
-        insertedIds = [];
-    });
-
-    afterAll(async () => {
-        await client.close();
+        await userFixture.cleanup();
     });
 
     describe('create', () => {
         it('persists a new account row', async () => {
             const fixture = userModelFactory.create();
-            insertedIds = [fixture.id];
+            userFixture.register(fixture.id);
 
             await repository.create(fixture);
 
@@ -51,9 +47,7 @@ describe('DrizzleUserRepository', () => {
 
     describe('findByEmail', () => {
         it('finds an account by email, case-insensitively', async () => {
-            const fixture = userModelFactory.create({ email: 'Ada.Fixture@Example.com' });
-            insertedIds = [fixture.id];
-            await insertUsers(db, [fixture]);
+            const fixture = await userFixture.insert({ email: 'Ada.Fixture@Example.com' });
 
             const result = await repository.findByEmail('ada.fixture@example.com');
 

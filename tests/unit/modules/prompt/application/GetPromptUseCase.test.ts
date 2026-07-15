@@ -38,7 +38,9 @@ describe('GetPromptUseCase', () => {
         repository.findById.mockResolvedValue(undefined);
 
         await expect(useCase.invoke({ id: 'missing-id' })).rejects.toThrow(PromptNotFoundError);
-        await expect(useCase.invoke({ id: 'missing-id' })).rejects.toThrow('Prompt not found: missing-id');
+        await expect(useCase.invoke({ id: 'missing-id' })).rejects.toThrow(
+            'Prompt not found: missing-id',
+        );
     });
 
     it('returns a prompt with no description unchanged', async () => {

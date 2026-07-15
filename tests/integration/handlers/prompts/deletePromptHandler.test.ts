@@ -6,12 +6,20 @@ import config from '@src/config/config.js';
 import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import { databaseClient } from '@src/modules/shared/services.js';
-import { promptCategoryModelFactory, promptModelFactory, userModelFactory } from '@tests/lib/config.js';
+import {
+    promptCategoryModelFactory,
+    promptModelFactory,
+    userModelFactory,
+} from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,
     insertPromptCategories,
 } from '@tests/lib/database/promptCategories.js';
-import { deletePromptsByIds, insertPrompts, selectPromptsByIds } from '@tests/lib/database/prompts.js';
+import {
+    deletePromptsByIds,
+    insertPrompts,
+    selectPromptsByIds,
+} from '@tests/lib/database/prompts.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
 import { createSignedToken } from '@tests/lib/utils.js';
 

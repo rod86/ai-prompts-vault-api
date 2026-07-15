@@ -44,18 +44,21 @@ describe('LoginUseCase', () => {
         expect(result).toEqual({ token: 'signed-token' });
         expect(passwordHasher.compare).toHaveBeenCalledWith('p', 'hash');
         expect(tokenIssuer.issueToken).toHaveBeenCalledOnce();
-        expect(tokenIssuer.issueToken).toHaveBeenCalledWith('fixture-id', new Date('2026-01-01T01:00:00.000Z'));
+        expect(tokenIssuer.issueToken).toHaveBeenCalledWith(
+            'fixture-id',
+            new Date('2026-01-01T01:00:00.000Z'),
+        );
     });
 
     it('throws InvalidCredentialsError when no account matches the email', async () => {
         userCredentialsRepository.findByEmail.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke({ email: 'unknown@example.com', password: 'p' })).rejects.toThrow(
-            InvalidCredentialsError,
-        );
-        await expect(useCase.invoke({ email: 'unknown@example.com', password: 'p' })).rejects.toThrow(
-            'Invalid authentication credentials',
-        );
+        await expect(
+            useCase.invoke({ email: 'unknown@example.com', password: 'p' }),
+        ).rejects.toThrow(InvalidCredentialsError);
+        await expect(
+            useCase.invoke({ email: 'unknown@example.com', password: 'p' }),
+        ).rejects.toThrow('Invalid authentication credentials');
         expect(passwordHasher.compare).not.toHaveBeenCalled();
         expect(tokenIssuer.issueToken).not.toHaveBeenCalled();
     });
@@ -68,12 +71,12 @@ describe('LoginUseCase', () => {
         });
         passwordHasher.compare.mockResolvedValue(false);
 
-        await expect(useCase.invoke({ email: 'a@b.com', password: 'wrong-password' })).rejects.toThrow(
-            InvalidCredentialsError,
-        );
-        await expect(useCase.invoke({ email: 'a@b.com', password: 'wrong-password' })).rejects.toThrow(
-            'Invalid authentication credentials',
-        );
+        await expect(
+            useCase.invoke({ email: 'a@b.com', password: 'wrong-password' }),
+        ).rejects.toThrow(InvalidCredentialsError);
+        await expect(
+            useCase.invoke({ email: 'a@b.com', password: 'wrong-password' }),
+        ).rejects.toThrow('Invalid authentication credentials');
         expect(tokenIssuer.issueToken).not.toHaveBeenCalled();
     });
 });

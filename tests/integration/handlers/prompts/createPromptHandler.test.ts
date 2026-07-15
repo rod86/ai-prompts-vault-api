@@ -1,46 +1,43 @@
 import { faker } from '@faker-js/faker';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient } from '@src/modules/shared/services.js';
-import { promptCategoryModelFactory, userModelFactory } from '@tests/lib/config.js';
+import { type User } from '@src/modules/user/domain/User.js';
 import {
-    deletePromptCategoriesByIds,
-    insertPromptCategories,
-} from '@tests/lib/database/promptCategories.js';
-import {
-    deletePromptsByIds,
-    selectPromptsByCategoryId,
-    selectPromptsByIds,
-} from '@tests/lib/database/prompts.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+    createPromptCategoryFixture,
+    createPromptFixture,
+    createUserFixture,
+    databaseClient,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
+import { selectPromptsByCategoryId, selectPromptsByIds } from '@tests/lib/database/prompts.js';
 import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('POST /prompts', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    const creatorUser = userModelFactory.create();
+    const userFixture = createUserFixture();
+    const categoryFixture = createPromptCategoryFixture();
+    const promptFixture = createPromptFixture();
+    let db: TestDatabaseConnection;
+    let creatorUser: User;
     let authToken: string;
 
     beforeAll(async () => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
-        await insertUsers(db, [creatorUser]);
+        db = databaseClient.getConnection();
+        creatorUser = await userFixture.insert();
         authToken = createSignedToken({ sub: creatorUser.id });
     });
 
+    afterEach(async () => {
+        await promptFixture.cleanup();
+        await categoryFixture.cleanup();
+    });
+
     afterAll(async () => {
-        await deleteUsersByIds(db, [creatorUser.id]);
-        await client.close();
+        await userFixture.cleanup();
     });
 
     it('rejects a request with no Authorization header and creates no prompt', async () => {
-        const category = promptCategoryModelFactory.create();
-        await insertPromptCategories(db, [category]);
+        const category = await categoryFixture.insert();
         const body = {
             title: 'My prompt title',
             prompt: 'My prompt text',
@@ -52,8 +49,6 @@ describe('POST /prompts', () => {
         expect(response.status).toBe(401);
         const stored = await selectPromptsByCategoryId(db, category.id);
         expect(stored).toEqual([]);
-
-        await deletePromptCategoriesByIds(db, [category.id]);
     });
 
     it('rejects an unauthenticated request with an invalid body as unauthorized, not as invalid input', async () => {
@@ -63,17 +58,8 @@ describe('POST /prompts', () => {
     });
 
     describe('when the category exists', () => {
-        const category = promptCategoryModelFactory.create();
-
-        beforeAll(async () => {
-            await insertPromptCategories(db, [category]);
-        });
-
-        afterAll(async () => {
-            await deletePromptCategoriesByIds(db, [category.id]);
-        });
-
         it('creates a prompt and returns 201 with the stored prompt', async () => {
+            const category = await categoryFixture.insert();
             const body = {
                 title: 'My prompt title',
                 prompt: 'My prompt text',
@@ -86,6 +72,7 @@ describe('POST /prompts', () => {
                 .set('Authorization', `Bearer ${authToken}`)
                 .send(body);
 
+            promptFixture.register(response.body.id);
             expect(response.status).toBe(201);
             expect(response.body).toEqual({
                 id: expect.any(String),
@@ -106,11 +93,10 @@ describe('POST /prompts', () => {
                 prompt: body.prompt,
                 description: body.description,
             });
-
-            await deletePromptsByIds(db, [response.body.id]);
         });
 
         it('returns description: null and stores it as null when not submitted', async () => {
+            const category = await categoryFixture.insert();
             const body = {
                 title: 'My prompt title',
                 prompt: 'My prompt text',
@@ -122,15 +108,15 @@ describe('POST /prompts', () => {
                 .set('Authorization', `Bearer ${authToken}`)
                 .send(body);
 
+            promptFixture.register(response.body.id);
             expect(response.body.description).toBeNull();
 
             const [persisted] = await selectPromptsByIds(db, [response.body.id]);
             expect(persisted?.description).toBeNull();
-
-            await deletePromptsByIds(db, [response.body.id]);
         });
 
         it('returns description: null and stores it as empty text when submitted as empty', async () => {
+            const category = await categoryFixture.insert();
             const body = {
                 title: 'My prompt title',
                 prompt: 'My prompt text',
@@ -143,12 +129,11 @@ describe('POST /prompts', () => {
                 .set('Authorization', `Bearer ${authToken}`)
                 .send(body);
 
+            promptFixture.register(response.body.id);
             expect(response.body.description).toBeNull();
 
             const [persisted] = await selectPromptsByIds(db, [response.body.id]);
             expect(persisted?.description).toBe('');
-
-            await deletePromptsByIds(db, [response.body.id]);
         });
     });
 

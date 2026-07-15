@@ -48,7 +48,9 @@ describe('requireAuthMiddleware', () => {
         const token = createSignedToken({ sub: fixture.id });
         const app = buildApp();
 
-        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ userId: fixture.id });
@@ -58,7 +60,9 @@ describe('requireAuthMiddleware', () => {
         const token = createSignedToken({ sub: faker.string.uuid() });
         const app = buildApp();
 
-        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
         expect(response.body).toMatchObject({ error: 'InvalidTokenError' });
@@ -77,7 +81,9 @@ describe('requireAuthMiddleware', () => {
         const token = createSignedToken({ sub: 'fixture-user-id', expiresInSeconds: -10 });
         const app = buildApp();
 
-        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
         expect(response.body).toMatchObject({ error: 'TokenExpiredError' });
@@ -87,7 +93,9 @@ describe('requireAuthMiddleware', () => {
         const token = createSignedToken({ sub: 'fixture-user-id', secret: 'a-different-secret' });
         const app = buildApp();
 
-        const response = await request(app).get('/protected').set('Authorization', `Bearer ${token}`);
+        const response = await request(app)
+            .get('/protected')
+            .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
         expect(response.body).toMatchObject({ error: 'InvalidTokenError' });
