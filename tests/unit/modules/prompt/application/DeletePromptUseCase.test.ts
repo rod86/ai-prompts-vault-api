@@ -39,7 +39,7 @@ describe('DeletePromptUseCase', () => {
         expect(promptRepository.delete).toHaveBeenCalledWith(existingPrompt.id);
     });
 
-    it('throws PromptNotFoundError and does not delete when the prompt does not exist', async () => {
+    it('throws PromptNotFoundError (not PromptOwnershipError) and does not delete when the prompt does not exist', async () => {
         const id = faker.string.uuid();
         const userId = faker.string.uuid();
         promptRepository.findById.mockResolvedValue(undefined);

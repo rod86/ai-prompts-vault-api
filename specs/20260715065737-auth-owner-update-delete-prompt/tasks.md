@@ -50,7 +50,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: `src/modules/prompt/application/DeletePromptUseCase.ts` — add `userId` to `DeletePromptQuery` and, after the not-found guard and before `delete`, throw `PromptOwnershipError` (from T3) when `prompt.user.id !== query.userId`. Green-keep typecheck: `src/handlers/prompts/deletePromptHandler.ts` narrows `req.auth` (throw `MissingTokenError` if absent) and passes `userId: req.auth.userId`.
   - Covers: AC7 "Given a prompt created by another user, When an authenticated user who is not its creator attempts to delete it, Then the request is rejected as forbidden and the prompt is not removed." (application); V2, E2
 
-- [ ] T8. Delete: not found is decided before ownership
+- [x] T8. Delete: not found is decided before ownership
   - Type: application
   - Depends on: T7
   - Red: extend `DeletePromptUseCase.test.ts` — given `findById` returns nothing, When `invoke` is called with a `userId`, Then it rejects with `PromptNotFoundError` (not `PromptOwnershipError`). (Repurpose the existing not-found test, now carrying a `userId`.)
