@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 import { GetPromptUseCase } from '@src/modules/prompt/application/GetPromptUseCase.js';
@@ -7,8 +8,12 @@ import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import { promptModelFactory, promptCategoryModelFactory } from '@tests/lib/config.js';
 
 const buildPrompt = (data: Partial<Prompt> = {}): Prompt => {
-    const { categoryId: _, ...prompt } = promptModelFactory.create(data);
-    return { ...prompt, category: promptCategoryModelFactory.create() };
+    const { categoryId: _categoryId, userId: _userId, ...prompt } = promptModelFactory.create(data);
+    return {
+        ...prompt,
+        category: promptCategoryModelFactory.create(),
+        user: { id: faker.string.uuid(), name: faker.person.fullName() },
+    };
 };
 
 describe('GetPromptUseCase', () => {

@@ -9,6 +9,7 @@ import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 const buildPrompt = (data: Partial<Prompt> = {}): Prompt => ({
     id: data.id ?? faker.string.uuid(),
     category: data.category ?? { id: faker.string.uuid(), name: faker.commerce.department() },
+    user: data.user ?? { id: faker.string.uuid(), name: faker.person.fullName() },
     title: data.title ?? faker.lorem.sentence(),
     prompt: data.prompt ?? faker.lorem.paragraph(),
     description: 'description' in data ? data.description : faker.lorem.sentence(),

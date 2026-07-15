@@ -1,4 +1,4 @@
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { type User } from '@src/modules/user/domain/User.js';
 import { users } from '@src/modules/user/infrastructure/database/schema.js';
@@ -43,4 +43,11 @@ export async function selectUsersByIds(
     }
 
     return db.select().from(users).where(inArray(users.id, ids));
+}
+
+export async function selectUsersByEmail(
+    db: NodePgDatabase<Record<string, unknown>>,
+    email: string,
+): Promise<(typeof users.$inferSelect)[]> {
+    return db.select().from(users).where(eq(users.email, email));
 }

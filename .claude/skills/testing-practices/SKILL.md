@@ -21,6 +21,11 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
 - Mock the dependency **type** (`mock<T>()`), never a hand-rolled fake.
 - Structure every test as Arrange / Act / Assert; no `try/catch` in tests — use hooks.
 - Build fake domain objects with model factories, not object literals.
+- Never write a raw ORM/db-library query inline in a test (`db.select()/.insert()/.update()/.delete()`,
+  raw SQL, etc.) — add or extend a helper in `tests/lib/database/<entity>.ts` and call that.
+- Before writing new setup/fixture/assertion logic, check `tests/lib/` (model factories,
+  database helpers, other shared helpers) for something that already does it — reuse or
+  extend it rather than duplicating inline.
 - Filter DB assertions to the test's own fixture ids — parallel test files share tables.
 - Don't write a test for a file with no logic of its own — a composition root
   (`services.ts`), a pure re-export, an interface/type-only file. Prove it via the type
@@ -158,8 +163,8 @@ per domain type, and a singleton instance of each is exported from
 A **fixture** is a model-factory object persisted to the database for an integration
 test. Always build it from a model factory (`tests/lib/modelFactories/`, imported as a
 singleton from `tests/lib/config.ts`) — never hand-roll the row — and persist/clean it
-with the per-table helpers in `tests/lib/database/<entity>.ts`. Never write raw SQL or
-truncate a table in a test.
+with the per-table helpers in `tests/lib/database/<entity>.ts`. Never write raw SQL,
+a raw ORM query, or truncate a table in a test.
 
 ### Per-table database helpers
 
@@ -172,6 +177,14 @@ connection as its first argument and early-returning on an empty array:
 - `delete<Entities>ByIds(db, ids)` — `db.delete(...).where(inArray(id, ids))`.
 - `select<Entities>ByIds(db, ids)` — reads rows back for a direct-query assertion (verify
   a write landed, or that a related row was left unchanged).
+
+**No raw queries inline in a test — always route through a helper.** If a test needs a
+lookup no existing helper covers (e.g. filtering by a column other than id), add a new
+function to that table's `tests/lib/database/<entity>.ts` file rather than writing
+`db.select()/.insert()/.update()/.delete()` directly in the test — name it after what it
+filters by, following the same pattern (e.g. `select<Entities>By<Column>(db, value)`).
+Check that file first for a helper that already does what you need before adding a new
+one or reaching for the ORM directly.
 
 ### Insert in the same test; scope cleanup to your own ids
 

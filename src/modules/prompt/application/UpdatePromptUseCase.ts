@@ -55,6 +55,7 @@ export class UpdatePromptUseCase {
         return {
             id: query.id,
             category,
+            user: existingPrompt.user,
             title: query.title,
             prompt: query.prompt,
             description: query.description,

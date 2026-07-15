@@ -25,6 +25,7 @@ const buildQuery = (data: Partial<UpdatePromptQuery> = {}): UpdatePromptQuery =>
 const buildExistingPrompt = (data: Partial<Prompt> = {}): Prompt => ({
     id: data.id ?? faker.string.uuid(),
     category: data.category ?? { id: faker.string.uuid(), name: faker.commerce.department() },
+    user: data.user ?? { id: faker.string.uuid(), name: faker.person.fullName() },
     title: data.title ?? faker.lorem.sentence(),
     prompt: data.prompt ?? faker.lorem.paragraph(),
     description: 'description' in data ? data.description : faker.lorem.sentence(),
@@ -60,6 +61,7 @@ describe('UpdatePromptUseCase', () => {
         expect(result).toEqual({
             id: query.id,
             category: fixtureCategory,
+            user: existingPrompt.user,
             title: query.title,
             prompt: query.prompt,
             description: query.description,

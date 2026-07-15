@@ -19,6 +19,7 @@ const updatePromptHandler: RequestHandler = async (req, res) => {
         prompt: prompt.prompt,
         description: prompt.description || null,
         category: prompt.category,
+        user: prompt.user,
         created_at: prompt.createdAt,
         updated_at: prompt.updatedAt,
     });
