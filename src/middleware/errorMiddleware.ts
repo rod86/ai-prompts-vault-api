@@ -2,7 +2,6 @@ import { type NextFunction, type Request, type Response } from 'express';
 import { CATEGORY_STATUS } from '@src/middleware/domainErrorStatus.js';
 import RequestValidationError from '@src/middleware/validateRequest/RequestValidationError.js';
 import { InvalidTokenError } from '@src/modules/auth/domain/errors/InvalidTokenError.js';
-import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { TokenExpiredError } from '@src/modules/auth/domain/errors/TokenExpiredError.js';
 import { DomainError } from '@src/modules/shared/domain/DomainError.js';
 
@@ -14,11 +13,6 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
             message: err.message,
             details: err.details,
         });
-        return;
-    }
-
-    if (err instanceof MissingTokenError) {
-        res.status(401).json({ error: err.name, message: err.message });
         return;
     }
 

@@ -125,7 +125,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='INVALID_CREDENTIALS'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC5 "Given invalid credentials, When a client authenticates, Then the response is an unauthorized outcome with `code` `INVALID_CREDENTIALS`."; E5
 
-- [ ] T12. Migrate `MissingTokenError`
+- [x] T12. Migrate `MissingTokenError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the `MissingTokenError` assertion in

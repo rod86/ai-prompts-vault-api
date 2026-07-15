@@ -54,7 +54,7 @@ describe('requireAuthMiddleware', () => {
         const response = await request(app).get('/protected');
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'MissingTokenError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'MISSING_TOKEN' });
     });
 
     it('rejects an expired token, telling the caller it expired', async () => {
