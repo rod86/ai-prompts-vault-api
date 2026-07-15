@@ -8,7 +8,7 @@ un-migrated errors keep hitting their old branch and stay green. Each re-parent 
 branch**, so the error falls through to the generic branch — that removal is what turns
 its assertion red→green, leaving no dead code behind.
 
-- [ ] T1. `DomainError` base + `ErrorCategory`
+- [x] T1. `DomainError` base + `ErrorCategory`
   - Type: domain
   - Depends on: none
   - Red: unit test `tests/unit/modules/shared/domain/DomainError.test.ts` — a throwaway
