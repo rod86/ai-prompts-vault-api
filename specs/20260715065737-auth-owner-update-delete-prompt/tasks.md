@@ -8,7 +8,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: `src/routes/prompts.routes.ts` — mount `requireAuthMiddleware` before `validateRequestMiddleware(UpdatePromptSchema)` on `PUT /prompts/:id`.
   - Covers: AC3 "Given a request to update a prompt that carries no valid authenticated identity, When the user attempts the update, Then it is rejected as unauthorized and the prompt is unchanged."; AC1 (owner happy path retained); V1, E1
 
-- [ ] T2. Update authentication is checked before body validation
+- [x] T2. Update authentication is checked before body validation
   - Type: route handler
   - Depends on: T1
   - Red: add to `updatePromptHandler.test.ts` — a request with **no** `Authorization` header **and** an invalid body (e.g. missing `title`) returns `401` (not `400`) and leaves the prompt unchanged. Fails only if the guard runs after validation.

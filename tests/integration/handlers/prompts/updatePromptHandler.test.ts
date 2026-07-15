@@ -271,6 +271,12 @@ describe('PUT /prompts/:id', () => {
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
+    it('rejects a request with no Authorization header and an invalid body as unauthorized, not as invalid input', async () => {
+        const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({});
+
+        expect(response.status).toBe(401);
+    });
+
     describe('Request Validation', () => {
         it('returns missing required value errors for all required body fields', async () => {
             const response = await request(app)
