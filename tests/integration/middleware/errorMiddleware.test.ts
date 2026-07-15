@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
@@ -31,10 +31,12 @@ describe('errorMiddleware', () => {
         expect(handlerReached).toBe(false);
     });
 
-    it('renders a generic internal error for a non-validation failure', async () => {
+    it('renders a generic internal error for a non-validation failure and logs the cause', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const fixtureError = new Error('unexpected');
         const app = express();
         app.get('/boom', () => {
-            throw new Error('unexpected');
+            throw fixtureError;
         });
         app.use(errorMiddleware);
 
@@ -42,8 +44,14 @@ describe('errorMiddleware', () => {
 
         expect(response.status).toBe(500);
         expect(response.body).toEqual({
-            error: 'InternalServerError',
+            status: 500,
+            code: 'INTERNAL_ERROR',
             message: 'Internal server error',
         });
+        expect(consoleErrorSpy).toHaveBeenCalledWith(fixtureError);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 });

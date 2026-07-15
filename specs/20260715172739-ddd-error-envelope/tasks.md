@@ -39,7 +39,7 @@ its assertion red→green, leaving no dead code behind.
     branch body to `{ status:400, code:'VALIDATION_ERROR', message: err.message, details: err.details }`.
   - Covers: AC9 "Given request input that violates a field rule, When it is submitted, Then the response is an invalid-request outcome with `code` `VALIDATION_ERROR` and a `details` object (existing nested shape), and body `status` equals the transport status."; E9, V1
 
-- [ ] T4. Generic fallback → uniform envelope + log cause
+- [x] T4. Generic fallback → uniform envelope + log cause
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/middleware/errorMiddleware.test.ts` internal-error case
