@@ -4,6 +4,10 @@ import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/Doma
 class StubDomainError extends DomainError {
     readonly code = 'X';
     readonly category: ErrorCategory = 'NotFound';
+
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+    }
 }
 
 describe('DomainError', () => {

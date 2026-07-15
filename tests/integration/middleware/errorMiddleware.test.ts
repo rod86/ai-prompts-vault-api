@@ -9,6 +9,10 @@ import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/Doma
 class StubDomainError extends DomainError {
     readonly code = 'STUB';
     readonly category: ErrorCategory = 'Unprocessable';
+
+    constructor(message: string) {
+        super(message);
+    }
 }
 
 describe('errorMiddleware', () => {
