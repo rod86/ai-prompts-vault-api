@@ -17,7 +17,7 @@ describe('DrizzleUserRepository', () => {
     beforeAll(() => {
         client.connect();
         db = client.getConnection();
-        repository = new DrizzleUserRepository(client);
+        repository = new DrizzleUserRepository(client, schema);
     });
 
     afterEach(async () => {

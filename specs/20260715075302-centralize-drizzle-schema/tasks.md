@@ -52,7 +52,7 @@ exception removed.
     the two repository tests.
   - Covers: AC4 "it receives its schema through construction and contains no direct import of schema definitions"; AC1 "imports no schema definition belonging to another bounded context"
 
-- [ ] T4. Migrate user context onto injected schema
+- [x] T4. Migrate user context onto injected schema
   - Type: infrastructure
   - Depends on: T1
   - Red: none — behavior-preserving; guarded by existing
