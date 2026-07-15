@@ -12,7 +12,7 @@ consumers are repointed, and only then are the old files and the boundary
 exception removed.
 -->
 
-- [ ] T1. Central schema files + barrel
+- [x] T1. Central schema files + barrel
   - Type: infrastructure
   - Depends on: none
   - Red: none — `user.schema.ts`, `prompt.schema.ts`, and `index.ts` are pure
