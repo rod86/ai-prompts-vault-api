@@ -1,5 +1,5 @@
 # Spec: Centralize Drizzle schema out of bounded contexts
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer, I want the persistence schema definitions centralized in one shared location and injected into repositories, so that bounded contexts no longer import one another's schema and the cross-context boundary exception can be removed.
 
 <!--

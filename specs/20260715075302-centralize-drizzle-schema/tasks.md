@@ -113,7 +113,7 @@ exception removed.
     it passes with no cross-context violation.
   - Covers: AC5 "the cross-context schema exception is absent and the lint passes"
 
-- [ ] T10. Final verification gate
+- [x] T10. Final verification gate
   - Type: infrastructure
   - Depends on: T9
   - Red: none — whole-suite verification.
