@@ -84,7 +84,7 @@ exception removed.
     access tables as `schema.<table>`.
   - Covers: AC6 "all existing tests pass and the type-check is clean"
 
-- [ ] T7. Repoint shared services to the barrel
+- [x] T7. Repoint shared services to the barrel
   - Type: infrastructure
   - Depends on: T1, T3, T4, T5, T6
   - Red: none — logic-less composition root (see testing-practices).
