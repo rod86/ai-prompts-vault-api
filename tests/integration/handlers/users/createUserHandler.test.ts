@@ -1,36 +1,23 @@
 import request from 'supertest';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient } from '@src/modules/shared/services.js';
-import { userModelFactory } from '@tests/lib/config.js';
 import {
-    deleteUsersByIds,
-    insertUsers,
-    selectUsersByEmail,
-    selectUsersByIds,
-} from '@tests/lib/database/users.js';
+    createUserFixture,
+    databaseClient,
+    type TestDatabaseConnection,
+} from '@tests/lib/config.js';
+import { selectUsersByEmail, selectUsersByIds } from '@tests/lib/database/users.js';
 
 describe('POST /users', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    let createdIds: string[] = [];
+    const userFixture = createUserFixture();
+    let db: TestDatabaseConnection;
 
     beforeAll(() => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
+        db = databaseClient.getConnection();
     });
 
     afterEach(async () => {
-        await deleteUsersByIds(db, createdIds);
-        createdIds = [];
-    });
-
-    afterAll(async () => {
-        await client.close();
+        await userFixture.cleanup();
     });
 
     it('creates a user and returns 201 with the stored user', async () => {
@@ -41,7 +28,7 @@ describe('POST /users', () => {
         };
 
         const response = await request(app).post('/users').send(body);
-        createdIds.push(response.body.id);
+        userFixture.register(response.body.id);
 
         expect(response.status).toBe(201);
         expect(response.body).toEqual({
@@ -63,9 +50,7 @@ describe('POST /users', () => {
     });
 
     it('returns a 422 email-already-in-use failure when the email is already used', async () => {
-        const existingUser = userModelFactory.create();
-        await insertUsers(db, [existingUser]);
-        createdIds.push(existingUser.id);
+        const existingUser = await userFixture.insert();
 
         const body = {
             name: 'Margaret Hamilton',

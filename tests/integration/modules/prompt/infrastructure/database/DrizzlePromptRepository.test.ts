@@ -1,79 +1,63 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
+import { schema } from '@src/config/drizzle/index.js';
+import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
+import { type User } from '@src/modules/user/domain/User.js';
 import {
-    promptCategoryModelFactory,
+    createPromptCategoryFixture,
+    createPromptFixture,
+    createUserFixture,
+    databaseClient,
     promptModelFactory,
-    userModelFactory,
+    type TestDatabaseConnection,
 } from '@tests/lib/config.js';
-import {
-    deletePromptCategoriesByIds,
-    insertPromptCategories,
-} from '@tests/lib/database/promptCategories.js';
-import {
-    deletePromptsByIds,
-    insertPrompts,
-    selectPromptsByIds,
-} from '@tests/lib/database/prompts.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { selectPromptsByIds } from '@tests/lib/database/prompts.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 describe('DrizzlePromptRepository', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
+    const categoryFixture = createPromptCategoryFixture();
+    const userFixture = createUserFixture();
+    const promptFixture = createPromptFixture();
+    let db: TestDatabaseConnection;
     let repository: DrizzlePromptRepository;
-    const recipeCategory = promptCategoryModelFactory.create({ name: 'Recipes & Cooking' });
-    const travelCategory = promptCategoryModelFactory.create({ name: 'Travel & Adventure' });
-    const fitnessCategory = promptCategoryModelFactory.create({ name: 'Fitness & Wellness' });
-    const creatorUser = userModelFactory.create();
+    let recipeCategory: PromptCategory;
+    let travelCategory: PromptCategory;
+    let fitnessCategory: PromptCategory;
+    let creatorUser: User;
 
     beforeAll(async () => {
-        client.connect();
-        db = client.getConnection();
-        repository = new DrizzlePromptRepository(client, schema);
-        await insertPromptCategories(db, [recipeCategory, travelCategory, fitnessCategory]);
-        await insertUsers(db, [creatorUser]);
+        db = databaseClient.getConnection();
+        repository = new DrizzlePromptRepository(databaseClient, schema);
+        recipeCategory = await categoryFixture.insert({ name: 'Recipes & Cooking' });
+        travelCategory = await categoryFixture.insert({ name: 'Travel & Adventure' });
+        fitnessCategory = await categoryFixture.insert({ name: 'Fitness & Wellness' });
+        creatorUser = await userFixture.insert();
+    });
+
+    afterEach(async () => {
+        await promptFixture.cleanup();
     });
 
     afterAll(async () => {
-        await deletePromptCategoriesByIds(db, [
-            recipeCategory.id,
-            travelCategory.id,
-            fitnessCategory.id,
-        ]);
-        await deleteUsersByIds(db, [creatorUser.id]);
-        await client.close();
+        await categoryFixture.cleanup();
+        await userFixture.cleanup();
     });
 
     describe('findAll', () => {
-        const olderPrompt = promptModelFactory.create({
-            categoryId: recipeCategory.id,
-            userId: creatorUser.id,
-            title: 'Older prompt',
-            createdAt: faker.date.past({ years: 2 }),
-        });
-        const newerPrompt = promptModelFactory.create({
-            categoryId: recipeCategory.id,
-            userId: creatorUser.id,
-            title: 'Newer prompt',
-            createdAt: faker.date.recent(),
-        });
-        const otherCategoryPrompt = promptModelFactory.create({
-            categoryId: travelCategory.id,
-            userId: creatorUser.id,
-            title: 'Other category prompt',
-            createdAt: faker.date.recent(),
-        });
-
-        afterEach(async () => {
-            await deletePromptsByIds(db, [olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
-        });
-
         it('returns every prompt joined with its category, most-recent-first', async () => {
-            await insertPrompts(db, [olderPrompt, newerPrompt]);
+            const olderPrompt = await promptFixture.insert({
+                categoryId: recipeCategory.id,
+                userId: creatorUser.id,
+                title: 'Older prompt',
+                createdAt: faker.date.past({ years: 2 }),
+            });
+            const newerPrompt = await promptFixture.insert({
+                categoryId: recipeCategory.id,
+                userId: creatorUser.id,
+                title: 'Newer prompt',
+                createdAt: faker.date.recent(),
+            });
 
             const result = await repository.findAll();
 
@@ -105,7 +89,24 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('returns only prompts belonging to a given category', async () => {
-            await insertPrompts(db, [olderPrompt, newerPrompt, otherCategoryPrompt]);
+            const olderPrompt = await promptFixture.insert({
+                categoryId: recipeCategory.id,
+                userId: creatorUser.id,
+                title: 'Older prompt',
+                createdAt: faker.date.past({ years: 2 }),
+            });
+            const newerPrompt = await promptFixture.insert({
+                categoryId: recipeCategory.id,
+                userId: creatorUser.id,
+                title: 'Newer prompt',
+                createdAt: faker.date.recent(),
+            });
+            const otherCategoryPrompt = await promptFixture.insert({
+                categoryId: travelCategory.id,
+                userId: creatorUser.id,
+                title: 'Other category prompt',
+                createdAt: faker.date.recent(),
+            });
 
             const result = await repository.findAll({ categoryId: recipeCategory.id });
 
@@ -119,7 +120,7 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('returns an empty array when the category filter matches nothing', async () => {
-            await insertPrompts(db, [olderPrompt, newerPrompt]);
+            await promptFixture.insert({ categoryId: recipeCategory.id, userId: creatorUser.id });
 
             const result = await repository.findAll({ categoryId: faker.string.uuid() });
 
@@ -127,59 +128,44 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('returns an empty array when the category filter is not UUID-shaped', async () => {
-            await insertPrompts(db, [olderPrompt, newerPrompt]);
+            await promptFixture.insert({ categoryId: recipeCategory.id, userId: creatorUser.id });
 
             const result = await repository.findAll({ categoryId: 'not-a-uuid' });
 
             expect(result).toEqual([]);
         });
 
-        it('returns an empty array when there are no prompts at all', async () => {
+        it('returns none of this suite’s prompts once they have been cleaned up', async () => {
+            // Built but never inserted: confirms afterEach cleanup leaves nothing of ours
+            // behind (the shared DB may still hold other suites' rows in parallel).
+            const ourIds = new Set([
+                faker.string.uuid(),
+                faker.string.uuid(),
+                faker.string.uuid(),
+            ]);
+
             const result = await repository.findAll();
 
-            const fixtureIds = new Set([olderPrompt.id, newerPrompt.id, otherCategoryPrompt.id]);
-            const fixturesInResult = result.filter((prompt) => fixtureIds.has(prompt.id));
-
-            expect(fixturesInResult).toEqual([]);
+            expect(result.filter((prompt) => ourIds.has(prompt.id))).toEqual([]);
         });
 
         it('represents a prompt with no description as an absent value', async () => {
-            // Built by hand, not via promptModelFactory: the factory always fills in a
-            // fake description, but this test needs one explicitly absent.
-            const promptWithoutDescription: PromptModel = {
-                id: faker.string.uuid(),
-                categoryId: recipeCategory.id,
-                userId: creatorUser.id,
-                title: 'Prompt without description',
-                prompt: faker.lorem.paragraph(),
-                createdAt: faker.date.recent(),
-                updatedAt: faker.date.recent(),
-            };
-
-            await insertPrompts(db, [promptWithoutDescription]);
+            const promptWithoutDescription = await insertPromptWithoutDescription(recipeCategory.id);
 
             const result = await repository.findAll();
 
             const match = result.find((prompt) => prompt.id === promptWithoutDescription.id);
             expect(match?.description).toBeUndefined();
-
-            await deletePromptsByIds(db, [promptWithoutDescription.id]);
         });
     });
 
     describe('findById', () => {
-        const fixturePrompt = promptModelFactory.create({
-            categoryId: fitnessCategory.id,
-            userId: creatorUser.id,
-            title: 'Fixture prompt',
-        });
-
-        afterEach(async () => {
-            await deletePromptsByIds(db, [fixturePrompt.id]);
-        });
-
         it('returns a prompt joined with its category by id', async () => {
-            await insertPrompts(db, [fixturePrompt]);
+            const fixturePrompt = await promptFixture.insert({
+                categoryId: fitnessCategory.id,
+                userId: creatorUser.id,
+                title: 'Fixture prompt',
+            });
 
             const result = await repository.findById(fixturePrompt.id);
 
@@ -196,7 +182,7 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('returns undefined when no prompt matches the id', async () => {
-            await insertPrompts(db, [fixturePrompt]);
+            await promptFixture.insert({ categoryId: fitnessCategory.id, userId: creatorUser.id });
 
             const result = await repository.findById(faker.string.uuid());
 
@@ -204,7 +190,7 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('returns undefined when the id is not UUID-shaped', async () => {
-            await insertPrompts(db, [fixturePrompt]);
+            await promptFixture.insert({ categoryId: fitnessCategory.id, userId: creatorUser.id });
 
             const result = await repository.findById('not-a-uuid');
 
@@ -212,25 +198,12 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('represents a prompt with no description as an absent value', async () => {
-            // Built by hand, not via promptModelFactory: the factory always fills in a
-            // fake description, but this test needs one explicitly absent.
-            const promptWithoutDescription: PromptModel = {
-                id: faker.string.uuid(),
-                categoryId: fitnessCategory.id,
-                userId: creatorUser.id,
-                title: 'Prompt without description',
-                prompt: faker.lorem.paragraph(),
-                createdAt: faker.date.recent(),
-                updatedAt: faker.date.recent(),
-            };
-
-            await insertPrompts(db, [promptWithoutDescription]);
+            const promptWithoutDescription =
+                await insertPromptWithoutDescription(fitnessCategory.id);
 
             const result = await repository.findById(promptWithoutDescription.id);
 
             expect(result?.description).toBeUndefined();
-
-            await deletePromptsByIds(db, [promptWithoutDescription.id]);
         });
     });
 
@@ -240,18 +213,9 @@ describe('DrizzlePromptRepository', () => {
                 categoryId: recipeCategory.id,
                 userId: creatorUser.id,
             });
-            const fixturePrompt = {
-                id: fixture.id,
-                categoryId: recipeCategory.id,
-                userId: creatorUser.id,
-                title: fixture.title,
-                prompt: fixture.prompt,
-                description: fixture.description,
-                createdAt: fixture.createdAt,
-                updatedAt: fixture.updatedAt,
-            };
 
-            await repository.create(fixturePrompt);
+            await repository.create(fixture);
+            promptFixture.register(fixture.id);
             const [result] = await selectPromptsByIds(db, [fixture.id]);
 
             expect(result).toEqual({
@@ -264,8 +228,6 @@ describe('DrizzlePromptRepository', () => {
                 createdAt: fixture.createdAt,
                 updatedAt: fixture.updatedAt,
             });
-
-            await deletePromptsByIds(db, [fixture.id]);
         });
 
         it('persists a prompt with no description as an absent value', async () => {
@@ -275,26 +237,16 @@ describe('DrizzlePromptRepository', () => {
                 userId: creatorUser.id,
                 title: 'Prompt without description',
                 prompt: faker.lorem.paragraph(),
+                description: undefined,
                 createdAt: faker.date.recent(),
                 updatedAt: faker.date.recent(),
             };
-            const fixturePrompt = {
-                id: fixture.id,
-                categoryId: recipeCategory.id,
-                userId: creatorUser.id,
-                title: fixture.title,
-                prompt: fixture.prompt,
-                description: undefined,
-                createdAt: fixture.createdAt,
-                updatedAt: fixture.updatedAt,
-            };
 
-            await repository.create(fixturePrompt);
+            await repository.create(fixture);
+            promptFixture.register(fixture.id);
             const [result] = await selectPromptsByIds(db, [fixture.id]);
 
             expect(result?.description).toBeNull();
-
-            await deletePromptsByIds(db, [fixture.id]);
         });
 
         it('persists the creator and resolves it via findById and findAll', async () => {
@@ -302,18 +254,9 @@ describe('DrizzlePromptRepository', () => {
                 categoryId: recipeCategory.id,
                 userId: creatorUser.id,
             });
-            const fixturePrompt = {
-                id: fixture.id,
-                categoryId: recipeCategory.id,
-                userId: creatorUser.id,
-                title: fixture.title,
-                prompt: fixture.prompt,
-                description: fixture.description,
-                createdAt: fixture.createdAt,
-                updatedAt: fixture.updatedAt,
-            };
 
-            await repository.create(fixturePrompt);
+            await repository.create(fixture);
+            promptFixture.register(fixture.id);
 
             const [persisted] = await selectPromptsByIds(db, [fixture.id]);
             expect(persisted).toMatchObject({ userId: creatorUser.id });
@@ -324,18 +267,15 @@ describe('DrizzlePromptRepository', () => {
             const foundInAll = await repository.findAll();
             const match = foundInAll.find((prompt) => prompt.id === fixture.id);
             expect(match?.user).toEqual({ id: creatorUser.id, name: creatorUser.name });
-
-            await deletePromptsByIds(db, [fixture.id]);
         });
     });
 
     describe('update', () => {
         it('persists updated fields for an existing prompt row', async () => {
-            const existingPrompt = promptModelFactory.create({
+            const existingPrompt = await promptFixture.insert({
                 categoryId: travelCategory.id,
                 userId: creatorUser.id,
             });
-            await insertPrompts(db, [existingPrompt]);
 
             const updatePrompt = {
                 categoryId: fitnessCategory.id,
@@ -358,16 +298,13 @@ describe('DrizzlePromptRepository', () => {
                 createdAt: existingPrompt.createdAt,
                 updatedAt: updatePrompt.updatedAt,
             });
-
-            await deletePromptsByIds(db, [existingPrompt.id]);
         });
 
         it('persists an updated prompt with no description as an absent value', async () => {
-            const existingPrompt = promptModelFactory.create({
+            const existingPrompt = await promptFixture.insert({
                 categoryId: travelCategory.id,
                 userId: creatorUser.id,
             });
-            await insertPrompts(db, [existingPrompt]);
 
             const updatePrompt = {
                 categoryId: travelCategory.id,
@@ -381,18 +318,15 @@ describe('DrizzlePromptRepository', () => {
             const [result] = await selectPromptsByIds(db, [existingPrompt.id]);
 
             expect(result?.description).toBeNull();
-
-            await deletePromptsByIds(db, [existingPrompt.id]);
         });
     });
 
     describe('delete', () => {
         it('removes an existing prompt row', async () => {
-            const existingPrompt = promptModelFactory.create({
+            const existingPrompt = await promptFixture.insert({
                 categoryId: recipeCategory.id,
                 userId: creatorUser.id,
             });
-            await insertPrompts(db, [existingPrompt]);
 
             await repository.delete(existingPrompt.id);
             const rows = await selectPromptsByIds(db, [existingPrompt.id]);
@@ -400,4 +334,23 @@ describe('DrizzlePromptRepository', () => {
             expect(rows).toEqual([]);
         });
     });
+
+    // Built by hand and inserted via repository.create with an explicit undefined
+    // description: promptFixture always fills one in through the model factory, but
+    // these cases need the description genuinely absent. Registered for cleanup.
+    async function insertPromptWithoutDescription(categoryId: string): Promise<PromptModel> {
+        const prompt: PromptModel = {
+            id: faker.string.uuid(),
+            categoryId,
+            userId: creatorUser.id,
+            title: 'Prompt without description',
+            prompt: faker.lorem.paragraph(),
+            description: undefined,
+            createdAt: faker.date.recent(),
+            updatedAt: faker.date.recent(),
+        };
+        await repository.create(prompt);
+        promptFixture.register(prompt.id);
+        return prompt;
+    }
 });

@@ -1,59 +1,53 @@
 import { faker } from '@faker-js/faker';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient } from '@src/modules/shared/services.js';
+import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
+import { type User } from '@src/modules/user/domain/User.js';
 import {
-    promptCategoryModelFactory,
-    promptModelFactory,
-    userModelFactory,
+    createPromptCategoryFixture,
+    createPromptFixture,
+    createUserFixture,
+    databaseClient,
+    type TestDatabaseConnection,
 } from '@tests/lib/config.js';
-import {
-    deletePromptCategoriesByIds,
-    insertPromptCategories,
-} from '@tests/lib/database/promptCategories.js';
-import {
-    deletePromptsByIds,
-    insertPrompts,
-    selectPromptsByIds,
-} from '@tests/lib/database/prompts.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { selectPromptsByIds } from '@tests/lib/database/prompts.js';
 import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('DELETE /prompts/:id', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    const fixtureCategory = promptCategoryModelFactory.create();
-    const creatorUser = userModelFactory.create();
-    const otherUser = userModelFactory.create();
+    const categoryFixture = createPromptCategoryFixture();
+    const userFixture = createUserFixture();
+    const promptFixture = createPromptFixture();
+    let db: TestDatabaseConnection;
+    let fixtureCategory: PromptCategory;
+    let creatorUser: User;
+    let otherUser: User;
     let authToken: string;
     let otherAuthToken: string;
 
     beforeAll(async () => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
-        await insertPromptCategories(db, [fixtureCategory]);
-        await insertUsers(db, [creatorUser, otherUser]);
+        db = databaseClient.getConnection();
+        fixtureCategory = await categoryFixture.insert();
+        creatorUser = await userFixture.insert();
+        otherUser = await userFixture.insert();
         authToken = createSignedToken({ sub: creatorUser.id });
         otherAuthToken = createSignedToken({ sub: otherUser.id });
     });
 
+    afterEach(async () => {
+        await promptFixture.cleanup();
+    });
+
     afterAll(async () => {
-        await deletePromptCategoriesByIds(db, [fixtureCategory.id]);
-        await deleteUsersByIds(db, [creatorUser.id, otherUser.id]);
-        await client.close();
+        await categoryFixture.cleanup();
+        await userFixture.cleanup();
     });
 
     it('deletes an existing prompt and returns 204 with no body', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const response = await request(app)
             .delete(`/prompts/${fixturePrompt.id}`)
@@ -92,11 +86,10 @@ describe('DELETE /prompts/:id', () => {
     });
 
     it('rejects a delete from a non-owner as forbidden and does not remove the prompt', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const response = await request(app)
             .delete(`/prompts/${fixturePrompt.id}`)
@@ -110,16 +103,13 @@ describe('DELETE /prompts/:id', () => {
 
         const persisted = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted).toHaveLength(1);
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('rejects a request with no Authorization header and does not remove the prompt', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const response = await request(app).delete(`/prompts/${fixturePrompt.id}`);
 
@@ -127,7 +117,5 @@ describe('DELETE /prompts/:id', () => {
 
         const persisted = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted).toHaveLength(1);
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 });

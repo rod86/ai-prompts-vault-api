@@ -1,64 +1,39 @@
 import { faker } from '@faker-js/faker';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { schema } from '@src/config/drizzle/index.js';
 import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { promptCategoryModelFactory } from '@tests/lib/config.js';
-import {
-    deletePromptCategoriesByIds,
-    insertPromptCategories,
-} from '@tests/lib/database/promptCategories.js';
+import { createPromptCategoryFixture, databaseClient } from '@tests/lib/config.js';
 
 describe('DrizzlePromptCategoryRepository', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
+    const categoryFixture = createPromptCategoryFixture();
     let repository: DrizzlePromptCategoryRepository;
 
     beforeAll(() => {
-        client.connect();
-        db = client.getConnection();
-        repository = new DrizzlePromptCategoryRepository(client, schema);
+        repository = new DrizzlePromptCategoryRepository(databaseClient, schema);
     });
 
-    afterAll(async () => {
-        await client.close();
+    afterEach(async () => {
+        await categoryFixture.cleanup();
     });
 
     describe('findAll', () => {
-        const categories = [
-            promptCategoryModelFactory.create({ name: 'Writing & Content' }),
-            promptCategoryModelFactory.create({ name: 'Business & Finance' }),
-            promptCategoryModelFactory.create({ name: 'Coding & Development' }),
-        ];
-        afterEach(async () => {
-            await deletePromptCategoriesByIds(
-                db,
-                categories.map((category) => category.id),
-            );
-        });
-
         it('returns the inserted categories ordered alphabetically by name ascending', async () => {
-            await insertPromptCategories(db, categories);
+            const writing = await categoryFixture.insert({ name: 'Writing & Content' });
+            const business = await categoryFixture.insert({ name: 'Business & Finance' });
+            const coding = await categoryFixture.insert({ name: 'Coding & Development' });
 
             const result = await repository.findAll();
 
-            const fixtureIds = new Set(categories.map((category) => category.id));
+            const fixtureIds = new Set([writing.id, business.id, coding.id]);
             const fixturesInResult = result.filter((category) => fixtureIds.has(category.id));
 
-            expect(fixturesInResult).toEqual([categories[1], categories[2], categories[0]]);
+            expect(fixturesInResult).toEqual([business, coding, writing]);
         });
     });
 
     describe('findById', () => {
-        const category = promptCategoryModelFactory.create();
-
-        afterEach(async () => {
-            await deletePromptCategoriesByIds(db, [category.id]);
-        });
-
         it('returns the matching category by id', async () => {
-            await insertPromptCategories(db, [category]);
+            const category = await categoryFixture.insert();
 
             const result = await repository.findById(category.id);
 

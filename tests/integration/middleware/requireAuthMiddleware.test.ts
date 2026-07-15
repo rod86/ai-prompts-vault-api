@@ -1,35 +1,17 @@
 import { faker } from '@faker-js/faker';
 import express, { type Express, type Request, type Response } from 'express';
 import request from 'supertest';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
+import { afterEach, describe, expect, it } from 'vitest';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import requireAuthMiddleware from '@src/middleware/requireAuthMiddleware.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient } from '@src/modules/shared/services.js';
-import { userModelFactory } from '@tests/lib/config.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { createUserFixture } from '@tests/lib/config.js';
 import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('requireAuthMiddleware', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    let insertedIds: string[] = [];
-
-    beforeAll(() => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
-    });
+    const userFixture = createUserFixture();
 
     afterEach(async () => {
-        await deleteUsersByIds(db, insertedIds);
-        insertedIds = [];
-    });
-
-    afterAll(async () => {
-        await client.close();
+        await userFixture.cleanup();
     });
 
     function buildApp(): Express {
@@ -42,9 +24,7 @@ describe('requireAuthMiddleware', () => {
     }
 
     it('attaches the caller identity for a valid, unexpired token', async () => {
-        const fixture = userModelFactory.create();
-        insertedIds = [fixture.id];
-        await insertUsers(db, [fixture]);
+        const fixture = await userFixture.insert();
         const token = createSignedToken({ sub: fixture.id });
         const app = buildApp();
 

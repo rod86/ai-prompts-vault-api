@@ -1,42 +1,8 @@
 import { eq, inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { schema } from '@src/config/drizzle/index.js';
-import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
 
 const { prompts } = schema;
-
-export async function insertPrompts(
-    db: NodePgDatabase<Record<string, unknown>>,
-    fixtures: PromptModel[],
-): Promise<void> {
-    if (fixtures.length === 0) {
-        return;
-    }
-
-    await db.insert(prompts).values(
-        fixtures.map((fixture) => ({
-            id: fixture.id,
-            promptCategoryId: fixture.categoryId,
-            userId: fixture.userId,
-            title: fixture.title,
-            prompt: fixture.prompt,
-            description: fixture.description ?? null,
-            createdAt: fixture.createdAt,
-            updatedAt: fixture.updatedAt,
-        })),
-    );
-}
-
-export async function deletePromptsByIds(
-    db: NodePgDatabase<Record<string, unknown>>,
-    ids: string[],
-): Promise<void> {
-    if (ids.length === 0) {
-        return;
-    }
-
-    await db.delete(prompts).where(inArray(prompts.id, ids));
-}
 
 export async function selectPromptsByIds(
     db: NodePgDatabase<Record<string, unknown>>,

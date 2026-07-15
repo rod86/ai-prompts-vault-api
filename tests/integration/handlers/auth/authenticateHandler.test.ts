@@ -1,34 +1,23 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient, passwordHasher } from '@src/modules/shared/services.js';
-import { userModelFactory } from '@tests/lib/config.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { passwordHasher } from '@src/modules/shared/services.js';
+import { type User } from '@src/modules/user/domain/User.js';
+import { createUserFixture } from '@tests/lib/config.js';
 
 describe('POST /authenticate', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    const createdIds: string[] = [];
-
+    const userFixture = createUserFixture();
     const knownPassword = 'a-secure-password';
-    const knownUser = userModelFactory.create();
+    let knownUser: User;
 
     beforeAll(async () => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
-
-        knownUser.passwordHash = await passwordHasher.hash(knownPassword);
-        await insertUsers(db, [knownUser]);
-        createdIds.push(knownUser.id);
+        knownUser = await userFixture.insert({
+            passwordHash: await passwordHasher.hash(knownPassword),
+        });
     });
 
     afterAll(async () => {
-        await deleteUsersByIds(db, createdIds);
-        await client.close();
+        await userFixture.cleanup();
     });
 
     it('issues a token and returns 200 for valid credentials', async () => {

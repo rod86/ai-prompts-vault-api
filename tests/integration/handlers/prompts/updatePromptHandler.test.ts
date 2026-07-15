@@ -1,60 +1,55 @@
 import { faker } from '@faker-js/faker';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import config from '@src/config/config.js';
-import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
-import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient } from '@src/modules/shared/services.js';
+import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
+import { type User } from '@src/modules/user/domain/User.js';
 import {
-    promptCategoryModelFactory,
-    promptModelFactory,
-    userModelFactory,
+    createPromptCategoryFixture,
+    createPromptFixture,
+    createUserFixture,
+    databaseClient,
+    type TestDatabaseConnection,
 } from '@tests/lib/config.js';
-import {
-    deletePromptCategoriesByIds,
-    insertPromptCategories,
-} from '@tests/lib/database/promptCategories.js';
-import {
-    deletePromptsByIds,
-    insertPrompts,
-    selectPromptsByIds,
-} from '@tests/lib/database/prompts.js';
-import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { selectPromptsByIds } from '@tests/lib/database/prompts.js';
 import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('PUT /prompts/:id', () => {
-    const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
-    let db: ReturnType<typeof client.getConnection>;
-    const fixtureCategory = promptCategoryModelFactory.create();
-    const otherFixtureCategory = promptCategoryModelFactory.create();
-    const creatorUser = userModelFactory.create();
-    const otherUser = userModelFactory.create();
+    const categoryFixture = createPromptCategoryFixture();
+    const userFixture = createUserFixture();
+    const promptFixture = createPromptFixture();
+    let db: TestDatabaseConnection;
+    let fixtureCategory: PromptCategory;
+    let otherFixtureCategory: PromptCategory;
+    let creatorUser: User;
+    let otherUser: User;
     let authToken: string;
     let otherAuthToken: string;
 
     beforeAll(async () => {
-        client.connect();
-        db = client.getConnection();
-        databaseClient.connect();
-        await insertPromptCategories(db, [fixtureCategory, otherFixtureCategory]);
-        await insertUsers(db, [creatorUser, otherUser]);
+        db = databaseClient.getConnection();
+        fixtureCategory = await categoryFixture.insert();
+        otherFixtureCategory = await categoryFixture.insert();
+        creatorUser = await userFixture.insert();
+        otherUser = await userFixture.insert();
         authToken = createSignedToken({ sub: creatorUser.id });
         otherAuthToken = createSignedToken({ sub: otherUser.id });
     });
 
+    afterEach(async () => {
+        await promptFixture.cleanup();
+    });
+
     afterAll(async () => {
-        await deletePromptCategoriesByIds(db, [fixtureCategory.id, otherFixtureCategory.id]);
-        await deleteUsersByIds(db, [creatorUser.id, otherUser.id]);
-        await client.close();
+        await categoryFixture.cleanup();
+        await userFixture.cleanup();
     });
 
     it('updates a prompt and returns 200 with the stored prompt', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -90,17 +85,14 @@ describe('PUT /prompts/:id', () => {
             prompt: body.prompt,
             description: body.description,
         });
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('clears the description when it is omitted from the request', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
             description: 'An existing description',
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -117,16 +109,13 @@ describe('PUT /prompts/:id', () => {
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBeNull();
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('sets the description to an empty string when submitted as one, instead of clearing it', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -144,16 +133,13 @@ describe('PUT /prompts/:id', () => {
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.description).toBe('');
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('updates the category and echoes the new category when category_id changes', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -174,8 +160,6 @@ describe('PUT /prompts/:id', () => {
 
         const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
         expect(persisted?.promptCategoryId).toBe(otherFixtureCategory.id);
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('returns a prompt-not-found error when the path id matches no prompt', async () => {
@@ -219,11 +203,10 @@ describe('PUT /prompts/:id', () => {
     });
 
     it('returns a category-not-found error when the existing prompt references an unknown category_id', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const unknownCategoryId = faker.string.uuid();
         const body = {
@@ -251,16 +234,13 @@ describe('PUT /prompts/:id', () => {
             prompt: fixturePrompt.prompt,
             description: fixturePrompt.description,
         });
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('rejects an update from a non-owner as forbidden and leaves the prompt unchanged', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -285,16 +265,13 @@ describe('PUT /prompts/:id', () => {
             title: fixturePrompt.title,
             prompt: fixturePrompt.prompt,
         });
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('rejects a request with no Authorization header and leaves the prompt unchanged', async () => {
-        const fixturePrompt = promptModelFactory.create({
+        const fixturePrompt = await promptFixture.insert({
             categoryId: fixtureCategory.id,
             userId: creatorUser.id,
         });
-        await insertPrompts(db, [fixturePrompt]);
 
         const body = {
             title: 'Updated title',
@@ -312,8 +289,6 @@ describe('PUT /prompts/:id', () => {
             title: fixturePrompt.title,
             prompt: fixturePrompt.prompt,
         });
-
-        await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
     it('rejects a request with no Authorization header and an invalid body as unauthorized, not as invalid input', async () => {
