@@ -145,7 +145,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='INVALID_TOKEN'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC7 "Given an invalid token, When a client calls a protected route, Then the response is an unauthorized outcome with `code` `INVALID_TOKEN`."; E7
 
-- [ ] T14. Migrate `TokenExpiredError`
+- [x] T14. Migrate `TokenExpiredError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the `TokenExpiredError` assertion in

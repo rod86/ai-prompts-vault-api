@@ -66,7 +66,7 @@ describe('requireAuthMiddleware', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'TokenExpiredError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'TOKEN_EXPIRED' });
     });
 
     it('rejects a token signed with a different secret', async () => {
