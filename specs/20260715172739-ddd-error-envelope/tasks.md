@@ -83,7 +83,7 @@ its assertion red→green, leaving no dead code behind.
     remove its per-class branch + import from `errorMiddleware.ts`.
   - Covers: AC1 "Given a prompt id that does not exist, When a client requests an operation on it, Then the response is a not-found outcome with `code` `PROMPT_NOT_FOUND`, a message, and a body `status` equal to the transport status."; E1, V2
 
-- [ ] T8. Migrate `PromptOwnershipError`
+- [x] T8. Migrate `PromptOwnershipError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `PromptOwnershipError` assertions in

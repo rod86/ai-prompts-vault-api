@@ -257,7 +257,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(403);
         expect(response.body).toEqual({
-            error: 'PromptOwnershipError',
+            status: 403,
+            code: 'PROMPT_OWNERSHIP',
             message: `You are not allowed to modify or delete this prompt: ${fixturePrompt.id}`,
         });
 
