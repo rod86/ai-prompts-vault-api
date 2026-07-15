@@ -168,12 +168,21 @@ Rules:
 
 The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. This has no exceptions — even a low-level client/connection wrapper (e.g. a database connection provider) implements a domain interface; there is no category of adapter exempt from this.
 
-**No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories plus their schema definitions, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
+**No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
 
-Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes. A repository receives the shared `DatabaseClientInterface` port itself (not a bare connection) and pulls both the query connection and its table objects from it, once, in the constructor. The co-located `schema.ts` may still be imported, but only for its **types** (to parameterize the generic) — never for the runtime table-object values:
+**Schema placement.** ORM schema definitions belong to infrastructure. They may
+be co-located with a repository when they are local to a bounded context. If
+schema definitions become coupled across multiple contexts, move them to a shared
+infrastructure location. Repositories never import runtime schema objects
+directly—they receive the schema via constructor injection, making them
+independent of the schema's physical location.
+
+Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes. A repository receives the shared `DatabaseClientInterface` port itself (not a bare connection) for the query connection, **plus the schema view it needs, injected through the constructor** — never importing the runtime table-object values directly. It destructures the tables from that injected `schema`. Injecting the schema (rather than importing it) keeps the repository agnostic to **where** the definitions physically live — co-located below, or lifted into a shared location when they're coupled across contexts (see the trade-off above):
 
 ```typescript
-// infrastructure/persistence/schema.ts
+// schema.ts — co-located under persistence/ when the table belongs to one
+// context; or in a shared location outside the contexts when definitions are
+// coupled across contexts. Either way the repository only receives it injected.
 import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const orders = pgTable('orders', {
@@ -186,24 +195,22 @@ export type OrderSchema = { orders: typeof orders };
 ```typescript
 // infrastructure/persistence/DrizzleOrderRepository.ts
 import { eq } from 'drizzle-orm';
-import type DatabaseClientInterface, {
-    type DatabaseConnection,
-} from '../../../shared/domain/interfaces/DatabaseClientInterface.js';
+import type DatabaseClientInterface from '../../../shared/domain/interfaces/DatabaseClientInterface.js';
 import type OrderRepositoryInterface from '../../domain/interfaces/OrderRepositoryInterface.js';
 import { type Order } from '../../domain/Order.js';
-import { type OrderSchema } from './schema.js';
+import { type OrderSchema } from './schema.js'; // type only — the table objects arrive via the constructor
 
 export class DrizzleOrderRepository implements OrderRepositoryInterface {
-    private readonly db: DatabaseConnection<OrderSchema>;
-    private readonly orders: OrderSchema['orders'];
-
-    constructor(client: DatabaseClientInterface<OrderSchema>) {
-        this.db = client.connect();
-        this.orders = client.schema().orders;
-    }
+    constructor(
+        private readonly client: DatabaseClientInterface<OrderSchema>,
+        private readonly schema: OrderSchema,
+    ) {}
 
     public async findById(id: string): Promise<Order | undefined> {
-        const rows = await this.db.select().from(this.orders).where(eq(this.orders.id, id)).limit(1);
+        const db = this.client.connect();
+        const { orders } = this.schema;
+
+        const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
         const row = rows[0];
 
         if (!row) {
@@ -247,24 +254,18 @@ export default interface IdGeneratorInterface {
 
 ```typescript
 // shared/domain/interfaces/DatabaseClientInterface.ts
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DatabaseConnection } from '@src/modules/shared/domain/Database.js';
 
-// The connection shape is part of the port's contract (connect()'s return type), not an
-// implementation detail, so it lives here in domain/ alongside the interface — not in
-// infrastructure/.
-export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
-    NodePgDatabase<DatabaseSchema>;
-
-export default interface DatabaseClientInterface<DatabaseSchema extends Record<string, unknown>> {
-    connect(): DatabaseConnection<DatabaseSchema>;
-    schema(): DatabaseSchema;
-    close(): Promise<void>;
+export default interface DatabaseClientInterface<Connection = unknown> {
+  connect(): void;
+  getConnection(): DatabaseConnection<Connection>;
+  close(): Promise<void>;
 }
 ```
 
 ```typescript
 // shared/infrastructure/datetime/SystemDateTime.ts
-import type DateTimeInterface from '../../domain/interfaces/DateTimeInterface.js';
+import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 
 export class SystemDateTime implements DateTimeInterface {
     public now(): Date {
@@ -276,7 +277,7 @@ export class SystemDateTime implements DateTimeInterface {
 ```typescript
 // shared/infrastructure/identity/UuidGenerator.ts
 import { randomUUID } from 'node:crypto';
-import type IdGeneratorInterface from '../../domain/interfaces/IdGeneratorInterface.js';
+import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 
 export class UuidGenerator implements IdGeneratorInterface {
     public generate(): string {
@@ -289,7 +290,7 @@ export class UuidGenerator implements IdGeneratorInterface {
 // shared/infrastructure/database/DatabaseClient.ts
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import type DatabaseClientInterface, { type DatabaseConnection } from '../../domain/interfaces/DatabaseClientInterface.js';
+import type DatabaseClientInterface, { type DatabaseConnection } from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 
 export type DatabaseConfig = {
     host: string;
@@ -315,10 +316,6 @@ export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
         }
 
         return drizzle(this.pool, { schema: this.databaseSchema });
-    }
-
-    public schema(): DatabaseSchema {
-        return this.databaseSchema;
     }
 
     public async close(): Promise<void> {
@@ -356,9 +353,10 @@ Each context wires its own pieces: instantiate the infrastructure implementation
 import { CreateOrderUseCase } from './application/CreateOrderUseCase.js';
 import { GetOrderUseCase } from './application/GetOrderUseCase.js';
 import { DrizzleOrderRepository } from './infrastructure/persistence/DrizzleOrderRepository.js';
+import { schema } from './infrastructure/persistence/schema.js'; // or the shared location, if lifted out
 import { databaseClient, systemDateTime, uuidGenerator } from '../shared/services.js';
 
-const orderRepository = new DrizzleOrderRepository(databaseClient);
+const orderRepository = new DrizzleOrderRepository(databaseClient, schema);
 
 export const createOrderUseCase = new CreateOrderUseCase(orderRepository, systemDateTime, uuidGenerator);
 export const getOrderUseCase = new GetOrderUseCase(orderRepository);

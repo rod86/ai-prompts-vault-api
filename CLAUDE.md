@@ -96,11 +96,15 @@ src/
   modules/<context>/    # bounded contexts — the home for business logic
     domain/             # entities, domain errors, repository interfaces
     application/        # use cases (*.UseCase.ts)
-    infrastructure/     # Drizzle repos, adapters, DB schema
+    infrastructure/     # Drizzle repos, adapters (schema lives in src/config/drizzle/)
     services.ts         # composition root for the context (DI wiring)
   config/
     config.ts           # env vars + fixed params (default-exported, no schema)
-    drizzle-schema.ts   # aggregated Drizzle schema (default-exported)
+    drizzle/            # centralized Drizzle schema (outside every bounded context)
+      user.schema.ts    # per-context table definitions
+      prompt.schema.ts  #   (prompts → users FK is a sibling import here)
+      schema.ts         # internal aggregation (export *) — drizzle-kit points here
+      index.ts          # barrel: `schema` object + DatabaseSchema/DatabaseConnection/PromptSchema/UserSchema
   app.ts                # HTTP app: routes (no listen)
   index.ts              # server bootstrap + graceful shutdown
 tests/
@@ -160,27 +164,41 @@ lazily-created `Pool` and returns a Drizzle connection typed to its schema:
 
 ```ts
 const client = new DatabaseClient(config, schema); // schema inferred
-const db = client.connect();  // DatabaseConnection<typeof schema>, reuses Pool
-await client.close();         // ends Pool, idempotent / no-op if never connected
+client.connect();                  // opens the Pool + Drizzle connection (returns void)
+const db = client.getConnection(); // DatabaseConnection, reuses the Pool
+await client.close();              // ends Pool, idempotent / no-op if never connected
 ```
 
 - Use the exported `DatabaseConnection` type alias (from
-  `src/modules/shared/services.ts`) for any `db` param/return — **never**
+  `src/config/drizzle/index.ts`) for any `db` param/return — **never**
   hand-write `NodePgDatabase<Record<string, unknown>>`.
-- Repositories take a `DatabaseConnection`, so wire them with
-  `new DrizzlePromptRepository(databaseClient.connect())` in `services.ts`.
+- Repositories take the `DatabaseClient` port **plus an injected schema view**
+  (a per-context `Pick<DatabaseSchema, …>` — `PromptSchema` / `UserSchema`) and
+  destructure the tables they need from `this.schema`; they import only schema
+  **types** from the barrel, never the table objects. Wire them with
+  `new DrizzlePromptRepository(databaseClient, schema)` in `services.ts` (the
+  full merged `schema` is structurally assignable to any `Pick` of it).
 - Config is split into two units: `src/config/config.ts` (env vars + fixed
-  params, no schema) and `src/config/drizzle-schema.ts` (the aggregated
-  Drizzle schema, default-exported, spread from each context's schema file
-  into one flat `{ tableName: table }` object). Every schema consumer imports
-  from `src/config/drizzle-schema.ts`, never off `config.database`.
+  params, no schema) and `src/config/drizzle/` (the centralized schema). The
+  schema lives **outside** the business-logic directory (`src/modules/`) on
+  purpose: the ORM couples schema definitions across contexts (cross-context
+  FKs / joins share table objects), so co-locating a table inside a context
+  would force cross-context imports. Centralizing it keeps contexts from
+  importing one another's schema. Runtime/app code imports `{ schema }` from
+  `@src/config/drizzle/index.js` (the barrel) and accesses tables via
+  `schema.<table>` — never a per-context `*.schema.ts` file. The internal
+  `schema.ts` aggregation (`export *`) exists only because drizzle-kit
+  discovers tables from top-level `pgTable` exports; `drizzle.config.ts` points
+  at it, not at the barrel.
 - `id` (uuid) is **app-provided on insert** — no `defaultRandom()` /
   `gen_random_uuid()` defaults.
 
 **Tests** construct their own `DatabaseClient<DatabaseSchema>` inline in each
-integration test file, from `config` (`@src/config/config.js`) and `schema`
-(`@src/config/drizzle-schema.js`) — see `DrizzlePromptRepository.test.ts` for
-the pattern. `tests/lib/config.ts` holds only the singleton model factories.
+integration test file, importing `{ schema, type DatabaseSchema }` from
+`@src/config/drizzle/index.js` and `config` from `@src/config/config.js` — see
+`DrizzlePromptRepository.test.ts` for the pattern (it also passes `schema` to
+the repository constructor). `tests/lib/config.ts` holds only the singleton
+model factories.
 
 ---
 
