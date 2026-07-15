@@ -1,15 +1,18 @@
 import { eq, sql } from 'drizzle-orm';
+import { type DatabaseConnection, type PromptSchema } from '@src/config/drizzle/index.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
-import { promptCategories } from '@src/modules/prompt/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzlePromptCategoryRepository implements PromptCategoryRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
+    constructor(
+        private readonly database: DatabaseClientInterface<DatabaseConnection>,
+        private readonly schema: PromptSchema,
+    ) {}
 
     public async findAll(): Promise<PromptCategory[]> {
         const db = this.database.getConnection();
+        const { promptCategories } = this.schema;
 
         return db
             .select({ id: promptCategories.id, name: promptCategories.name })
@@ -19,6 +22,7 @@ export class DrizzlePromptCategoryRepository implements PromptCategoryRepository
 
     public async findById(id: string): Promise<PromptCategory | undefined> {
         const db = this.database.getConnection();
+        const { promptCategories } = this.schema;
 
         const rows = await db
             .select({ id: promptCategories.id, name: promptCategories.name })

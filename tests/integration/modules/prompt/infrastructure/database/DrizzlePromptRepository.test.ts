@@ -34,7 +34,7 @@ describe('DrizzlePromptRepository', () => {
     beforeAll(async () => {
         client.connect();
         db = client.getConnection();
-        repository = new DrizzlePromptRepository(client);
+        repository = new DrizzlePromptRepository(client, schema);
         await insertPromptCategories(db, [recipeCategory, travelCategory, fitnessCategory]);
         await insertUsers(db, [creatorUser]);
     });

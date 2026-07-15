@@ -19,7 +19,7 @@ describe('DrizzlePromptCategoryRepository', () => {
     beforeAll(() => {
         client.connect();
         db = client.getConnection();
-        repository = new DrizzlePromptCategoryRepository(client);
+        repository = new DrizzlePromptCategoryRepository(client, schema);
     });
 
     afterAll(async () => {

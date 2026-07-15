@@ -38,7 +38,7 @@ exception removed.
     (verified during planning: 3 tables, no changes).
   - Covers: AC7 "the migration generator … produces no new migration"
 
-- [ ] T3. Migrate prompt context onto injected schema
+- [x] T3. Migrate prompt context onto injected schema
   - Type: infrastructure
   - Depends on: T1
   - Red: none — behavior-preserving; guarded by existing
