@@ -71,7 +71,7 @@ its assertion red→green, leaving no dead code behind.
     `{ status:404, code:'NOT_FOUND', message: \`Cannot ${req.method} ${req.path}\` }`.
   - Covers: AC10 "Given a path the API does not serve, When a client requests it, Then the response is a not-found outcome with `code` `NOT_FOUND` and a message naming the method and path."; E10
 
-- [ ] T7. Migrate `PromptNotFoundError`
+- [x] T7. Migrate `PromptNotFoundError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `PromptNotFoundError` assertions in

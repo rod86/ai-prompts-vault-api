@@ -177,7 +177,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
-            error: 'PromptNotFoundError',
+            status: 404,
+            code: 'PROMPT_NOT_FOUND',
             message: `Prompt not found: ${unknownId}`,
         });
     });
@@ -197,7 +198,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
-            error: 'PromptNotFoundError',
+            status: 404,
+            code: 'PROMPT_NOT_FOUND',
             message: `Prompt not found: ${unknownId}`,
         });
     });
