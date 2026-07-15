@@ -1,15 +1,18 @@
 import { sql } from 'drizzle-orm';
+import { type DatabaseConnection, type UserSchema } from '@src/config/drizzle/index.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseConnection } from '@src/modules/shared/services.js';
 import type UserRepositoryInterface from '@src/modules/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@src/modules/user/domain/User.js';
-import { users } from '@src/modules/user/infrastructure/database/schema.js';
 
 export class DrizzleUserRepository implements UserRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
+    constructor(
+        private readonly database: DatabaseClientInterface<DatabaseConnection>,
+        private readonly schema: UserSchema,
+    ) {}
 
     public async findByEmail(email: string): Promise<User | undefined> {
         const db = this.database.getConnection();
+        const { users } = this.schema;
 
         const rows = await db
             .select()
@@ -35,6 +38,7 @@ export class DrizzleUserRepository implements UserRepositoryInterface {
 
     public async create(user: User): Promise<void> {
         const db = this.database.getConnection();
+        const { users } = this.schema;
 
         await db.insert(users).values({
             id: user.id,

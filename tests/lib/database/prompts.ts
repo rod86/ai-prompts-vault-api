@@ -1,7 +1,9 @@
 import { eq, inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
+import { schema } from '@src/config/drizzle/index.js';
 import { type PromptModel } from '@tests/lib/modelFactories/PromptModelFactory.js';
+
+const { prompts } = schema;
 
 export async function insertPrompts(
     db: NodePgDatabase<Record<string, unknown>>,

@@ -2,9 +2,9 @@ import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import config from '@src/config/config.js';
-import schema from '@src/config/drizzle-schema.js';
+import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { databaseClient, type DatabaseSchema } from '@src/modules/shared/services.js';
+import { databaseClient } from '@src/modules/shared/services.js';
 import { promptCategoryModelFactory } from '@tests/lib/config.js';
 import {
     deletePromptCategoriesByIds,

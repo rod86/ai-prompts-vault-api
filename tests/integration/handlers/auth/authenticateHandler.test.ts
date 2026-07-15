@@ -2,12 +2,11 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import config from '@src/config/config.js';
-import schema from '@src/config/drizzle-schema.js';
+import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
 import {
     databaseClient,
     passwordHasher,
-    type DatabaseSchema,
 } from '@src/modules/shared/services.js';
 import { userModelFactory } from '@tests/lib/config.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';

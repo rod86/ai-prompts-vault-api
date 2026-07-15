@@ -1,5 +1,5 @@
 # Spec: Centralize Drizzle schema out of bounded contexts
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer, I want the persistence schema definitions centralized in one shared location and injected into repositories, so that bounded contexts no longer import one another's schema and the cross-context boundary exception can be removed.
 
 <!--
@@ -53,9 +53,12 @@ None — this refactor introduces no user-facing error behavior.
 - **AC2** — Given the record that was previously defined in two contexts, When
   the centralized schema is inspected, Then that record is defined exactly once
   and every context that uses it shares that single definition.
-- **AC3** — Given the centralized schema location, When any code outside that
-  location imports the schema, Then it imports only through the single entry
-  point (never a per-context schema file directly).
+- **AC3** — Given the centralized schema location, When application/runtime code
+  outside that location imports the schema, Then it imports only through the
+  single entry point and accesses tables via the exported schema object — never
+  importing a per-context schema file or the internal aggregation file directly.
+  The migration toolchain configuration is the one exception (D11): it references
+  the internal aggregation file that re-exports the tables.
 - **AC4** — Given a repository, When it is constructed, Then it receives its
   schema through construction and contains no direct import of schema
   definitions.
@@ -82,3 +85,4 @@ None — this refactor introduces no user-facing error behavior.
 | D8 | Where do the `DatabaseSchema`/connection types live? | Both move into the entry point; all importers are repointed to it | Single home for schema-derived types |
 | D9 | Enforce "only the entry point is importable" via tooling or convention? | Convention only (documented; no lint rule added) | AC3 stated as a convention, not tool-enforced |
 | D10 | (Directive) Auth's schema view and the duplicate per-context type | Auth reuses `UserSchema`; the separate `AuthSchema` type is dropped — no two structurally identical schema-view types. Supersedes the `AuthSchema` part of D4 | Removes a duplicate type; both user and auth contexts inject `UserSchema` |
+| D11 | (Directive) The migration tool can't discover tables through the barrel's schema object (verified: 0 tables → destructive drop migration). How to feed the tool while keeping D7? | Add an internal aggregation file `schema.ts` in the central location that re-exports the context tables at top level; point the migration tool at it, and have the single entry point build its schema object + types from it (verified: tool reports 3 tables, no migration). Consumers still import only from the entry point and use `schema.<table>` (D7 preserved). Supersedes the D7/T2 detail that pointed the tool at the two per-context files | Adds `schema.ts`; refines AC3 to exempt the migration toolchain, which references the aggregation file |

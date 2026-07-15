@@ -1,15 +1,18 @@
 import { eq, sql } from 'drizzle-orm';
+import { type DatabaseConnection, type UserSchema } from '@src/config/drizzle/index.js';
 import type UserCredentialsRepositoryInterface from '@src/modules/auth/domain/interfaces/UserCredentialsRepositoryInterface.js';
 import { type UserCredentials } from '@src/modules/auth/domain/UserCredentials.js';
-import { users } from '@src/modules/auth/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseConnection } from '@src/modules/shared/services.js';
 
 export class DrizzleUserCredentialsRepository implements UserCredentialsRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
+    constructor(
+        private readonly database: DatabaseClientInterface<DatabaseConnection>,
+        private readonly schema: UserSchema,
+    ) {}
 
     public async findByEmail(email: string): Promise<UserCredentials | undefined> {
         const db = this.database.getConnection();
+        const { users } = this.schema;
 
         const rows = await db
             .select({ id: users.id, email: users.email, passwordHash: users.passwordHash })
@@ -28,6 +31,7 @@ export class DrizzleUserCredentialsRepository implements UserCredentialsReposito
 
     public async findById(id: string): Promise<UserCredentials | undefined> {
         const db = this.database.getConnection();
+        const { users } = this.schema;
 
         const rows = await db
             .select({ id: users.id, email: users.email, passwordHash: users.passwordHash })

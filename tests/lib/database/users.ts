@@ -1,7 +1,9 @@
 import { eq, inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { schema } from '@src/config/drizzle/index.js';
 import { type User } from '@src/modules/user/domain/User.js';
-import { users } from '@src/modules/user/infrastructure/database/schema.js';
+
+const { users } = schema;
 
 export async function insertUsers(
     db: NodePgDatabase<Record<string, unknown>>,

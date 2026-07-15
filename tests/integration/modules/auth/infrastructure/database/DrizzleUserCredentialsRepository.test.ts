@@ -1,10 +1,9 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
-import schema from '@src/config/drizzle-schema.js';
+import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
 import { DrizzleUserCredentialsRepository } from '@src/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { type DatabaseSchema } from '@src/modules/shared/services.js';
 import { userModelFactory } from '@tests/lib/config.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
 
@@ -17,7 +16,7 @@ describe('DrizzleUserCredentialsRepository', () => {
     beforeAll(() => {
         client.connect();
         db = client.getConnection();
-        repository = new DrizzleUserCredentialsRepository(client);
+        repository = new DrizzleUserCredentialsRepository(client, schema);
     });
 
     afterEach(async () => {

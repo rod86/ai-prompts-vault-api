@@ -1,4 +1,5 @@
 import { desc, eq, sql } from 'drizzle-orm';
+import { type DatabaseConnection, type PromptSchema } from '@src/config/drizzle/index.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import {
     type CreatePrompt,
@@ -6,16 +7,17 @@ import {
     type PromptFilter,
     type UpdatePrompt,
 } from '@src/modules/prompt/domain/Prompt.js';
-import { promptCategories, prompts } from '@src/modules/prompt/infrastructure/database/schema.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
-import { type DatabaseConnection } from '@src/modules/shared/services.js';
-import { users } from '@src/modules/user/infrastructure/database/schema.js';
 
 export class DrizzlePromptRepository implements PromptRepositoryInterface {
-    constructor(private readonly database: DatabaseClientInterface<DatabaseConnection>) {}
+    constructor(
+        private readonly database: DatabaseClientInterface<DatabaseConnection>,
+        private readonly schema: PromptSchema,
+    ) {}
 
     public async findAll(filter?: PromptFilter): Promise<Prompt[]> {
         const db = this.database.getConnection();
+        const { prompts, promptCategories, users } = this.schema;
 
         // Compared as text (not uuid) so a filter value that isn't UUID-shaped
         // simply matches nothing instead of erroring at the database (spec §3/§6 Decision 4).
@@ -56,6 +58,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
 
     public async findById(id: string): Promise<Prompt | undefined> {
         const db = this.database.getConnection();
+        const { prompts, promptCategories, users } = this.schema;
 
         const rows = await db
             .select({
@@ -96,6 +99,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
 
     public async create(prompt: CreatePrompt): Promise<void> {
         const db = this.database.getConnection();
+        const { prompts } = this.schema;
 
         await db.insert(prompts).values({
             id: prompt.id,
@@ -111,6 +115,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
 
     public async update(id: string, prompt: UpdatePrompt): Promise<void> {
         const db = this.database.getConnection();
+        const { prompts } = this.schema;
 
         await db
             .update(prompts)
@@ -126,6 +131,7 @@ export class DrizzlePromptRepository implements PromptRepositoryInterface {
 
     public async delete(id: string): Promise<void> {
         const db = this.database.getConnection();
+        const { prompts } = this.schema;
 
         await db.delete(prompts).where(eq(prompts.id, id));
     }
