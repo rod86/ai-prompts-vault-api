@@ -11,7 +11,12 @@ import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlr
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof RequestValidationError) {
-        res.status(400).json({ error: err.name, message: err.message, details: err.details });
+        res.status(400).json({
+            status: 400,
+            code: 'VALIDATION_ERROR',
+            message: err.message,
+            details: err.details,
+        });
         return;
     }
 

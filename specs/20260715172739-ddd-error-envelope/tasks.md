@@ -30,7 +30,7 @@ its assertion red→green, leaving no dead code behind.
     `satisfies Record<ErrorCategory, number>`.
   - Covers: prerequisite for AC1–AC8; the family→status resolution.
 
-- [ ] T3. Validation branch → uniform envelope
+- [x] T3. Validation branch → uniform envelope
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/middleware/errorMiddleware.test.ts` validation case to

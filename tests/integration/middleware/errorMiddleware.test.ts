@@ -23,7 +23,8 @@ describe('errorMiddleware', () => {
 
         expect(response.status).toBe(400);
         expect(response.body).toEqual({
-            error: 'RequestValidationError',
+            status: 400,
+            code: 'VALIDATION_ERROR',
             message: 'Request Validation data failed',
             details: { body: { name: 'name invalid' } },
         });
