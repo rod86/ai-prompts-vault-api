@@ -145,6 +145,22 @@ layer** (handlers/middleware) — **never** inside the business-logic layer
 (`src/modules/<context>/{domain,application}`). Use cases receive and return
 `camelCase`; the handler maps to/from the `snake_case` wire shape.
 
+**Error envelope is uniform.** Every error response body is exactly
+`{ status, code, message }`, plus `details` only for a request-validation
+failure — the one property no other error ever carries. `status` always
+mirrors the transport status; `code` is a stable, client-facing identifier,
+never an internal class name. Business errors extend the shared `DomainError`
+base (`src/modules/shared/domain/DomainError.ts`), declaring a `code` and a
+`category` (`NotFound | Forbidden | Unauthorized | Unprocessable`);
+`src/middleware/errorMiddleware.ts` maps `category → status` via
+`CATEGORY_STATUS` (`src/middleware/domainErrorStatus.ts`) in one central
+branch — a new business error that reuses an existing `category` needs no
+middleware edit. An unexpected/technical failure falls through to a generic
+`INTERNAL_ERROR` 500; the underlying cause is logged server-side
+(`console.error`) but never sent to the client. See `domain-driven-design`
+for the `DomainError` subclassing rules and `node-express-typescript` for the
+middleware pattern.
+
 ---
 
 ## Business Logic

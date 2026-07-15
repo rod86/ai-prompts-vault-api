@@ -49,8 +49,8 @@ most maintainable option that follows TypeScript best practices.
 
 ## Error Handling
 
-- Throw **named error classes** that extend `Error` (e.g., `NotFoundError`), never raw strings or bare `Error`.
-- Map error classes to HTTP status codes in **one** place (the error-handling middleware), not in controllers.
+- Throw **named error classes** that extend `Error` (e.g., `NotFoundError`), never raw strings or bare `Error`. In a business-logic backend, extend a shared classifying base (`code` + `category`) instead of raw `Error` — see `domain-driven-design`.
+- Map error **categories** to HTTP status codes in **one** place (the error-handling middleware), not in controllers, and not hardcoded on the error class itself — see `node-express-typescript`.
 - No swallowed catches. Handle or re-throw, never empty `catch {}`.
 
 ## Validation
