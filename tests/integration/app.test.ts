@@ -15,7 +15,8 @@ describe('app', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
-            error: 'NotFound',
+            status: 404,
+            code: 'NOT_FOUND',
             message: 'Cannot GET /does-not-exist',
         });
     });

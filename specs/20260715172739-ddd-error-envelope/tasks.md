@@ -61,7 +61,7 @@ its assertion red→green, leaving no dead code behind.
     per-class branches, above the fallback**: `const status = CATEGORY_STATUS[err.category]; res.status(status).json({ status, code: err.code, message: err.message })`.
   - Covers: prerequisite/mechanism for AC1–AC8 (generic domain rendering via the category map).
 
-- [ ] T6. `notFoundMiddleware` → uniform envelope
+- [x] T6. `notFoundMiddleware` → uniform envelope
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/app.test.ts` unknown-route case to expect
