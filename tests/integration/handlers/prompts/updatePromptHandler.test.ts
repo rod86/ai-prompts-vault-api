@@ -13,6 +13,7 @@ import {
 } from '@tests/lib/database/promptCategories.js';
 import { deletePromptsByIds, insertPrompts, selectPromptsByIds } from '@tests/lib/database/prompts.js';
 import { deleteUsersByIds, insertUsers } from '@tests/lib/database/users.js';
+import { createSignedToken } from '@tests/lib/utils.js';
 
 describe('PUT /prompts/:id', () => {
     const client = new DatabaseClient<DatabaseSchema>(config.database, schema);
@@ -20,6 +21,7 @@ describe('PUT /prompts/:id', () => {
     const fixtureCategory = promptCategoryModelFactory.create();
     const otherFixtureCategory = promptCategoryModelFactory.create();
     const creatorUser = userModelFactory.create();
+    let authToken: string;
 
     beforeAll(async () => {
         client.connect();
@@ -27,6 +29,7 @@ describe('PUT /prompts/:id', () => {
         databaseClient.connect();
         await insertPromptCategories(db, [fixtureCategory, otherFixtureCategory]);
         await insertUsers(db, [creatorUser]);
+        authToken = createSignedToken({ sub: creatorUser.id });
     });
 
     afterAll(async () => {
@@ -49,7 +52,10 @@ describe('PUT /prompts/:id', () => {
             description: 'Updated description',
         };
 
-        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual({
@@ -91,7 +97,10 @@ describe('PUT /prompts/:id', () => {
             category_id: fixtureCategory.id,
         };
 
-        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.body.description).toBeNull();
 
@@ -115,7 +124,10 @@ describe('PUT /prompts/:id', () => {
             description: '',
         };
 
-        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.body.description).toBeNull();
 
@@ -139,7 +151,10 @@ describe('PUT /prompts/:id', () => {
             description: 'Updated description',
         };
 
-        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.body.category).toEqual({
             id: otherFixtureCategory.id,
@@ -160,7 +175,10 @@ describe('PUT /prompts/:id', () => {
             category_id: fixtureCategory.id,
         };
 
-        const response = await request(app).put(`/prompts/${unknownId}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${unknownId}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
@@ -177,7 +195,10 @@ describe('PUT /prompts/:id', () => {
             category_id: faker.string.uuid(),
         };
 
-        const response = await request(app).put(`/prompts/${unknownId}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${unknownId}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
@@ -200,7 +221,10 @@ describe('PUT /prompts/:id', () => {
             category_id: unknownCategoryId,
         };
 
-        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
 
         expect(response.status).toBe(422);
         expect(response.body).toEqual({
@@ -220,9 +244,39 @@ describe('PUT /prompts/:id', () => {
         await deletePromptsByIds(db, [fixturePrompt.id]);
     });
 
+    it('rejects a request with no Authorization header and leaves the prompt unchanged', async () => {
+        const fixturePrompt = promptModelFactory.create({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
+        await insertPrompts(db, [fixturePrompt]);
+
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: fixtureCategory.id,
+        };
+
+        const response = await request(app).put(`/prompts/${fixturePrompt.id}`).send(body);
+
+        expect(response.status).toBe(401);
+
+        const [persisted] = await selectPromptsByIds(db, [fixturePrompt.id]);
+        expect(persisted).toMatchObject({
+            id: fixturePrompt.id,
+            title: fixturePrompt.title,
+            prompt: fixturePrompt.prompt,
+        });
+
+        await deletePromptsByIds(db, [fixturePrompt.id]);
+    });
+
     describe('Request Validation', () => {
         it('returns missing required value errors for all required body fields', async () => {
-            const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({});
+            const response = await request(app)
+                .put(`/prompts/${faker.string.uuid()}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({});
 
             expect(response.body.details.body).toEqual({
                 title: 'Missing required value',
@@ -232,7 +286,10 @@ describe('PUT /prompts/:id', () => {
         });
 
         it('returns an invalid value error for a malformed path id', async () => {
-            const response = await request(app).put('/prompts/not-a-uuid').send({});
+            const response = await request(app)
+                .put('/prompts/not-a-uuid')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({});
 
             expect(response.body.details.params).toEqual(
                 expect.objectContaining({ id: 'Invalid UUID value' }),
@@ -240,11 +297,14 @@ describe('PUT /prompts/:id', () => {
         });
 
         it('returns an invalid value error for a malformed category_id', async () => {
-            const response = await request(app).put(`/prompts/${faker.string.uuid()}`).send({
-                title: 'Updated title',
-                prompt: 'Updated prompt text',
-                category_id: 'not-a-uuid',
-            });
+            const response = await request(app)
+                .put(`/prompts/${faker.string.uuid()}`)
+                .set('Authorization', `Bearer ${authToken}`)
+                .send({
+                    title: 'Updated title',
+                    prompt: 'Updated prompt text',
+                    category_id: 'not-a-uuid',
+                });
 
             expect(response.body.details.body).toEqual(
                 expect.objectContaining({ category_id: 'Invalid UUID value' }),

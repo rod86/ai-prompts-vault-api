@@ -1,7 +1,7 @@
 # Tasks: Owner-only, authenticated update & delete of a prompt
 Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
 
-- [ ] T1. Require authentication on the update route
+- [x] T1. Require authentication on the update route
   - Type: route handler
   - Depends on: none
   - Red: extend `tests/integration/handlers/prompts/updatePromptHandler.test.ts` — `PUT /prompts/:id` with a valid body but **no** `Authorization` header returns `401` and leaves the prompt unchanged (`selectPromptsByIds`). Fails because the route is currently public. Green-keeping: add a valid `Authorization: Bearer <jwt>` whose user **is the prompt's creator** to the existing happy-path test so it still reaches the handler and stays `200`.

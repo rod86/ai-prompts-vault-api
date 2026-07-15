@@ -22,6 +22,7 @@ promptsRouter.post(
 );
 promptsRouter.put(
     '/prompts/:id',
+    requireAuthMiddleware,
     validateRequestMiddleware(UpdatePromptSchema),
     updatePromptHandler,
 );
