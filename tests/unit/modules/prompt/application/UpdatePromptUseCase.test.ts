@@ -85,9 +85,9 @@ describe('UpdatePromptUseCase', () => {
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
-    it('throws PromptNotFoundError and does not look up the category, persist, or read the clock when the prompt does not exist', async () => {
+    it('throws PromptNotFoundError (not PromptOwnershipError) and does not look up the category, persist, or read the clock when the prompt does not exist', async () => {
         promptRepository.findById.mockResolvedValue(undefined);
-        const query = buildQuery();
+        const query = buildQuery({ userId: faker.string.uuid() });
 
         await expect(useCase.invoke(query)).rejects.toThrow(PromptNotFoundError);
         await expect(useCase.invoke(query)).rejects.toThrow(`Prompt not found: ${query.id}`);

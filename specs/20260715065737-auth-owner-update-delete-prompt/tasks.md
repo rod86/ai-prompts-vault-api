@@ -22,7 +22,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: create `src/modules/prompt/domain/errors/PromptOwnershipError.ts` (carries the prompt id); `src/modules/prompt/application/UpdatePromptUseCase.ts` — add `userId` to `UpdatePromptQuery` and, after the not-found guard and before category resolution, throw `PromptOwnershipError` when `existingPrompt.user.id !== query.userId`. Green-keep typecheck: `src/handlers/prompts/updatePromptHandler.ts` narrows `req.auth` (throw `MissingTokenError` if absent) and passes `userId: req.auth.userId`.
   - Covers: AC6 "Given a prompt created by another user, When an authenticated user who is not its creator attempts to update it, Then the request is rejected as forbidden and the prompt is unchanged." (application); V2, E2
 
-- [ ] T4. Update: not found is decided before ownership
+- [x] T4. Update: not found is decided before ownership
   - Type: application
   - Depends on: T3
   - Red: extend `UpdatePromptUseCase.test.ts` — given `findById` returns nothing, When `invoke` is called with a `userId`, Then it rejects with `PromptNotFoundError` (not `PromptOwnershipError`). (Repurpose the existing not-found test, now carrying a `userId`.)
