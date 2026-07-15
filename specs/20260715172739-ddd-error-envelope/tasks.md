@@ -50,7 +50,7 @@ its assertion red→green, leaving no dead code behind.
     then returns the generic envelope.
   - Covers: AC11 "Given an unexpected/technical failure, When it occurs during a request, Then the response is a generic internal-failure outcome with `code` `INTERNAL_ERROR` and a fixed message, no internal detail is leaked, and the underlying cause is recorded server-side."; E11, V3
 
-- [ ] T5. Generic `DomainError` branch (added after per-class branches)
+- [x] T5. Generic `DomainError` branch (added after per-class branches)
   - Type: middleware
   - Depends on: T1, T2
   - Red: add an `it` to `tests/integration/middleware/errorMiddleware.test.ts` that throws

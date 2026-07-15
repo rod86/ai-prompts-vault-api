@@ -4,6 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
+import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/DomainError.js';
+
+class StubDomainError extends DomainError {
+    readonly code = 'STUB';
+    readonly category: ErrorCategory = 'Unprocessable';
+}
 
 describe('errorMiddleware', () => {
     it('renders the RequestValidationError contract and never reaches the handler', async () => {
@@ -49,6 +55,23 @@ describe('errorMiddleware', () => {
             message: 'Internal server error',
         });
         expect(consoleErrorSpy).toHaveBeenCalledWith(fixtureError);
+    });
+
+    it('renders a DomainError through the category status map', async () => {
+        const app = express();
+        app.get('/stub', () => {
+            throw new StubDomainError('stub failed');
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/stub');
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            status: 422,
+            code: 'STUB',
+            message: 'stub failed',
+        });
     });
 
     afterEach(() => {
