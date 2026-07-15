@@ -42,6 +42,7 @@
         ]
     },
     "rules": {
+        "import/no-named-as-default-member": "off",
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-non-null-assertion": "error",
         "@typescript-eslint/explicit-function-return-type": ["warn", { "allowExpressions": true }],
