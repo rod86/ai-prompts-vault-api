@@ -12,6 +12,10 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
 
 ## Quick rules
 
+- **Keep tests simple.** Passing is the floor, not the goal: a test must also be
+  easy to read, understand, and maintain. Prefer the plain, obvious version over
+  clever, compact, or over-abstracted code. If a test takes real effort to follow,
+  simplify it (see [Keep tests simple](#keep-tests-simple)).
 - Tests live under `tests/`, never in `src/`; mirror the `src/` path; suffix `.test.ts`.
 - TDD every change: red → green → refactor.
 - **A unit in isolation with every collaborator mocked → unit test. Two or more
@@ -21,15 +25,41 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
 - Mock the dependency **type** (`mock<T>()`), never a hand-rolled fake.
 - Structure every test as Arrange / Act / Assert; no `try/catch` in tests — use hooks.
 - Build fake domain objects with model factories, not object literals.
+- Persist and clean up DB rows through the per-table **fixture classes**
+  (`tests/lib/fixtures/`, instantiated via `create<Entity>Fixture()` from
+  `tests/lib/config.ts`) — never a raw insert/delete inline.
 - Never write a raw ORM/db-library query inline in a test (`db.select()/.insert()/.update()/.delete()`,
-  raw SQL, etc.) — add or extend a helper in `tests/lib/database/<entity>.ts` and call that.
+  raw SQL, etc.). Writes/deletes go through a fixture; read-backs go through a
+  helper in `tests/lib/database/<entity>.ts`.
 - Before writing new setup/fixture/assertion logic, check `tests/lib/` (model factories,
-  database helpers, other shared helpers) for something that already does it — reuse or
-  extend it rather than duplicating inline.
+  fixtures, database read-back helpers, other shared helpers) for something that already
+  does it — reuse or extend it rather than duplicating inline.
 - Filter DB assertions to the test's own fixture ids — parallel test files share tables.
 - Don't write a test for a file with no logic of its own — a composition root
   (`services.ts`), a pure re-export, an interface/type-only file. Prove it via the type
   checker and via the tests of the pieces it wires together.
+
+## Keep tests simple
+
+A test has two jobs: pass, **and** stay easy to read and maintain. The second is not
+optional. A test is documentation of behavior that another person (or you, later) has to
+trust at a glance — so favor the plain and obvious over the clever and compact.
+
+- Prefer straightforward, linear tests: a clear Arrange / Act / Assert with no hidden
+  control flow. Avoid loops, conditionals, and branching in a test body — if you're
+  tempted, write separate `it`s or a table of cases instead.
+- Don't over-abstract. Reach for shared helpers (model factories, fixtures, `tests/lib`)
+  to remove real duplication and keep tests in domain terms — not to compress a test into
+  something you have to decode. A little repetition is fine when it makes the test read
+  top-to-bottom.
+- Keep each test focused on one behavior, with only the setup that behavior needs
+  visible. Push incidental wiring into hooks/helpers; keep what the test is actually
+  proving in the test.
+- When a test is genuinely hard to follow, that is a signal to simplify it (or the code
+  under test) — not to add a comment explaining the complexity.
+
+This applies to the refactor step below: refactor the **tests** for clarity too, not just
+the production code.
 
 ## TDD loop
 
@@ -41,10 +71,11 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
 
 ```
 tests/
-  lib/            # Shared test helpers (database, mocks, builders, sample responses,...)
-    config.ts     # Test client/config + singleton model factories, imported by tests.
+  lib/            # Shared test helpers (fixtures, factories, database, mocks, builders,...)
+    config.ts     # Shared DB client + singleton model factories + create<Entity>Fixture() helpers.
     modelFactories # One factory per domain type, building fake instances of it.
-    database      # Helpers to insert/select/delete rows directly, one file per table (e.g. `users.ts`)
+    fixtures      # One fixture class per table: persists a factory object + tracks/cleans its ids.
+    database      # Read-back helpers only (select rows to verify a write), one file per table.
   unit/           # Unit tests
   integration/    # Integration tests
 ```
@@ -54,10 +85,14 @@ tests/
 - Mirror the `src/` path under `tests/unit/` or `tests/integration/`. Example:
   `src/<path>/CreateUser.ts` -> `tests/unit/<path>/CreateUser.test.ts`.
 - HTTP handler/route tests mirror their source the same way — one test file per
-  handler, named after it. Don't collect multiple routes' tests into one shared
-  file (e.g. a single `app.test.ts`): it grows unbounded as routes are added, and
-  every file gets its own self-contained `beforeAll`/`afterAll` connect/close pair
-  anyway (see Integration lifecycle below), so splitting has no extra setup cost.
+  handler, named after it. Don't collect several routes' tests into one shared file:
+  it grows unbounded as routes are added, so a per-handler split keeps each file
+  focused (setup cost is the same either way — see Integration lifecycle below).
+- `app.test.ts` is the exception, and it is **not** a route dumping ground: it tests
+  `app.ts`-level concerns — the application-wide wiring that isn't owned by any single
+  handler (the 404 / not-found contract, the centralized error middleware, generic
+  middleware, the health check). Per-route behavior still belongs in that route's own
+  file.
 - File suffix is always `.test.ts`.
 - `describe` names the unit under test; `it` states the behavior as an
   expectation: `it('returns 404 when the entity does not exist')`.
@@ -160,80 +195,110 @@ per domain type, and a singleton instance of each is exported from
 
 ## Fixtures
 
-A **fixture** is a model-factory object persisted to the database for an integration
-test. Always build it from a model factory (`tests/lib/modelFactories/`, imported as a
-singleton from `tests/lib/config.ts`) — never hand-roll the row — and persist/clean it
-with the per-table helpers in `tests/lib/database/<entity>.ts`. Never write raw SQL,
-a raw ORM query, or truncate a table in a test.
+A **fixture** persists a model-factory object to the database for an integration test
+and owns its cleanup. Fixtures are **classes**, one per table, in `tests/lib/fixtures/`
+(extending `AbstractFixture<T>`). A fixture wraps the shared `databaseClient` plus that
+table's model factory, so tests never hand-roll a row, write raw SQL/ORM queries, or
+truncate a table.
 
-### Per-table database helpers
+### The fixture class
 
-One file per table (e.g. `tests/lib/database/prompts.ts`), each taking the `db`
-connection as its first argument and early-returning on an empty array:
+`AbstractFixture<TModel>` gives every fixture an internal `Set` of the ids it created
+and three operations; each subclass implements `insert`/`cleanup` for its table:
 
-- `insert<Entities>(db, fixtures)` — persists the factory objects, mapping domain fields
-  to columns inside the helper (e.g. `categoryId` → `promptCategoryId`) so tests stay in
-  domain terms.
-- `delete<Entities>ByIds(db, ids)` — `db.delete(...).where(inArray(id, ids))`.
-- `select<Entities>ByIds(db, ids)` — reads rows back for a direct-query assertion (verify
-  a write landed, or that a related row was left unchanged).
+- `insert(data?)` — builds a row via the model factory (with optional overrides),
+  persists it (mapping domain fields to columns, e.g. `categoryId` → `promptCategoryId`),
+  tracks its id, and returns the model.
+- `cleanup()` — deletes every id the fixture tracked (`where(inArray(id, [...ids]))`),
+  then clears the set; no-ops when nothing was inserted.
+- `register(id)` — tracks an id the fixture did **not** insert itself, so `cleanup()`
+  still removes it. Use it when the code under test performs the insert — e.g. after
+  `repository.create(row)` or a `POST` that creates a row, call
+  `fixture.register(row.id)` so teardown covers it.
 
-**No raw queries inline in a test — always route through a helper.** If a test needs a
-lookup no existing helper covers (e.g. filtering by a column other than id), add a new
-function to that table's `tests/lib/database/<entity>.ts` file rather than writing
-`db.select()/.insert()/.update()/.delete()` directly in the test — name it after what it
-filters by, following the same pattern (e.g. `select<Entities>By<Column>(db, value)`).
-Check that file first for a helper that already does what you need before adding a new
-one or reaching for the ORM directly.
-
-### Insert in the same test; scope cleanup to your own ids
-
-Generate and insert the entity-under-test fixture **inside the `it` that uses it**, and
-delete it at the end of that same test — not in a shared hook:
+Instantiate one fixture per table via the `create<Entity>Fixture()` helper from
+`tests/lib/config.ts`, as a `const` inside the top-level `describe`:
 
 ```ts
+const categoryFixture = createPromptCategoryFixture();
+const userFixture = createUserFixture();
+const promptFixture = createPromptFixture();
+```
+
+### Insert in the same test; clean up via the fixture
+
+Insert the entity-under-test **inside the `it` that uses it**, and let the fixture's
+`cleanup()` (called from an `afterEach`) remove only the ids it tracked — never a shared
+manual delete, never a truncate. Sibling integration files run in parallel against the
+same tables (see the Integration lifecycle below).
+
+```ts
+afterEach(async () => {
+    await promptFixture.cleanup(); // deletes only this suite's prompt rows
+});
+
 it('updates and returns the prompt', async () => {
-    const fixturePrompt = promptModelFactory.create({ categoryId: fixtureCategory.id });
-    await insertPrompts(db, [fixturePrompt]);
+    const existingPrompt = await promptFixture.insert({ categoryId: fixtureCategory.id });
 
     // ...act + assert...
-
-    await deletePromptsByIds(db, [fixturePrompt.id]); // clean up only this test's row
 });
 ```
 
-Delete only the ids the test inserted — never truncate. Sibling integration files run in
-parallel against the same tables (see the Integration lifecycle below).
+When the code under test does the insert, register the id so cleanup still covers it:
+
+```ts
+await repository.create(row);
+promptFixture.register(row.id);
+```
+
+### Read-back helpers (`tests/lib/database/<entity>.ts`)
+
+Writes and deletes go through the fixture; **reading rows back to assert on a write** goes
+through a per-table helper. One file per table (e.g. `tests/lib/database/prompts.ts`),
+each taking the `db` connection first and early-returning on an empty array:
+
+- `select<Entities>ByIds(db, ids)` — reads rows back to verify a write landed (or that a
+  related row was left unchanged).
+- `select<Entities>By<Column>(db, value)` — a lookup by some other column when a test
+  needs one.
+
+**No raw queries inline in a test.** If a test needs a read no existing helper covers, add
+a function to that table's file (named after what it filters by) rather than calling
+`db.select()` directly — and check the file first for one that already fits.
 
 ### Related tables (foreign keys)
 
-When a fixture references a parent row, split the two by lifetime and respect the FK
-ordering:
+When the entity under test references a parent row, split the two fixtures by lifetime and
+respect the FK ordering:
 
 - **Shared parent / reference rows** (the FK target, read-only across the file's tests):
-  build the factory object once as a describe-scope `const`, insert it in `beforeAll`,
-  delete it in `afterAll`.
-- **Per-test child rows** (the entity under test): generate and insert inside each test,
-  as above.
-- **Order:** insert parent-before-child; delete child-before-parent — matching the FK
-  constraint. The parent lives across the whole suite (`beforeAll` → `afterAll`) while
-  each child is created and torn down within its own test.
+  insert them once in `beforeAll`; clean them in `afterAll`.
+- **Per-test child rows** (the entity under test): insert inside each `it`; clean them in
+  `afterEach`.
+- **Order:** insert parent-before-child; clean child-before-parent — matching the FK
+  constraint.
 
 ```ts
-const fixtureCategory = promptCategoryModelFactory.create({ name: '...' });
-
 beforeAll(async () => {
-    db = databaseClient.connect();
-    await insertPromptCategories(db, [fixtureCategory]); // parent first
+    db = databaseClient.getConnection();
+    fixtureCategory = await categoryFixture.insert({ name: '...' }); // parent first
+    creatorUser = await userFixture.insert();
+});
+
+afterEach(async () => {
+    await promptFixture.cleanup(); // child rows, after each test
 });
 
 afterAll(async () => {
-    await deletePromptCategoriesByIds(db, [fixtureCategory.id]); // parent last
-    await databaseClient.close();
+    await categoryFixture.cleanup(); // parents last
+    await userFixture.cleanup();
 });
 ```
 
-Name fixture variables `fixture<Entity>` (a second one `otherFixture<Entity>`).
+Name the fixture instance `<entity>Fixture` (`promptFixture`); name the models it returns
+after their role in the test (`existingPrompt`, `creatorUser`, `fixtureCategory`).
+Connection open/close is not per-file boilerplate here — a shared setup file opens the
+`databaseClient` once per integration file (see Integration lifecycle below).
 
 ## Mocking
 
@@ -285,12 +350,17 @@ await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.use
 - Two or more real pieces working together — your code with a database, with an
   HTTP API, or two of your own modules combined.
 - When a test touches the database:
-    1. Open the connection once, before all tests, in a `beforeAll` nested
-       inside the top-level `describe` (not at file scope).
-    2. Insert the seed data the test needs.
+    1. Open the connection once per integration file — in a shared setup hook the
+       runner applies to every integration file, or a `beforeAll` nested inside the
+       top-level `describe` (never at file scope).
+    2. Insert the seed data the test needs through a fixture (`fixture.insert(...)`),
+       parents in `beforeAll`, per-test rows in the `it`.
     3. Run the test.
-    4. Clean up only the data the test inserted — leave everything else untouched.
-    5. Close the connection once, after all tests, in the matching `afterAll`.
+    4. Clean up only the data the test inserted, via the fixture's `cleanup()`
+       (children in `afterEach`, parents in `afterAll`) — leave everything else
+       untouched, never truncate.
+    5. Close the connection once, after all tests, in the matching `afterAll` (or the
+       shared teardown hook).
 - When a test asserts the result of a write (`create`/`update`/`delete`), verify
   it with a direct table query (a helper in `tests/lib/database/*.ts`), **not** by
   calling the unit's own read method (`findById`/`findAll`) or another read

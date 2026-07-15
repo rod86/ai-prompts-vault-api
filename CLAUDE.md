@@ -108,7 +108,7 @@ src/
   app.ts                # HTTP app: routes (no listen)
   index.ts              # server bootstrap + graceful shutdown
 tests/
-  lib/                  # shared helpers: DB helpers, model factories
+  lib/                  # shared helpers: model factories, fixtures, DB read-back helpers
   unit/                 # unit tests (mocked deps)
   integration/          # integration tests (real DB, supertest)
 specs/                  # SDD specs, one timestamped folder per feature
@@ -193,12 +193,16 @@ await client.close();              // ends Pool, idempotent / no-op if never con
 - `id` (uuid) is **app-provided on insert** — no `defaultRandom()` /
   `gen_random_uuid()` defaults.
 
-**Tests** construct their own `DatabaseClient<DatabaseSchema>` inline in each
-integration test file, importing `{ schema, type DatabaseSchema }` from
-`@src/config/drizzle/index.js` and `config` from `@src/config/config.js` — see
-`DrizzlePromptRepository.test.ts` for the pattern (it also passes `schema` to
-the repository constructor). `tests/lib/config.ts` holds only the singleton
-model factories.
+**Tests** reuse the app's `databaseClient` (the singleton from
+`@src/modules/shared/services.js`) rather than constructing their own — it is
+re-exported from `tests/lib/config.ts`, and `tests/integration.setup.ts` opens
+it in `beforeAll` / closes it in `afterAll` once per integration file (wired to
+the `integration` Vitest project only, so unit runs never touch the DB).
+Fixtures and the app-under-test share this one client, so a single
+connect()/close() covers both. Repository tests still pass `schema` (imported
+from `@src/config/drizzle/index.js`) to the repository constructor —
+`new DrizzlePromptRepository(databaseClient, schema)` — see
+`DrizzlePromptRepository.test.ts` for the pattern.
 
 ---
 
@@ -220,16 +224,34 @@ isolated-vs-real distinction):
   DB/HTTP.
 
 **Test helpers (`tests/lib`):**
-- `tests/lib/config.ts` exports the singleton model factories.
-- `tests/lib/database/*.ts` — one file per table with direct insert/select/delete
-  helpers (e.g. `selectPromptsByIds`). Use these to verify writes, not the
-  repository's own read method or another route.
+- `tests/lib/config.ts` re-exports the shared `databaseClient` and its
+  `TestDatabaseClient`/`TestDatabaseConnection` types, exports the singleton
+  model factories, and exports a `create<Entity>Fixture()` factory function per
+  table (`createUserFixture`, `createPromptFixture`,
+  `createPromptCategoryFixture`).
+- `tests/lib/modelFactories/*.ts` — one factory per domain type building
+  fake-but-valid instances (`AbstractModelFactory<T>` base).
+- `tests/lib/fixtures/*.ts` — one **fixture class** per table
+  (`AbstractFixture<T>` base). A fixture wraps the `databaseClient` + that
+  table's model factory; `insert(data?)` builds a row via the factory, persists
+  it, tracks its id, and returns the model; `cleanup()` deletes every id it
+  tracked; `register(id)` tracks an externally-created row (one the app or a
+  repository inserted) so `cleanup()` also removes it. Instantiate one per
+  `describe` via the `create<Entity>Fixture()` helper; insert per-test rows in
+  the `it`, insert shared parent/reference rows in `beforeAll`, and drive
+  teardown from `cleanup()` in `afterEach`/`afterAll` (child fixtures before
+  parents).
+- `tests/lib/database/*.ts` — one file per table with **read-back** helpers only
+  (e.g. `selectPromptsByIds`, `selectUsersByEmail`); writes and deletes go
+  through the fixtures. Use these to verify a write landed, not the repository's
+  own read method or another route.
 
 **Example files to copy from:** `ListPromptsUseCase.test.ts` (unit, local
 `buildPrompt` builder), `DrizzlePromptRepository.test.ts` /
-`DrizzlePromptCategoryRepository.test.ts` (integration DB lifecycle + shared
-reference categories, inline `DatabaseClient` construction), `app.test.ts`
-(route + not-found contract).
+`DrizzlePromptCategoryRepository.test.ts` (integration DB lifecycle + fixtures +
+shared reference categories), `deletePromptHandler.test.ts` (route test wiring
+category/user/prompt fixtures), `app.test.ts` (app-level concerns: not-found
+contract, error/generic middleware, health check — not per-route tests).
 
 **Schema** is managed outside test scope — migrations must be applied before
 running the suite (`npm run db:migrate`).
