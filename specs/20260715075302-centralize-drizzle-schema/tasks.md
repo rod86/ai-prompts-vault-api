@@ -28,7 +28,7 @@ exception removed.
     (shared by the user and auth contexts; no separate `AuthSchema` — D10).
   - Covers: AC3 "application/runtime code … imports only through the single entry point"
 
-- [ ] T2. Repoint drizzle-kit config; prove no migration
+- [x] T2. Repoint drizzle-kit config; prove no migration
   - Type: infrastructure
   - Depends on: T1
   - Red: none — config-only change; verification is the migration diff.
