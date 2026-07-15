@@ -93,7 +93,7 @@ exception removed.
     `DatabaseConnection` exports.
   - Covers: AC3 "any code outside that location imports the schema … only through the single entry point"
 
-- [ ] T8. Remove the old schema files
+- [x] T8. Remove the old schema files
   - Type: infrastructure
   - Depends on: T2, T3, T4, T6, T7
   - Red: none — deletion of now-unreferenced files; type-check/lint/tests guard it.
