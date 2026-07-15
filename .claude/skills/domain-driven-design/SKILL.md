@@ -170,15 +170,12 @@ The only layer where third-party libraries appear (ORM, crypto, HTTP clients). E
 
 **No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
 
-**Where schema definitions live is a trade-off, not a fixed rule.** A table's
-schema **may** sit co-located next to its repository under `persistence/` — the
-simplest home when the table belongs to one context. **But** once schema
-definitions become coupled across contexts (a table shared by several contexts,
-or cross-context foreign keys / joins the ORM resolves by referencing another
-context's table object), co-locating them forces one context to import another's
-schema. In that case, lift the schema out into a single shared location outside
-every context and inject it, so no context imports another's definitions. Both
-layouts are valid — pick by how coupled the definitions are.
+**Schema placement.** ORM schema definitions belong to infrastructure. They may
+be co-located with a repository when they are local to a bounded context. If
+schema definitions become coupled across multiple contexts, move them to a shared
+infrastructure location. Repositories never import runtime schema objects
+directly—they receive the schema via constructor injection, making them
+independent of the schema's physical location.
 
 Repositories translate between persistence rows and domain entities — the mapping (including `null` → `undefined`) happens here so the domain never sees storage shapes. A repository receives the shared `DatabaseClientInterface` port itself (not a bare connection) for the query connection, **plus the schema view it needs, injected through the constructor** — never importing the runtime table-object values directly. It destructures the tables from that injected `schema`. Injecting the schema (rather than importing it) keeps the repository agnostic to **where** the definitions physically live — co-located below, or lifted into a shared location when they're coupled across contexts (see the trade-off above):
 
@@ -257,23 +254,18 @@ export default interface IdGeneratorInterface {
 
 ```typescript
 // shared/domain/interfaces/DatabaseClientInterface.ts
-import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DatabaseConnection } from '@src/modules/shared/domain/Database.js';
 
-// The connection shape is part of the port's contract (connect()'s return type), not an
-// implementation detail, so it lives here in domain/ alongside the interface — not in
-// infrastructure/.
-export type DatabaseConnection<DatabaseSchema extends Record<string, unknown> = Record<string, unknown>> =
-    NodePgDatabase<DatabaseSchema>;
-
-export default interface DatabaseClientInterface<DatabaseSchema extends Record<string, unknown>> {
-    connect(): DatabaseConnection<DatabaseSchema>;
-    close(): Promise<void>;
+export default interface DatabaseClientInterface<Connection = unknown> {
+  connect(): void;
+  getConnection(): DatabaseConnection<Connection>;
+  close(): Promise<void>;
 }
 ```
 
 ```typescript
 // shared/infrastructure/datetime/SystemDateTime.ts
-import type DateTimeInterface from '../../domain/interfaces/DateTimeInterface.js';
+import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 
 export class SystemDateTime implements DateTimeInterface {
     public now(): Date {
@@ -285,7 +277,7 @@ export class SystemDateTime implements DateTimeInterface {
 ```typescript
 // shared/infrastructure/identity/UuidGenerator.ts
 import { randomUUID } from 'node:crypto';
-import type IdGeneratorInterface from '../../domain/interfaces/IdGeneratorInterface.js';
+import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 
 export class UuidGenerator implements IdGeneratorInterface {
     public generate(): string {
@@ -298,7 +290,7 @@ export class UuidGenerator implements IdGeneratorInterface {
 // shared/infrastructure/database/DatabaseClient.ts
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import type DatabaseClientInterface, { type DatabaseConnection } from '../../domain/interfaces/DatabaseClientInterface.js';
+import type DatabaseClientInterface, { type DatabaseConnection } from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 
 export type DatabaseConfig = {
     host: string;
