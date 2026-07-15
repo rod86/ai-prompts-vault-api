@@ -1,11 +1,7 @@
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as promptSchema from '@src/config/drizzle/prompt.schema.js';
-import * as userSchema from '@src/config/drizzle/user.schema.js';
+import * as tables from '@src/config/drizzle/schema.js';
 
-export const schema = {
-    ...userSchema,
-    ...promptSchema,
-};
+export const schema = { ...tables };
 
 export type DatabaseSchema = typeof schema;
 export type DatabaseConnection = NodePgDatabase<DatabaseSchema>;
