@@ -62,7 +62,7 @@ exception removed.
     in `src/modules/user/services.ts`; pass `schema` in the repository test.
   - Covers: AC4 "it receives its schema through construction and contains no direct import of schema definitions"
 
-- [ ] T5. Migrate + dedupe auth context
+- [x] T5. Migrate + dedupe auth context
   - Type: infrastructure
   - Depends on: T1
   - Red: none — behavior-preserving; guarded by existing

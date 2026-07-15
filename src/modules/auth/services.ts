@@ -1,4 +1,5 @@
 import config from '@src/config/config.js';
+import { schema } from '@src/config/drizzle/index.js';
 import { LoginUseCase } from '@src/modules/auth/application/LoginUseCase.js';
 import { ValidateTokenUseCase } from '@src/modules/auth/application/ValidateTokenUseCase.js';
 import { DrizzleUserCredentialsRepository } from '@src/modules/auth/infrastructure/database/DrizzleUserCredentialsRepository.js';
@@ -6,7 +7,7 @@ import { JwtTokenIssuer } from '@src/modules/auth/infrastructure/security/JwtTok
 import { JwtTokenVerifier } from '@src/modules/auth/infrastructure/security/JwtTokenVerifier.js';
 import { databaseClient, dateTimeService, passwordHasher } from '@src/modules/shared/services.js';
 
-const userCredentialsRepository = new DrizzleUserCredentialsRepository(databaseClient);
+const userCredentialsRepository = new DrizzleUserCredentialsRepository(databaseClient, schema);
 const tokenIssuer = new JwtTokenIssuer(config.jwtSecret);
 const tokenVerifier = new JwtTokenVerifier(config.jwtSecret);
 
