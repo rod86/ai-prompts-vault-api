@@ -15,7 +15,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: none — ordering is delivered by T1's middleware placement; this task adds the test that proves it.
   - Covers: AC5 "Given a request to update a prompt that carries no valid authenticated identity and an invalid body, When the user attempts the update, Then it is rejected as unauthorized (not as invalid input) and the prompt is unchanged."; V1, E1
 
-- [ ] T3. Update use case rejects a non-owner
+- [x] T3. Update use case rejects a non-owner
   - Type: application
   - Depends on: none
   - Red: extend `tests/unit/modules/prompt/application/UpdatePromptUseCase.test.ts` — given `findById` returns a prompt whose `user.id` is the owner, When `invoke` is called with a `userId` for a **different** user, Then it rejects with `PromptOwnershipError` and `promptRepository.update` is **not** called. Green-keeping: add a matching `userId` to the existing happy-path and category-not-found queries so they still pass. Fails because `UpdatePromptQuery` has no `userId` and no ownership check exists.

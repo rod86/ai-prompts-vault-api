@@ -1,12 +1,18 @@
 import { type RequestHandler } from 'express';
+import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { updatePromptUseCase } from '@src/modules/prompt/services.js';
 import { type UpdatePromptRequest } from '@src/routes/prompts.schema.js';
 
 const updatePromptHandler: RequestHandler = async (req, res) => {
     const { params, body } = req.parsedRequest as UpdatePromptRequest;
 
+    if (!req.auth) {
+        throw new MissingTokenError();
+    }
+
     const prompt = await updatePromptUseCase.invoke({
         id: params.id,
+        userId: req.auth.userId,
         title: body.title,
         prompt: body.prompt,
         categoryId: body.category_id,

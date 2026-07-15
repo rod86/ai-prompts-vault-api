@@ -1,5 +1,6 @@
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { PromptOwnershipError } from '@src/modules/prompt/domain/errors/PromptOwnershipError.js';
 import { PromptUpdateError } from '@src/modules/prompt/domain/errors/PromptUpdateError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
@@ -8,6 +9,7 @@ import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTi
 
 export type UpdatePromptQuery = {
     id: string;
+    userId: string;
     title: string;
     prompt: string;
     categoryId: string;
@@ -26,6 +28,10 @@ export class UpdatePromptUseCase {
 
         if (!existingPrompt) {
             throw new PromptNotFoundError(query.id);
+        }
+
+        if (existingPrompt.user.id !== query.userId) {
+            throw new PromptOwnershipError(query.id);
         }
 
         const category =
