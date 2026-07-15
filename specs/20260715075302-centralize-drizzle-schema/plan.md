@@ -19,9 +19,16 @@ destructuring the needed tables at the top of each method
 the merged `schema` (from the barrel) into its repositories — the full object is
 structurally assignable to any `Pick` of it, so wiring stays `new Repo(client, schema)`.
 
-`drizzle.config.ts` is repointed at the new `*.schema.ts` files; the merged
-schema is table-for-table identical, so `drizzle-kit generate` yields no new
-migration. The boundary tooling's `schema` element and its two allow-rules
+The central directory also holds an internal aggregation file `schema.ts` that
+re-exports every context's tables at top level (`export * from './user.schema.js'`
+/ `'./prompt.schema.js'`). This exists because drizzle-kit discovers tables only
+from **top-level `pgTable` exports** of the file it is pointed at — it cannot
+unwrap the barrel's `schema` object (verified: pointing it at `index.ts` reported
+0 tables and generated a destructive drop migration). `drizzle.config.ts` is
+therefore pointed at `schema.ts`, and the barrel `index.ts` builds its `schema`
+object and types from that same aggregation file. The merged schema is
+table-for-table identical, so `drizzle-kit generate` yields no new migration
+(verified: 3 tables, no changes). The boundary tooling's `schema` element and its two allow-rules
 (added by spec `20260714142121-create-prompt-auth-creator`) are removed, since
 no cross-context schema import remains. Encapsulation of the central directory
 ("only `index.ts` is imported from outside") is a documented convention, not a
@@ -37,7 +44,8 @@ the barrel/merge pattern mirrors the current `src/config/drizzle-schema.ts`.
 | --------- | ------------ | --------- | ------ |
 | User schema | new | `src/config/drizzle/user.schema.ts` | `users` table, moved verbatim from the user module |
 | Prompt schema | new | `src/config/drizzle/prompt.schema.ts` | `promptCategories`, `prompts` moved; FK imports `users` from `./user.schema.js` (sibling) |
-| Schema barrel | new | `src/config/drizzle/index.ts` | `export const schema` (merged); `export type DatabaseSchema`, `DatabaseConnection`, `PromptSchema`, `UserSchema` (no separate `AuthSchema` — auth reuses `UserSchema`, D10) |
+| Schema aggregation | new | `src/config/drizzle/schema.ts` | `export *` of every context's tables (top-level exports); the source drizzle-kit and the barrel both consume (D11) |
+| Schema barrel | new | `src/config/drizzle/index.ts` | builds `schema` (merged, from `./schema.js`) + `export type DatabaseSchema`, `DatabaseConnection`, `PromptSchema`, `UserSchema` (no separate `AuthSchema` — auth reuses `UserSchema`, D10) |
 | Old prompt schema | existing → delete | `src/modules/prompt/infrastructure/database/schema.ts` | removed |
 | Old user schema | existing → delete | `src/modules/user/infrastructure/database/schema.ts` | removed |
 | Old auth schema (dup) | existing → delete | `src/modules/auth/infrastructure/database/schema.ts` | removed (duplicate `users`) |
@@ -50,17 +58,29 @@ the barrel/merge pattern mirrors the current `src/config/drizzle-schema.ts`.
 | User services | existing | `src/modules/user/services.ts` | pass `schema` into user repository |
 | Auth services | existing | `src/modules/auth/services.ts` | pass `schema` into credentials repository |
 | Shared services | existing | `src/modules/shared/services.ts` | import `schema`/`DatabaseSchema` from barrel; drop local `DatabaseSchema`/`DatabaseConnection` exports |
-| Drizzle-kit config | existing | `drizzle.config.ts` | `schema:` → `['./src/config/drizzle/user.schema.ts', './src/config/drizzle/prompt.schema.ts']` |
+| Drizzle-kit config | existing | `drizzle.config.ts` | `schema:` → `'./src/config/drizzle/schema.ts'` (the aggregation file, D11) |
 | Boundary config | existing | `.eslintrc.json` | remove `schema` element + `from:schema` rule + `to:schema` allowance in the infrastructure rule |
 | Test DB helpers | existing | `tests/lib/database/{prompts,users,promptCategories}.ts` | import `{ schema }` from barrel; use `schema.<table>` |
 | Integration tests | existing | `tests/integration/**` (12 files) | import `{ schema }` and `DatabaseSchema`/`DatabaseConnection` from barrel instead of old paths |
 
 ## 3. Interfaces & contracts
 
-Barrel (`src/config/drizzle/index.ts`):
+Aggregation file (`src/config/drizzle/schema.ts`) — top-level table exports for
+drizzle-kit and the barrel (D11):
 
 ```ts
-export const schema = { ...userSchema, ...promptSchema };
+export * from './user.schema.js';
+export * from './prompt.schema.js';
+```
+
+Barrel (`src/config/drizzle/index.ts`) — builds the schema object + types from
+the aggregation file; exposes no individual tables (D7):
+
+```ts
+import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as tables from '@src/config/drizzle/schema.js';
+
+export const schema = { ...tables };
 export type DatabaseSchema = typeof schema;
 export type DatabaseConnection = NodePgDatabase<DatabaseSchema>;
 export type PromptSchema = Pick<DatabaseSchema, 'prompts' | 'promptCategories' | 'users'>;
@@ -102,10 +122,11 @@ None.
 ## 7. Assumptions & risks
 
 Assumptions:
-1. `drizzle-kit` reads Drizzle table objects from the files listed in
-   `drizzle.config.ts`; pointing it at the two `*.schema.ts` files (which export
-   the tables at top level) is sufficient — consequence if wrong: the migration
-   diff in T2 would flag it immediately and the config target is corrected.
+1. `drizzle-kit` discovers tables from **top-level `pgTable` exports** of the
+   file it is pointed at, so `schema.ts` (which `export *`s the context tables at
+   top level) is a valid source — **verified** during planning: pointing at
+   `schema.ts` reports 3 tables and no migration, whereas pointing at the barrel's
+   `schema` object reports 0 tables. T2 re-confirms via the migration diff.
 2. Passing the full merged `schema` where a `Pick<DatabaseSchema, …>` is expected
    type-checks (structural subtyping) — consequence if wrong: wiring gains an
    explicit narrowing at the call site; no behavior impact.
@@ -135,7 +156,7 @@ Risks:
 | --------- | --------------- |
 | AC1 (no cross-context schema import) | §1 sibling FK inside central dir; §2 repo injection; §2 `.eslintrc.json`; §8 boundary-lint case |
 | AC2 (single shared record) | §2 delete auth dup + inject `UserSchema` (D10); §4 note; §8 auth case |
-| AC3 (single entry point) | §2 `index.ts` barrel; §3 barrel exports; D7/D9 |
+| AC3 (single entry point) | §2 `index.ts` barrel + `schema.ts` aggregation; §3 barrel/aggregation exports; D7/D9/D11 |
 | AC4 (schema injected, not imported) | §2 all four repositories; §3 constructor shape |
 | AC5 (exception removed, lint passes) | §2 `.eslintrc.json`; §8 boundary-lint case |
 | AC6 (tests + type-check pass) | §2 services wiring + test-import updates; §8 join/auth cases |

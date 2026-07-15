@@ -12,7 +12,7 @@ consumers are repointed, and only then are the old files and the boundary
 exception removed.
 -->
 
-- [x] T1. Central schema files + barrel
+- [ ] T1. Central schema files + barrel
   - Type: infrastructure
   - Depends on: none
   - Red: none — `user.schema.ts`, `prompt.schema.ts`, and `index.ts` are pure
@@ -20,20 +20,22 @@ exception removed.
     remain so the suite stays green. Go straight to Green.
   - Green: create `src/config/drizzle/user.schema.ts` (`users`, verbatim),
     `src/config/drizzle/prompt.schema.ts` (`promptCategories`, `prompts`; FK
-    `users` imported from `./user.schema.js`), and `src/config/drizzle/index.ts`
-    exporting `const schema = { ...userSchema, ...promptSchema }` plus types
+    `users` imported from `./user.schema.js`), `src/config/drizzle/schema.ts`
+    (`export * from './user.schema.js'` / `'./prompt.schema.js'` — the aggregation
+    file, D11), and `src/config/drizzle/index.ts` (`import * as tables from
+    './schema.js'; export const schema = { ...tables }`) plus types
     `DatabaseSchema`, `DatabaseConnection`, `PromptSchema`, and `UserSchema`
     (shared by the user and auth contexts; no separate `AuthSchema` — D10).
-  - Covers: AC3 "any code outside that location imports the schema … only through the single entry point"
+  - Covers: AC3 "application/runtime code … imports only through the single entry point"
 
-- [x] T2. Repoint drizzle-kit config; prove no migration
+- [ ] T2. Repoint drizzle-kit config; prove no migration
   - Type: infrastructure
   - Depends on: T1
   - Red: none — config-only change; verification is the migration diff.
   - Green: set `drizzle.config.ts` `schema:` to
-    `['./src/config/drizzle/user.schema.ts', './src/config/drizzle/prompt.schema.ts']`,
-    then run `npx drizzle-kit generate` and confirm it reports **no** pending
-    changes.
+    `'./src/config/drizzle/schema.ts'` (the aggregation file, D11), then run
+    `npx drizzle-kit generate` and confirm it reports **no** pending changes
+    (verified during planning: 3 tables, no changes).
   - Covers: AC7 "the migration generator … produces no new migration"
 
 - [ ] T3. Migrate prompt context onto injected schema
@@ -125,7 +127,7 @@ exception removed.
 | --- | -------------------------------------- | ------------------ |
 | AC1 | Given any bounded context's persistence code, When its imports are inspected, Then it imports no schema definition belonging to another bounded context. | T3, T5, T8, T9 |
 | AC2 | Given the record that was previously defined in two contexts, When the centralized schema is inspected, Then that record is defined exactly once and every context that uses it shares that single definition. | T1, T5 |
-| AC3 | Given the centralized schema location, When any code outside that location imports the schema, Then it imports only through the single entry point (never a per-context schema file directly). | T1, T7, T8 |
+| AC3 | Given the centralized schema location, When application/runtime code outside that location imports the schema, Then it imports only through the single entry point and accesses tables via the exported schema object — never importing a per-context schema file or the internal aggregation file directly. The migration toolchain configuration is the one exception (D11): it references the internal aggregation file that re-exports the tables. | T1, T7, T8 |
 | AC4 | Given a repository, When it is constructed, Then it receives its schema through construction and contains no direct import of schema definitions. | T3, T4, T5 |
 | AC5 | Given the boundary-checking tooling, When the linter runs, Then the cross-context schema exception is absent and the lint passes. | T9 |
 | AC6 | Given the completed change, When the full test suite and the type-check run, Then all existing tests pass and the type-check is clean, with no change to existing behavior. | T3, T4, T5, T6, T7, T10 |
