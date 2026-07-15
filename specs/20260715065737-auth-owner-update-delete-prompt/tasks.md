@@ -29,7 +29,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: none — the ownership check sits after the `findById` not-found guard from T3; this task adds the test that proves the ordering.
   - Covers: AC8 "Given a well-formed identifier that matches no existing prompt, When an authenticated user attempts to update or delete it, Then the request is rejected as not found (not as forbidden) and nothing changes." (update)
 
-- [ ] T5. Update by a non-owner returns forbidden (end-to-end)
+- [x] T5. Update by a non-owner returns forbidden (end-to-end)
   - Type: route handler
   - Depends on: T1, T3
   - Red: add to `updatePromptHandler.test.ts` — seed a prompt created by user A, authenticate as a **different** seeded user B, `PUT /prompts/:id` with a valid body, and assert `403` (`PromptOwnershipError`) with the prompt unchanged in the DB (`selectPromptsByIds`). Fails because `PromptOwnershipError` is unmapped (falls through to `500`).
