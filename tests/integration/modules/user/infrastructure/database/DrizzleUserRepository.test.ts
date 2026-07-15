@@ -1,9 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import config from '@src/config/config.js';
-import schema from '@src/config/drizzle-schema.js';
+import { schema, type DatabaseSchema } from '@src/config/drizzle/index.js';
 import DatabaseClient from '@src/modules/shared/infrastructure/database/DatabaseClient.js';
-import { type DatabaseSchema } from '@src/modules/shared/services.js';
 import { DrizzleUserRepository } from '@src/modules/user/infrastructure/database/DrizzleUserRepository.js';
 import { userModelFactory } from '@tests/lib/config.js';
 import { deleteUsersByIds, insertUsers, selectUsersByIds } from '@tests/lib/database/users.js';

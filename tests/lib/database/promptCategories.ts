@@ -1,7 +1,9 @@
 import { inArray } from 'drizzle-orm';
 import { type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { schema } from '@src/config/drizzle/index.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
-import { promptCategories } from '@src/modules/prompt/infrastructure/database/schema.js';
+
+const { promptCategories } = schema;
 
 export async function insertPromptCategories(
     db: NodePgDatabase<Record<string, unknown>>,

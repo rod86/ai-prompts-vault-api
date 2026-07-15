@@ -74,7 +74,7 @@ exception removed.
     `src/modules/auth/infrastructure/database/schema.ts` (the duplicate `users`).
   - Covers: AC2 "that record is defined exactly once and every context that uses it shares that single definition"; AC4 "it receives its schema through construction and contains no direct import of schema definitions"
 
-- [ ] T6. Repoint tests to the barrel
+- [x] T6. Repoint tests to the barrel
   - Type: infrastructure
   - Depends on: T1, T3, T4, T5
   - Red: none — test-infrastructure repoint; the suite must stay green.
