@@ -168,15 +168,15 @@ npm run dev
 src/
   modules/<context>/       # bounded contexts — the home for business logic (auth, prompt, user, shared)
     domain/                # entities, domain errors, repository interfaces
-    application/           # use cases (*.UseCase.ts)
-    infrastructure/        # Adapters (rizzle repositories, Token Generators,...)
+    application/           # use cases
+    infrastructure/        # Adapters (drizzle repositories, Token Generators,...)
     services.ts            # Context services setup (DI wiring)
   handlers/                # HTTP route handler
   middleware/              # Express middleware
   routes/                  # Express routers + request-validation schemas
   config/
     config.ts              # env vars + fixed params (no schema)
-    drizzle/               # centralized Drizzle schema (per-context files + index.ts barrel)
+    drizzle/               # Drizzle config (per-context schema files + index.ts barrel with types and config)
   types/                   # Additional TypeScript types declarations (e.g. custom req typing)
   app.ts                   # HTTP app: middleware + routes (no listen)
   index.ts                 # server bootstrap + graceful shutdown
