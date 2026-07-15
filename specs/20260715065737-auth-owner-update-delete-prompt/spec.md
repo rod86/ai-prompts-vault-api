@@ -1,5 +1,5 @@
 # Spec: Owner-only, authenticated update & delete of a prompt
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a registered user, I want updating and deleting a prompt to require me to be authenticated and to be limited to prompts I created, so that only a prompt's owner can modify or remove it.
 
 ## 1. Behavior

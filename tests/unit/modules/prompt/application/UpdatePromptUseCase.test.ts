@@ -7,6 +7,7 @@ import {
 } from '@src/modules/prompt/application/UpdatePromptUseCase.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { PromptOwnershipError } from '@src/modules/prompt/domain/errors/PromptOwnershipError.js';
 import { PromptUpdateError } from '@src/modules/prompt/domain/errors/PromptUpdateError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
@@ -16,6 +17,7 @@ import { promptCategoryModelFactory } from '@tests/lib/config.js';
 
 const buildQuery = (data: Partial<UpdatePromptQuery> = {}): UpdatePromptQuery => ({
     id: data.id ?? faker.string.uuid(),
+    userId: data.userId ?? faker.string.uuid(),
     title: data.title ?? faker.lorem.sentence(),
     prompt: data.prompt ?? faker.lorem.paragraph(),
     categoryId: data.categoryId ?? faker.string.uuid(),
@@ -54,7 +56,11 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(existingPrompt);
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         promptRepository.update.mockResolvedValue(undefined);
-        const query = buildQuery({ id: existingPrompt.id, categoryId: fixtureCategory.id });
+        const query = buildQuery({
+            id: existingPrompt.id,
+            userId: existingPrompt.user.id,
+            categoryId: fixtureCategory.id,
+        });
 
         const result = await useCase.invoke(query);
 
@@ -79,9 +85,9 @@ describe('UpdatePromptUseCase', () => {
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
-    it('throws PromptNotFoundError and does not look up the category, persist, or read the clock when the prompt does not exist', async () => {
+    it('throws PromptNotFoundError (not PromptOwnershipError) and does not look up the category, persist, or read the clock when the prompt does not exist', async () => {
         promptRepository.findById.mockResolvedValue(undefined);
-        const query = buildQuery();
+        const query = buildQuery({ userId: faker.string.uuid() });
 
         await expect(useCase.invoke(query)).rejects.toThrow(PromptNotFoundError);
         await expect(useCase.invoke(query)).rejects.toThrow(`Prompt not found: ${query.id}`);
@@ -94,7 +100,7 @@ describe('UpdatePromptUseCase', () => {
         const existingPrompt = buildExistingPrompt();
         promptRepository.findById.mockResolvedValue(existingPrompt);
         categoryRepository.findById.mockResolvedValue(undefined);
-        const query = buildQuery({ id: existingPrompt.id });
+        const query = buildQuery({ id: existingPrompt.id, userId: existingPrompt.user.id });
 
         await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
         await expect(useCase.invoke(query)).rejects.toThrow(
@@ -112,6 +118,7 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.update.mockResolvedValue(undefined);
         const query = buildQuery({
             id: existingPrompt.id,
+            userId: existingPrompt.user.id,
             categoryId: fixtureCategory.id,
             description: undefined,
         });
@@ -125,7 +132,11 @@ describe('UpdatePromptUseCase', () => {
         const existingPrompt = buildExistingPrompt();
         promptRepository.findById.mockResolvedValue(existingPrompt);
         promptRepository.update.mockResolvedValue(undefined);
-        const query = buildQuery({ id: existingPrompt.id, categoryId: existingPrompt.category.id });
+        const query = buildQuery({
+            id: existingPrompt.id,
+            userId: existingPrompt.user.id,
+            categoryId: existingPrompt.category.id,
+        });
 
         const result = await useCase.invoke(query);
 
@@ -141,6 +152,7 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.update.mockResolvedValue(undefined);
         const query = buildQuery({
             id: existingPrompt.id,
+            userId: existingPrompt.user.id,
             categoryId: fixtureCategory.id,
             description: '',
         });
@@ -157,11 +169,25 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(existingPrompt);
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         promptRepository.update.mockRejectedValue(fixtureError);
-        const query = buildQuery({ id: existingPrompt.id, categoryId: fixtureCategory.id });
+        const query = buildQuery({
+            id: existingPrompt.id,
+            userId: existingPrompt.user.id,
+            categoryId: fixtureCategory.id,
+        });
 
         const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
 
         expect(error).toBeInstanceOf(PromptUpdateError);
         expect((error as PromptUpdateError).cause).toBe(fixtureError);
+    });
+
+    it('throws PromptOwnershipError and does not persist when the authenticated requester is not the prompt owner', async () => {
+        const existingPrompt = buildExistingPrompt();
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        const query = buildQuery({ id: existingPrompt.id, userId: faker.string.uuid() });
+
+        await expect(useCase.invoke(query)).rejects.toThrow(PromptOwnershipError);
+        expect(categoryRepository.findById).not.toHaveBeenCalled();
+        expect(promptRepository.update).not.toHaveBeenCalled();
     });
 });

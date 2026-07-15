@@ -22,11 +22,13 @@ promptsRouter.post(
 );
 promptsRouter.put(
     '/prompts/:id',
+    requireAuthMiddleware,
     validateRequestMiddleware(UpdatePromptSchema),
     updatePromptHandler,
 );
 promptsRouter.delete(
     '/prompts/:id',
+    requireAuthMiddleware,
     validateRequestMiddleware(DeletePromptSchema),
     deletePromptHandler,
 );
