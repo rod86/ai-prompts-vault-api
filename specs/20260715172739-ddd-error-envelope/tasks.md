@@ -20,7 +20,7 @@ its assertion red→green, leaving no dead code behind.
     `name = new.target.name`, forwards `options.cause`).
   - Covers: prerequisite for AC1–AC8; unit-verifies the `name`/`cause`/`code`/`category` contract.
 
-- [ ] T2. `CATEGORY_STATUS` map
+- [x] T2. `CATEGORY_STATUS` map
   - Type: route handler (HTTP mapping)
   - Depends on: T1
   - Red: unit test `tests/unit/middleware/domainErrorStatus.test.ts` — asserts
