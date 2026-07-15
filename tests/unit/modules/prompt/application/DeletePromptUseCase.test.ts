@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 import { DeletePromptUseCase } from '@src/modules/prompt/application/DeletePromptUseCase.js';
 import { PromptNotFoundError } from '@src/modules/prompt/domain/errors/PromptNotFoundError.js';
+import { PromptOwnershipError } from '@src/modules/prompt/domain/errors/PromptOwnershipError.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 
@@ -31,7 +32,7 @@ describe('DeletePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(existingPrompt);
         promptRepository.delete.mockResolvedValue(undefined);
 
-        const result = await useCase.invoke({ id: existingPrompt.id });
+        const result = await useCase.invoke({ id: existingPrompt.id, userId: existingPrompt.user.id });
 
         expect(result).toBeUndefined();
         expect(promptRepository.delete).toHaveBeenCalledOnce();
@@ -40,10 +41,22 @@ describe('DeletePromptUseCase', () => {
 
     it('throws PromptNotFoundError and does not delete when the prompt does not exist', async () => {
         const id = faker.string.uuid();
+        const userId = faker.string.uuid();
         promptRepository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke({ id })).rejects.toThrow(PromptNotFoundError);
-        await expect(useCase.invoke({ id })).rejects.toThrow(`Prompt not found: ${id}`);
+        await expect(useCase.invoke({ id, userId })).rejects.toThrow(PromptNotFoundError);
+        await expect(useCase.invoke({ id, userId })).rejects.toThrow(`Prompt not found: ${id}`);
+        expect(promptRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it('throws PromptOwnershipError and does not delete when the authenticated requester is not the prompt owner', async () => {
+        const existingPrompt = buildPrompt();
+        promptRepository.findById.mockResolvedValue(existingPrompt);
+        const userId = faker.string.uuid();
+
+        await expect(useCase.invoke({ id: existingPrompt.id, userId })).rejects.toThrow(
+            PromptOwnershipError,
+        );
         expect(promptRepository.delete).not.toHaveBeenCalled();
     });
 });

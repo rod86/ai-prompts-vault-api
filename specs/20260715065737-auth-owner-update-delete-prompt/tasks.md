@@ -43,7 +43,7 @@ Plan: specs/20260715065737-auth-owner-update-delete-prompt/plan.md
   - Green: `src/routes/prompts.routes.ts` — mount `requireAuthMiddleware` before `validateRequestMiddleware(DeletePromptSchema)` on `DELETE /prompts/:id`.
   - Covers: AC4 "Given a request to delete a prompt that carries no valid authenticated identity, When the user attempts the delete, Then it is rejected as unauthorized and the prompt is not removed."; AC2 (owner happy path retained); V1, E1
 
-- [ ] T7. Delete use case rejects a non-owner
+- [x] T7. Delete use case rejects a non-owner
   - Type: application
   - Depends on: T3
   - Red: extend `tests/unit/modules/prompt/application/DeletePromptUseCase.test.ts` — given `findById` returns a prompt whose `user.id` is the owner, When `invoke` is called with a `userId` for a **different** user, Then it rejects with `PromptOwnershipError` and `repository.delete` is **not** called. Green-keeping: add a matching `userId` to the existing happy-path query so it still passes. Fails because `DeletePromptQuery` has no `userId` and no ownership check exists.
