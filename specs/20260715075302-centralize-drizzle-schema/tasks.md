@@ -103,7 +103,7 @@ exception removed.
     `npm test` — all pass.
   - Covers: AC1 "imports no schema definition belonging to another bounded context"
 
-- [ ] T9. Remove the cross-context boundary exception
+- [x] T9. Remove the cross-context boundary exception
   - Type: infrastructure
   - Depends on: T8
   - Red: none — tooling change; verification is `npm run lint`.
