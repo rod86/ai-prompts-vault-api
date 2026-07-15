@@ -1,13 +1,15 @@
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { type DatabaseConfig, type DatabaseConnection } from '@src/modules/shared/domain/Database.js';
+import {
+    type DatabaseConfig,
+    type DatabaseConnection,
+} from '@src/modules/shared/domain/Database.js';
 import type DatabaseClientInterface from '@src/modules/shared/domain/interfaces/DatabaseClientInterface.js';
 import { DatabaseNotConnectedError } from '@src/modules/shared/infrastructure/database/DatabaseNotConnectedError.js';
 
-
-export default class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
-    implements DatabaseClientInterface<NodePgDatabase<DatabaseSchema>>
-{
+export default class DatabaseClient<
+    DatabaseSchema extends Record<string, unknown>,
+> implements DatabaseClientInterface<NodePgDatabase<DatabaseSchema>> {
     private pool: Pool | undefined;
     private connection: DatabaseConnection<NodePgDatabase<DatabaseSchema>> | undefined;
 

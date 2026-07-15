@@ -10,7 +10,9 @@ export class JwtTokenVerifier implements TokenVerifierInterface {
 
     public async verifyToken(token: string): Promise<{ userId: string }> {
         try {
-            const decoded = jwt.verify(token, this.secret, { algorithms: [JwtTokenVerifier.ALGORITHM] });
+            const decoded = jwt.verify(token, this.secret, {
+                algorithms: [JwtTokenVerifier.ALGORITHM],
+            });
             const userId = (decoded as jwt.JwtPayload).sub;
 
             if (!userId) {

@@ -1,0 +1,16 @@
+# Build output & deps
+dist
+node_modules
+coverage
+
+# Generated SQL migrations
+drizzle
+
+# Tooling & agent config
+.claude
+
+# Spec-driven development artifacts
+specs
+
+# Docs (managed by hand, not Prettier)
+*.md

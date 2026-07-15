@@ -29,13 +29,18 @@ export class LoginUseCase {
             throw new InvalidCredentialsError();
         }
 
-        const passwordMatches = await this.passwordHasher.compare(query.password, credentials.passwordHash);
+        const passwordMatches = await this.passwordHasher.compare(
+            query.password,
+            credentials.passwordHash,
+        );
 
         if (!passwordMatches) {
             throw new InvalidCredentialsError();
         }
 
-        const expiresAt = new Date(this.dateTime.now().getTime() + this.tokenExpirationSeconds * 1000);
+        const expiresAt = new Date(
+            this.dateTime.now().getTime() + this.tokenExpirationSeconds * 1000,
+        );
         const token = await this.tokenIssuer.issueToken(credentials.id, expiresAt);
 
         return { token };

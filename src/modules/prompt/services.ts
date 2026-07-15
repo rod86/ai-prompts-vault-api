@@ -1,3 +1,4 @@
+import { schema } from '@src/config/drizzle/index.js';
 import { CreatePromptUseCase } from '@src/modules/prompt/application/CreatePromptUseCase.js';
 import { DeletePromptUseCase } from '@src/modules/prompt/application/DeletePromptUseCase.js';
 import { GetPromptUseCase } from '@src/modules/prompt/application/GetPromptUseCase.js';
@@ -6,7 +7,6 @@ import { ListPromptsUseCase } from '@src/modules/prompt/application/ListPromptsU
 import { UpdatePromptUseCase } from '@src/modules/prompt/application/UpdatePromptUseCase.js';
 import { DrizzlePromptCategoryRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptCategoryRepository.js';
 import { DrizzlePromptRepository } from '@src/modules/prompt/infrastructure/database/DrizzlePromptRepository.js';
-import { schema } from '@src/config/drizzle/index.js';
 import { databaseClient, dateTimeService, idGenerator } from '@src/modules/shared/services.js';
 
 const promptCategoryRepository = new DrizzlePromptCategoryRepository(databaseClient, schema);

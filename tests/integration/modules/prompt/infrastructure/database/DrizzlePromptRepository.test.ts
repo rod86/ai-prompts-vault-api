@@ -138,11 +138,7 @@ describe('DrizzlePromptRepository', () => {
         it('returns none of this suite’s prompts once they have been cleaned up', async () => {
             // Built but never inserted: confirms afterEach cleanup leaves nothing of ours
             // behind (the shared DB may still hold other suites' rows in parallel).
-            const ourIds = new Set([
-                faker.string.uuid(),
-                faker.string.uuid(),
-                faker.string.uuid(),
-            ]);
+            const ourIds = new Set([faker.string.uuid(), faker.string.uuid(), faker.string.uuid()]);
 
             const result = await repository.findAll();
 
@@ -150,7 +146,9 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('represents a prompt with no description as an absent value', async () => {
-            const promptWithoutDescription = await insertPromptWithoutDescription(recipeCategory.id);
+            const promptWithoutDescription = await insertPromptWithoutDescription(
+                recipeCategory.id,
+            );
 
             const result = await repository.findAll();
 
@@ -198,8 +196,9 @@ describe('DrizzlePromptRepository', () => {
         });
 
         it('represents a prompt with no description as an absent value', async () => {
-            const promptWithoutDescription =
-                await insertPromptWithoutDescription(fitnessCategory.id);
+            const promptWithoutDescription = await insertPromptWithoutDescription(
+                fitnessCategory.id,
+            );
 
             const result = await repository.findById(promptWithoutDescription.id);
 

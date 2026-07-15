@@ -7,8 +7,7 @@ export type RequestSchema = ZodType<{ params?: unknown; query?: unknown; body?: 
 export type ValidationDetails = Partial<Record<RequestPart, Record<string, string>>>;
 
 export type ValidatorResult<S extends RequestSchema> =
-    | { success: true; data: z.infer<S> }
-    | { success: false; errors: ValidationDetails };
+    { success: true; data: z.infer<S> } | { success: false; errors: ValidationDetails };
 
 function groupIssues(issues: z.core.$ZodIssue[]): ValidationDetails {
     const errors: ValidationDetails = {};

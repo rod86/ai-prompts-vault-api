@@ -21,8 +21,8 @@ describe('GET /prompt-categories', () => {
             expect(response.status).toBe(200);
 
             const fixtureIds = [banana.id, apple.id, cherry.id];
-            const fixturesInResponse = response.body.filter(
-                (category: { id: string }) => fixtureIds.includes(category.id)
+            const fixturesInResponse = response.body.filter((category: { id: string }) =>
+                fixtureIds.includes(category.id),
             );
 
             expect(fixturesInResponse).toEqual([apple, banana, cherry]);
