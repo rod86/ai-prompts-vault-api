@@ -253,7 +253,7 @@ Runs top-to-bottom. Correct order, and **why cheap-before-expensive matters**:
 
 ### Validation factory — writes validated data onto a custom prop
 
-Because `req.query` is read-only in v5, don't overwrite it; put parsed query on `req.validatedQuery`. On failure, `next(err)` — let the one error handler own the wire format. Map the schema issues to flat, source-namespaced field errors so the error handler can render them (`ValidationError` below).
+Because `req.query` is read-only in v5, don't overwrite it; put parsed query on `req.validatedQuery`. On failure, `next(err)` — let the one error handler own the wire format. Carry the schema issues on the thrown error (grouped however your project's `details` shape needs — see §9) so the error handler can render them (`ValidationError` below).
 
 ```typescript
 // middleware/validateMiddleware.ts
@@ -284,57 +284,54 @@ export default validateMiddleware;
 
 ### Centralized error handler — the ONLY place that shapes error responses
 
-Identified by having **exactly four params** `(err, req, res, next)` — TS needs all four even if `next` is unused. Type `err` as `unknown` and narrow with `instanceof`. Known operational errors → clean client message; unknown → log full detail, return generic 500 (never leak a stack trace in prod). Every error gets the uniform `{ error, message, details }` body, with **one deliberate exception**: request-validation failures return `{ errors: [{ field, error }] }` (a flat, field-level list the client can map to form fields), handled by the first branch below.
+Identified by having **exactly four params** `(err, req, res, next)` — TS needs all four even if `next` is unused. Type `err` as `unknown` and narrow with `instanceof`. Every error response shares **one envelope**: `{ status, code, message }`. `status` in the body always mirrors the response's transport status; `code` is a stable, client-facing identifier that must never change when an internal class is renamed. **One deliberate exception**: a request-validation failure additionally carries `details` (a nested, field-level breakdown) — the only error that ever gets a fourth property; every other error, including an unknown route (404) and an unexpected/technical failure (500), still fits the three-field envelope.
+
+Business errors don't carry their own HTTP status — that would leak a transport concern into the domain. Instead each extends a shared `DomainError` base (owned by your business-logic/DDD layer; see that skill for the base class and subclassing rules) carrying a `code` and a `category` — a small closed outcome-family set (`NotFound` / `Forbidden` / `Unauthorized` / `Unprocessable`, extend as your domain needs). The HTTP layer alone knows about status codes, so it alone maps `category → status`, through a near-static lookup table:
+
+```typescript
+// middleware/domainErrorStatus.ts
+import { type ErrorCategory } from '../shared/domain/DomainError.js';
+
+export const CATEGORY_STATUS = {
+    NotFound: 404,
+    Forbidden: 403,
+    Unauthorized: 401,
+    Unprocessable: 422,
+} satisfies Record<ErrorCategory, number>;
+```
 
 ```typescript
 // middleware/error.ts
 import type { Request, Response, NextFunction } from 'express';
-import { AppError, ValidationError } from '../shared/errors.js';
-import { logger } from '../shared/logger.js';
-import { config } from '../config/index.js';
+import { ValidationError } from '../shared/errors.js';
+import { DomainError } from '../shared/domain/DomainError.js';
+import { CATEGORY_STATUS } from './domainErrorStatus.js';
 
 export function notFoundMiddleware(req: Request, res: Response): void {
-    res.status(404).json({ error: 'NotFound', message: `Cannot ${req.method} ${req.path}` });
+    res.status(404).json({ status: 404, code: 'NOT_FOUND', message: `Cannot ${req.method} ${req.path}` });
 }
 
 export function errorMiddleware(err: unknown, req: Request, res: Response, _next: NextFunction): void {
-    if (err instanceof ValidationError) {                    // the one exception to the envelope
-        res.status(err.status).json({ errors: err.errors }); // { errors: [{ field, error }] }
+    if (err instanceof ValidationError) {                          // the one branch that adds `details`
+        res.status(400).json({
+            status: 400,
+            code: 'VALIDATION_ERROR',
+            message: err.message,
+            details: err.details,                                 // shape is a project choice — see §9
+        });
         return;
     }
-    if (err instanceof AppError) {
-        res.status(err.status).json({ error: err.name, message: err.message, details: err.details });
+    if (err instanceof DomainError) {
+        const status = CATEGORY_STATUS[err.category];
+        res.status(status).json({ status, code: err.code, message: err.message });
         return;
     }
-    logger.error({ err }, 'Unhandled error');
-    res.status(500).json({ error: 'InternalServerError', message: config.isProd ? 'Something went wrong' : String(err) });
+    console.error(err);                                           // record the real cause server-side...
+    res.status(500).json({ status: 500, code: 'INTERNAL_ERROR', message: 'Internal server error' }); // ...never send it
 }
 ```
 
-```typescript
-// shared/errors.ts — typed error hierarchy carrying its own HTTP status
-export abstract class AppError extends Error {
-    abstract readonly status: number;
-    constructor(message: string, public readonly details?: unknown) {
-        super(message);
-        this.name = new.target.name;
-    }
-}
-export class BadRequestError extends AppError { readonly status = 400; }
-export class NotFoundError extends AppError { readonly status = 404; }
-export class UnauthorizedError extends AppError { readonly status = 401; }
-
-// Validation is the one error with a bespoke body: a flat list of field-level messages.
-export type FieldError = { field: string; error: string };
-export class ValidationError extends AppError {
-    readonly status = 400;
-    constructor(public readonly errors: FieldError[]) {
-        super('Validation failed');
-    }
-}
-```
-
-This is why handlers don't need `try/catch`: they `throw new NotFoundError(...)` and the mapping to a status code + response shape happens in one place. Adding a domain-error→status branch means editing the error handler, not every handler.
+This is why handlers don't need `try/catch`: they `throw new OrderNotFoundError(...)` and the mapping to a status + envelope happens in exactly one place. Adding a business error that reuses an existing `category` needs **zero** middleware edits — only its own file under `domain/errors/`; adding a genuinely new outcome family means adding one row to `CATEGORY_STATUS`. The generic fallback branch is the security boundary: it must never forward `err.message`, `err.stack`, or a wrapped `cause` to the client, only the fixed `INTERNAL_ERROR` code and message — swap `console.error` for your logger, but always log the real error server-side so it stays diagnosable.
 
 ## 7. Adding custom values to `req`
 
@@ -439,10 +436,10 @@ clean fixtures per the DB lifecycle.
   assert status and the full resource with relations **assembled as nested objects**, not raw
   foreign-key ids, plus timestamp semantics (created timestamp preserved, updated timestamp
   bumped). This is the one test that owns the complete shape; every other test leans on it.
-- **Every domain error path — assert the mapped status and message.** The handler throws
-  typed domain errors (§6) that the central error handler maps to a status + error body
-  (e.g. not-found → 404, invalid reference → 4xx). Test each — the error handler is the most
-  regression-prone seam.
+- **Every domain error path — assert the mapped status, code, and message.** The handler
+  throws typed `DomainError`s (§6) that the central error handler maps by `category` to a
+  status + envelope (e.g. not-found → 404, invalid reference → 4xx). Test each — the error
+  handler is the most regression-prone seam.
 - **Error precedence when several things are wrong.** Pin the deterministic order: when
   multiple inputs are invalid, only the first/most-significant error surfaces (e.g. a missing
   target wins over an invalid reference) — existence is checked before references.
@@ -500,7 +497,8 @@ above holds identically either way.
 | `app.listen()` in the same module you import in tests | Split `createApp()` from the server/bootstrap module |
 | No error handler / no 404 → Express returns default HTML, leaks stack | Register `notFoundMiddleware` then `errorMiddleware` **last** |
 | `try/catch → next(err)` in every async handler | Just `throw` (Express 5 auto-forwards); map errors once in the handler |
-| Domain-error→status mapping copy-pasted per handler | Centralize in the error handler; throw typed `AppError`s |
+| Domain-error→status mapping copy-pasted per handler | Throw typed `DomainError`s classified by `category`; map `category → status` once, centrally |
+| A domain error hardcodes its own HTTP status | Classify with `category` instead; only the HTTP layer knows about status codes |
 | Reading `process.env` throughout; secret defaults to `''` | One validated frozen `config`; fail fast on missing/invalid env |
 | Reassigning `req.query` (read-only in v5) | Store parsed query on `req.validatedQuery` |
 | `(req as any).user` casts | Declaration-merge `Express.Request` once |

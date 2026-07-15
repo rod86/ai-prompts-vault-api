@@ -177,7 +177,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
-            error: 'PromptNotFoundError',
+            status: 404,
+            code: 'PROMPT_NOT_FOUND',
             message: `Prompt not found: ${unknownId}`,
         });
     });
@@ -197,7 +198,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toEqual({
-            error: 'PromptNotFoundError',
+            status: 404,
+            code: 'PROMPT_NOT_FOUND',
             message: `Prompt not found: ${unknownId}`,
         });
     });
@@ -222,7 +224,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(422);
         expect(response.body).toEqual({
-            error: 'CategoryNotFoundError',
+            status: 422,
+            code: 'CATEGORY_NOT_FOUND',
             message: `Category not found: ${unknownCategoryId}`,
         });
 
@@ -255,7 +258,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(403);
         expect(response.body).toEqual({
-            error: 'PromptOwnershipError',
+            status: 403,
+            code: 'PROMPT_OWNERSHIP',
             message: `You are not allowed to modify or delete this prompt: ${fixturePrompt.id}`,
         });
 

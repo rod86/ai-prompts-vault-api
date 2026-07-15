@@ -1,5 +1,5 @@
 # Spec: Uniform Error Envelope + Domain Error Classification
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API client, I want every error response to share one predictable shape with a stable machine-readable code, so that I can handle failures uniformly without depending on internal class names.
 
 ## 1. Behavior

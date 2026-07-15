@@ -36,7 +36,7 @@ src/modules/
 | Entity | `export type <Name> = { ... }`, file `<Name>.ts`, native types only | `<context>/domain/` |
 | Entity data shape | `export type <Name>Filter` / `Update<Name>` in the entity's file | `<context>/domain/` |
 | Port / contract | `interface <Domain><Role>Interface` — `<Role>` = the port's purpose (Repository, Provider, Gateway, Hasher, …), never a technology; default export | `<context>/domain/interfaces/` |
-| Domain error | `class <What>Error extends Error`, sets `this.name` | `<context>/domain/errors/` |
+| Domain error | `class <What>Error extends DomainError`, declares `code` + `category` | `<context>/domain/errors/` |
 | Use case | `class <Name>UseCase`, filename = class, single `invoke(query?)` | `<context>/application/` |
 | Use case input | `<Name>Query` — optional; when present it's an object of native types (never raw params); omit entirely when the use case takes no input | same file as the use case |
 | Use case output | `<Name>Response` — the return shape, never a domain entity; omit it and return `void` when not needed | same file as the use case |
@@ -85,17 +85,40 @@ export default interface OrderRepositoryInterface {
 }
 ```
 
-**`domain/errors/`** — one class per file, named in business language (`OrderNotFoundError`, `EmailAlreadyInUseError` — what went wrong, not where), extending `Error` and setting `this.name` so it survives serialization:
+**`domain/errors/`** — one class per file, named in business language (`OrderNotFoundError`, `EmailAlreadyInUseError` — what went wrong, not where), extending the shared `DomainError` base instead of raw `Error`. Each subclass declares two readonly classifiers: a stable `code` (the client-facing contract — renaming the class must never change it) and a `category` (a small closed outcome-family set the HTTP layer maps to a transport status; see below). The base sets `name` from `new.target.name` so it still survives serialization, and forwards an optional `cause`:
 
 ```typescript
-// domain/errors/OrderNotFoundError.ts
-export class OrderNotFoundError extends Error {
-    constructor(id: string) {
-        super(`Order not found: ${id}`);
-        this.name = 'OrderNotFoundError';
+// shared/domain/DomainError.ts
+export type ErrorCategory = 'NotFound' | 'Forbidden' | 'Unauthorized' | 'Unprocessable';
+
+export abstract class DomainError extends Error {
+    abstract readonly code: string;
+    abstract readonly category: ErrorCategory;
+
+    protected constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+        this.name = new.target.name;
     }
 }
 ```
+
+```typescript
+// domain/errors/OrderNotFoundError.ts
+import { DomainError, type ErrorCategory } from '../../shared/domain/DomainError.js';
+
+export class OrderNotFoundError extends DomainError {
+    readonly code = 'ORDER_NOT_FOUND';
+    readonly category: ErrorCategory = 'NotFound';
+
+    constructor(id: string) {
+        super(`Order not found: ${id}`);
+    }
+}
+```
+
+`category` is a domain concern — it names an outcome family (not-found, forbidden, unauthorized, unprocessable) and says nothing about HTTP. Mapping a `category` to a transport status (404, 403, ...) is the HTTP layer's job, not the domain's — see `node-express-typescript`. This split is what lets a new error that reuses an existing `category` ship without touching the HTTP layer at all: only its own file changes.
+
+**Every concrete subclass must declare its own constructor**, even a trivial one-liner, even when it only forwards to `super(...)`. TypeScript keeps a subclass's *inherited* constructor accessibility when the subclass doesn't declare its own — so a subclass that omits its constructor stays `protected` (uncallable from outside the class hierarchy) exactly like the abstract base, and `new SomeError(...)` fails to typecheck anywhere outside `domain/errors/`.
 
 ## Application layer (`<context>/application/`)
 
@@ -369,7 +392,7 @@ The architecture buys you two kinds of tests, plus what's left uncovered on purp
 - **Use case → unit test.** Instantiate the use case with **mocks** of the domain ports, plus the fixed shared ports (`FixedDateTime`, `FixedIdGenerator`). Assert on the returned `Response` and on the mocks' interactions, and cover each domain-error branch. Fast, deterministic, no I/O and no mocking of globals — this is where the bulk of the business logic, and the domain errors it throws, gets verified.
 - **Infrastructure adapter → integration test.** Test against the **real** dependency (real DB, real HTTP client), never a mock — a mocked dependency proves nothing. What's under test is the mapping (row ↔ entity, `null → undefined`) and that the port contract holds against the real technology. How you provision that dependency is up to your setup.
 - **Composed adapters (an adapter with other adapters injected) → still integration.** The injection graph doesn't decide the test type — what sits at the bottom of it does. If the class's value comes from touching real technology (directly or through an injected adapter that wraps it), test it end-to-end against the real dependency. Mocking the injected port would erase the very thing the adapter exists to do. Smell to watch for: an "adapter" with real branching logic that depends *only* on other domain ports (no real technology of its own) is application logic in disguise — move it into a use case, where it gets a proper unit test with port mocks, and leave the thin adapters to integration tests.
-- **Domain (types, interfaces, errors) → no dedicated tests.** It has no logic of its own, so it's covered indirectly: interfaces by the port mocks and real adapters above, errors by the use-case error-branch assertions, plain types by nothing.
+- **Domain (types, interfaces, errors) → no dedicated tests.** It has no logic of its own, so it's covered indirectly: interfaces by the port mocks and real adapters above, errors by the use-case error-branch assertions, plain types by nothing. **Exception: the shared `DomainError` base itself.** Unlike its declarative subclasses (a `code`, a `category`, a one-line constructor forwarding to `super`), the base class has actual logic — deriving `name` from `new.target.name`, forwarding `cause` — so it earns its own unit test, once, in `shared/domain/`. A concrete subclass still gets no dedicated test of its own.
 - **Wiring (`services.ts`) → no dedicated tests.** It has no logic of its own either — pure composition, instantiating and exporting singletons/use cases. Covered indirectly: `tsc` proves the exports are shaped correctly, and the unit/integration tests of what it wires (use cases, adapters) prove those pieces work. See `testing-practices` for the general "no logic, no test" rule this follows.
 
 | Component | Test type | Strategy |

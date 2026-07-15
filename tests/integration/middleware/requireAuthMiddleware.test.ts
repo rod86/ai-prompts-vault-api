@@ -45,7 +45,7 @@ describe('requireAuthMiddleware', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'InvalidTokenError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'INVALID_TOKEN' });
     });
 
     it('rejects a request with no Authorization header', async () => {
@@ -54,7 +54,7 @@ describe('requireAuthMiddleware', () => {
         const response = await request(app).get('/protected');
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'MissingTokenError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'MISSING_TOKEN' });
     });
 
     it('rejects an expired token, telling the caller it expired', async () => {
@@ -66,7 +66,7 @@ describe('requireAuthMiddleware', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'TokenExpiredError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'TOKEN_EXPIRED' });
     });
 
     it('rejects a token signed with a different secret', async () => {
@@ -78,6 +78,6 @@ describe('requireAuthMiddleware', () => {
             .set('Authorization', `Bearer ${token}`);
 
         expect(response.status).toBe(401);
-        expect(response.body).toMatchObject({ error: 'InvalidTokenError' });
+        expect(response.body).toMatchObject({ status: 401, code: 'INVALID_TOKEN' });
     });
 });

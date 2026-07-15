@@ -39,7 +39,8 @@ describe('POST /authenticate', () => {
 
         expect(response.status).toBe(401);
         expect(response.body).toEqual({
-            error: 'InvalidCredentialsError',
+            status: 401,
+            code: 'INVALID_CREDENTIALS',
             message: 'Invalid authentication credentials',
         });
         expect(response.body.token).toBeUndefined();
@@ -52,7 +53,8 @@ describe('POST /authenticate', () => {
 
         expect(response.status).toBe(401);
         expect(response.body).toEqual({
-            error: 'InvalidCredentialsError',
+            status: 401,
+            code: 'INVALID_CREDENTIALS',
             message: 'Invalid authentication credentials',
         });
         expect(response.body.token).toBeUndefined();

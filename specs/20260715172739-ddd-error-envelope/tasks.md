@@ -8,7 +8,7 @@ un-migrated errors keep hitting their old branch and stay green. Each re-parent 
 branch**, so the error falls through to the generic branch — that removal is what turns
 its assertion red→green, leaving no dead code behind.
 
-- [ ] T1. `DomainError` base + `ErrorCategory`
+- [x] T1. `DomainError` base + `ErrorCategory`
   - Type: domain
   - Depends on: none
   - Red: unit test `tests/unit/modules/shared/domain/DomainError.test.ts` — a throwaway
@@ -20,7 +20,7 @@ its assertion red→green, leaving no dead code behind.
     `name = new.target.name`, forwards `options.cause`).
   - Covers: prerequisite for AC1–AC8; unit-verifies the `name`/`cause`/`code`/`category` contract.
 
-- [ ] T2. `CATEGORY_STATUS` map
+- [x] T2. `CATEGORY_STATUS` map
   - Type: route handler (HTTP mapping)
   - Depends on: T1
   - Red: unit test `tests/unit/middleware/domainErrorStatus.test.ts` — asserts
@@ -30,7 +30,7 @@ its assertion red→green, leaving no dead code behind.
     `satisfies Record<ErrorCategory, number>`.
   - Covers: prerequisite for AC1–AC8; the family→status resolution.
 
-- [ ] T3. Validation branch → uniform envelope
+- [x] T3. Validation branch → uniform envelope
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/middleware/errorMiddleware.test.ts` validation case to
@@ -39,7 +39,7 @@ its assertion red→green, leaving no dead code behind.
     branch body to `{ status:400, code:'VALIDATION_ERROR', message: err.message, details: err.details }`.
   - Covers: AC9 "Given request input that violates a field rule, When it is submitted, Then the response is an invalid-request outcome with `code` `VALIDATION_ERROR` and a `details` object (existing nested shape), and body `status` equals the transport status."; E9, V1
 
-- [ ] T4. Generic fallback → uniform envelope + log cause
+- [x] T4. Generic fallback → uniform envelope + log cause
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/middleware/errorMiddleware.test.ts` internal-error case
@@ -50,7 +50,7 @@ its assertion red→green, leaving no dead code behind.
     then returns the generic envelope.
   - Covers: AC11 "Given an unexpected/technical failure, When it occurs during a request, Then the response is a generic internal-failure outcome with `code` `INTERNAL_ERROR` and a fixed message, no internal detail is leaked, and the underlying cause is recorded server-side."; E11, V3
 
-- [ ] T5. Generic `DomainError` branch (added after per-class branches)
+- [x] T5. Generic `DomainError` branch (added after per-class branches)
   - Type: middleware
   - Depends on: T1, T2
   - Red: add an `it` to `tests/integration/middleware/errorMiddleware.test.ts` that throws
@@ -61,7 +61,7 @@ its assertion red→green, leaving no dead code behind.
     per-class branches, above the fallback**: `const status = CATEGORY_STATUS[err.category]; res.status(status).json({ status, code: err.code, message: err.message })`.
   - Covers: prerequisite/mechanism for AC1–AC8 (generic domain rendering via the category map).
 
-- [ ] T6. `notFoundMiddleware` → uniform envelope
+- [x] T6. `notFoundMiddleware` → uniform envelope
   - Type: middleware
   - Depends on: none
   - Red: update `tests/integration/app.test.ts` unknown-route case to expect
@@ -71,7 +71,7 @@ its assertion red→green, leaving no dead code behind.
     `{ status:404, code:'NOT_FOUND', message: \`Cannot ${req.method} ${req.path}\` }`.
   - Covers: AC10 "Given a path the API does not serve, When a client requests it, Then the response is a not-found outcome with `code` `NOT_FOUND` and a message naming the method and path."; E10
 
-- [ ] T7. Migrate `PromptNotFoundError`
+- [x] T7. Migrate `PromptNotFoundError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `PromptNotFoundError` assertions in
@@ -83,7 +83,7 @@ its assertion red→green, leaving no dead code behind.
     remove its per-class branch + import from `errorMiddleware.ts`.
   - Covers: AC1 "Given a prompt id that does not exist, When a client requests an operation on it, Then the response is a not-found outcome with `code` `PROMPT_NOT_FOUND`, a message, and a body `status` equal to the transport status."; E1, V2
 
-- [ ] T8. Migrate `PromptOwnershipError`
+- [x] T8. Migrate `PromptOwnershipError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `PromptOwnershipError` assertions in
@@ -94,7 +94,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='PROMPT_OWNERSHIP'`, `category='Forbidden'`) and remove its per-class branch + import.
   - Covers: AC2 "Given a prompt owned by another user, When a client attempts to modify or delete it, Then the response is a forbidden outcome with `code` `PROMPT_OWNERSHIP`."; E2
 
-- [ ] T9. Migrate `CategoryNotFoundError`
+- [x] T9. Migrate `CategoryNotFoundError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `CategoryNotFoundError` assertions in
@@ -105,7 +105,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='CATEGORY_NOT_FOUND'`, `category='Unprocessable'`) and remove its per-class branch + import.
   - Covers: AC3 "Given a category id that does not exist, When a client creates or updates a prompt referencing it, Then the response is an unprocessable outcome with `code` `CATEGORY_NOT_FOUND`."; E3
 
-- [ ] T10. Migrate `EmailAlreadyInUseError`
+- [x] T10. Migrate `EmailAlreadyInUseError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `EmailAlreadyInUseError` assertion in
@@ -115,7 +115,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='EMAIL_ALREADY_IN_USE'`, `category='Unprocessable'`) and remove its per-class branch + import.
   - Covers: AC4 "Given an email already registered, When a client registers with it, Then the response is an unprocessable outcome with `code` `EMAIL_ALREADY_IN_USE`."; E4
 
-- [ ] T11. Migrate `InvalidCredentialsError`
+- [x] T11. Migrate `InvalidCredentialsError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update both `InvalidCredentialsError` assertions in
@@ -125,7 +125,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='INVALID_CREDENTIALS'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC5 "Given invalid credentials, When a client authenticates, Then the response is an unauthorized outcome with `code` `INVALID_CREDENTIALS`."; E5
 
-- [ ] T12. Migrate `MissingTokenError`
+- [x] T12. Migrate `MissingTokenError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the `MissingTokenError` assertion in
@@ -135,7 +135,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='MISSING_TOKEN'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC6 "Given no token, When a client calls a protected route, Then the response is an unauthorized outcome with `code` `MISSING_TOKEN`."; E6
 
-- [ ] T13. Migrate `InvalidTokenError`
+- [x] T13. Migrate `InvalidTokenError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the two `InvalidTokenError` assertions in
@@ -145,7 +145,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='INVALID_TOKEN'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC7 "Given an invalid token, When a client calls a protected route, Then the response is an unauthorized outcome with `code` `INVALID_TOKEN`."; E7
 
-- [ ] T14. Migrate `TokenExpiredError`
+- [x] T14. Migrate `TokenExpiredError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the `TokenExpiredError` assertion in
