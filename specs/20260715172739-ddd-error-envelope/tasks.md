@@ -135,7 +135,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='MISSING_TOKEN'`, `category='Unauthorized'`) and remove its per-class branch + import.
   - Covers: AC6 "Given no token, When a client calls a protected route, Then the response is an unauthorized outcome with `code` `MISSING_TOKEN`."; E6
 
-- [ ] T13. Migrate `InvalidTokenError`
+- [x] T13. Migrate `InvalidTokenError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update the two `InvalidTokenError` assertions in
