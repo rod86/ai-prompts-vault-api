@@ -94,7 +94,7 @@ its assertion red→green, leaving no dead code behind.
     (`code='PROMPT_OWNERSHIP'`, `category='Forbidden'`) and remove its per-class branch + import.
   - Covers: AC2 "Given a prompt owned by another user, When a client attempts to modify or delete it, Then the response is a forbidden outcome with `code` `PROMPT_OWNERSHIP`."; E2
 
-- [ ] T9. Migrate `CategoryNotFoundError`
+- [x] T9. Migrate `CategoryNotFoundError`
   - Type: domain
   - Depends on: T1, T5
   - Red: update `CategoryNotFoundError` assertions in

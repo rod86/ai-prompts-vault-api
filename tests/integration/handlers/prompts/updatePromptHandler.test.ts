@@ -224,7 +224,8 @@ describe('PUT /prompts/:id', () => {
 
         expect(response.status).toBe(422);
         expect(response.body).toEqual({
-            error: 'CategoryNotFoundError',
+            status: 422,
+            code: 'CATEGORY_NOT_FOUND',
             message: `Category not found: ${unknownCategoryId}`,
         });
 
