@@ -6,8 +6,8 @@ process.loadEnvFile();
 export default defineConfig({
     dialect: 'postgresql',
     schema: [
-        './src/modules/prompt/infrastructure/database/schema.ts',
-        './src/modules/user/infrastructure/database/schema.ts',
+        './src/config/drizzle/user.schema.ts',
+        './src/config/drizzle/prompt.schema.ts',
     ],
     out: './drizzle',
     dbCredentials: {
