@@ -176,7 +176,7 @@ src/
   routes/                  # Express routers + request-validation schemas
   config/
     config.ts              # env vars + fixed params (no schema)
-    drizzle-schema.ts      # aggregated Drizzle schema
+    drizzle/               # centralized Drizzle schema (per-context files + index.ts barrel)
   types/                   # Additional TypeScript types declarations (e.g. custom req typing)
   app.ts                   # HTTP app: middleware + routes (no listen)
   index.ts                 # server bootstrap + graceful shutdown
