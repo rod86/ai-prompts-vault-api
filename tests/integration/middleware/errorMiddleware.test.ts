@@ -17,6 +17,11 @@ class StubDomainError extends DomainError {
 }
 
 describe('errorMiddleware', () => {
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('renders the RequestValidationError contract and never reaches the handler', async () => {
         const schema = z.object({
             body: z.object({ name: z.string().min(1, 'name invalid') }),
@@ -94,9 +99,5 @@ describe('errorMiddleware', () => {
             code: 'STUB',
             message: 'stub failed',
         });
-    });
-
-    afterEach(() => {
-        vi.restoreAllMocks();
     });
 });
