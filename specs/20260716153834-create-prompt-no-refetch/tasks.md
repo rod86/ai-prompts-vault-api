@@ -27,7 +27,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     minimal `findById` that returns `undefined` when no row matches
   - Covers: V2 (lookup mechanics); supports AC4
 
-- [ ] T3. Drizzle user-lookup adapter — existing user
+- [x] T3. Drizzle user-lookup adapter — existing user
   - Type: infrastructure
   - Depends on: T2
   - Red: add to the T2 test file: insert a user via `createUserFixture()`, `findById`

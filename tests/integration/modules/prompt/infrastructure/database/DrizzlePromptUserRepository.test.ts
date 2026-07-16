@@ -17,6 +17,14 @@ describe('DrizzlePromptUserRepository', () => {
     });
 
     describe('findById', () => {
+        it('returns the matching user by id', async () => {
+            const user = await userFixture.insert();
+
+            const result = await repository.findById(user.id);
+
+            expect(result).toEqual({ id: user.id, name: user.name });
+        });
+
         it('returns undefined when no user matches the id', async () => {
             const result = await repository.findById(faker.string.uuid());
 
