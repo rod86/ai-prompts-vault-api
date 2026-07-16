@@ -409,6 +409,9 @@ Every feature moves through two stages, separated by a human approval gate:
 Planning (docs only)  ──approval──▶  Implementation (code, test-first)
 ```
 
+> **.env secrets**: AI will never have access to any ``.env`` file (``.env.example``). Its access is locked.
+> If a plan needs to modify an ``.env`` file, AI will ask user to modify MANUALLY the file.
+
 ### Where specs live
 
 Each feature gets its own folder under `specs/`, named with a timestamp and a short slug,
