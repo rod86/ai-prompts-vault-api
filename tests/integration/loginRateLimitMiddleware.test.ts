@@ -1,0 +1,48 @@
+import request from 'supertest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import app from '@src/app.js';
+import config from '@src/config/config.js';
+import { passwordHasher } from '@src/modules/shared/services.js';
+import { type User } from '@src/modules/user/domain/User.js';
+import { createUserFixture } from '@tests/lib/config.js';
+
+describe('login rate limit middleware', () => {
+    const userFixture = createUserFixture();
+    const knownPassword = 'a-secure-password';
+    let knownUser: User;
+
+    beforeAll(async () => {
+        knownUser = await userFixture.insert({
+            passwordHash: await passwordHasher.hash(knownPassword),
+        });
+    });
+
+    afterAll(async () => {
+        await userFixture.cleanup();
+    });
+
+    it('rejects further attempts with E1 once the failed-attempt allowance is exhausted, even with correct credentials', async () => {
+        const clientIp = '10.10.0.1';
+        let response;
+
+        for (let i = 0; i < config.loginRateLimit.max; i++) {
+            response = await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', clientIp)
+                .send({ email: knownUser.email, password: 'wrong-password' });
+        }
+
+        response = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(response.status).toBe(429);
+        expect(response.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
+        expect(response.headers['retry-after']).toBeDefined();
+    });
+});

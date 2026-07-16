@@ -8,7 +8,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: add `loginRateLimit.windowMs` (`LOGIN_RATE_LIMIT_WINDOW_MS` ?? 900000) and `loginRateLimit.max` (`LOGIN_RATE_LIMIT_MAX` ?? 5) to `src/config/config.ts`; add both vars to `.env.example` and the local `.env` (plan §2)
   - Covers: spec §2 fields "failed-attempt allowance", "lock window duration"
 
-- [ ] T2. Lock after the full allowance of failed attempts
+- [x] T2. Lock after the full allowance of failed attempts
   - Type: route wiring
   - Depends on: T1
   - Red: new `tests/integration/loginRateLimitMiddleware.test.ts` (known-password user via `createUserFixture` + `passwordHasher.hash` in `beforeAll`, per `authenticateHandler.test.ts`): client `X-Forwarded-For: 10.10.0.1` sends `config.loginRateLimit.max` wrong-password attempts, then one attempt with **correct** credentials — assert the final response is `429` with body exactly `{ status: 429, code: 'TOO_MANY_REQUESTS', message: 'Too many requests, please try again later.' }` and a `retry-after` header — fails: no login limiter mounted, correct credentials return `200 { token }`
