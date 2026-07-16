@@ -22,7 +22,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: add optional `skipSuccessfulRequests?: boolean` to `createRateLimitMiddleware`'s options, forwarded as `skipSuccessfulRequests: skipSuccessfulRequests ?? false` (plan §3; existing `app.ts` call site untouched); pass `{ ...config.loginRateLimit, skipSuccessfulRequests: true }` at the route
   - Covers: AC3 "Given a client that logs in successfully more times than its failed-attempt allowance within one window, when it logs in again with correct credentials, then it is authenticated — successes never consume the allowance."
 
-- [ ] T4. Under-limit failures don't block a valid login (pinning)
+- [x] T4. Under-limit failures don't block a valid login (pinning)
   - Type: integration test (pinning)
   - Depends on: T3
   - Red: in `loginRateLimitMiddleware.test.ts`, client `X-Forwarded-For: 10.10.0.3` sends `max - 1` wrong-password attempts, then correct credentials — assert `200` with `{ token: expect.any(String) }` — expected to pass on arrival (plan §7.4): the allowance boundary is library-provided once T2/T3 are green; a failure reveals a misconfigured `max`

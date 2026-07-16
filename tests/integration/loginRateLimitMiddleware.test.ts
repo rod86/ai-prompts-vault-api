@@ -60,4 +60,23 @@ describe('login rate limit middleware', () => {
         expect(response?.status).toBe(200);
         expect(response?.body).toEqual({ token: expect.any(String) });
     });
+
+    it('authenticates normally when the client has fewer failed attempts than its allowance', async () => {
+        const clientIp = '10.10.0.3';
+
+        for (let i = 0; i < config.loginRateLimit.max - 1; i++) {
+            await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', clientIp)
+                .send({ email: knownUser.email, password: 'wrong-password' });
+        }
+
+        const response = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ token: expect.any(String) });
+    });
 });
