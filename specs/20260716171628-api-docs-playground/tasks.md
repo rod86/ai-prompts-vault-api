@@ -22,7 +22,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/routes/users.response.schema.ts` (`UserResponseSchema`, `.meta({id: 'User'})`); type `createUserHandler`'s response body and map dates via `.toISOString()`
   - Covers: AC6 "Given valid registration data, when a client registers a user, then the response matches the documented registration success shape exactly."
 
-- [ ] T4. Prompt response schema + typed create handler
+- [x] T4. Prompt response schema + typed create handler
   - Type: response schema
   - Depends on: none
   - Red: in `tests/integration/handlers/prompts/createPromptHandler.test.ts`, a new test "response matches the documented shape": create a prompt, assert `PromptResponseSchema.parse(response.body)` succeeds (nullable `description`, nested `category`/`user`, ISO dates) — fails because `src/routes/prompts.response.schema.ts` does not exist
