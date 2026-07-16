@@ -43,7 +43,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: none — test-only pinning task; production code unchanged
   - Covers: AC5 "Given one client locked out of login, when a different client submits correct credentials, then that client is authenticated — allowances are independent per client."
 
-- [ ] T7. Lock is scoped to the login route (pinning)
+- [x] T7. Lock is scoped to the login route (pinning)
   - Type: integration test (pinning)
   - Depends on: T3
   - Red: in `loginRateLimitMiddleware.test.ts`, lock client `X-Forwarded-For: 10.10.0.7` (`max` wrong-password attempts, then assert its next attempt is `429`), then the same client calls `GET /health` — assert `200 { status: 'ok' }` — expected to pass on arrival (plan §7.4): the limiter is mounted on the route, not the app; a failure reveals an app-level mount leaking the lock

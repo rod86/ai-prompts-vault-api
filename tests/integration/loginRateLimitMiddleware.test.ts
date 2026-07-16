@@ -141,4 +141,29 @@ describe('login rate limit middleware', () => {
         expect(otherResponse.status).toBe(200);
         expect(otherResponse.body).toEqual({ token: expect.any(String) });
     });
+
+    it('serves other endpoints normally for a client locked out of login', async () => {
+        const clientIp = '10.10.0.7';
+
+        for (let i = 0; i < config.loginRateLimit.max; i++) {
+            await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', clientIp)
+                .send({ email: knownUser.email, password: 'wrong-password' });
+        }
+
+        const lockedResponse = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(lockedResponse.status).toBe(429);
+
+        const healthResponse = await request(app)
+            .get('/health')
+            .set('X-Forwarded-For', clientIp);
+
+        expect(healthResponse.status).toBe(200);
+        expect(healthResponse.body).toEqual({ status: 'ok' });
+    });
 });
