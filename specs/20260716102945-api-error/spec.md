@@ -1,5 +1,5 @@
 # Spec: Unified boundary error (ApiError)
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API maintainer, I want every controlled boundary failure (invalid request data, rate limit exceeded, unknown route) raised and rendered through a single shared error mechanism, so that error responses stay uniform and adding a new controlled failure requires no duplicated handling.
 
 ## 1. Behavior

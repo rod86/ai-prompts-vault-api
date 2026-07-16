@@ -1,5 +1,5 @@
 import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
-import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
+import { ApiError } from '@src/errors/ApiError.js';
 
 export default function createRateLimitMiddleware({
     windowMs,
@@ -13,6 +13,13 @@ export default function createRateLimitMiddleware({
         limit: max,
         standardHeaders: 'draft-8',
         legacyHeaders: false,
-        handler: (_req, _res, next) => next(new RateLimitExceededError()),
+        handler: (_req, _res, next) =>
+            next(
+                new ApiError(
+                    429,
+                    'TOO_MANY_REQUESTS',
+                    'Too many requests, please try again later.',
+                ),
+            ),
     });
 }

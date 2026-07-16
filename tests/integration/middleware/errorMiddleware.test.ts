@@ -2,8 +2,8 @@ import express, { type Request, type Response } from 'express';
 import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
+import { ApiError } from '@src/errors/ApiError.js';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
-import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
 import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/DomainError.js';
 
@@ -70,7 +70,7 @@ describe('errorMiddleware', () => {
     it('renders the RateLimitExceededError contract', async () => {
         const app = express();
         app.get('/limited', () => {
-            throw new RateLimitExceededError();
+            throw new ApiError(429, 'TOO_MANY_REQUESTS', 'Too many requests, please try again later.');
         });
         app.use(errorMiddleware);
 
@@ -81,6 +81,37 @@ describe('errorMiddleware', () => {
             status: 429,
             code: 'TOO_MANY_REQUESTS',
             message: 'Too many requests, please try again later.',
+        });
+    });
+
+    it('renders an ApiError with no details key when details is absent', async () => {
+        const app = express();
+        app.get('/stub-api-error', () => {
+            throw new ApiError(418, 'STUB_CODE', 'stub message');
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/stub-api-error');
+
+        expect(response.status).toBe(418);
+        expect(response.body).toEqual({ status: 418, code: 'STUB_CODE', message: 'stub message' });
+    });
+
+    it('renders an ApiError with details included when present', async () => {
+        const app = express();
+        app.get('/stub-api-error-with-details', () => {
+            throw new ApiError(400, 'STUB_CODE', 'stub message', { field: 'bad' });
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/stub-api-error-with-details');
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+            status: 400,
+            code: 'STUB_CODE',
+            message: 'stub message',
+            details: { field: 'bad' },
         });
     });
 
