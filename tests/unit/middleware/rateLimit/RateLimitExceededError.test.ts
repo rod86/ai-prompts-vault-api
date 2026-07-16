@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
-import { DomainError } from '@src/modules/shared/domain/DomainError.js';
 
 describe('RateLimitExceededError', () => {
-    it('carries the rate-limit code, category, and message', () => {
+    it('carries the rate-limit message', () => {
         const error = new RateLimitExceededError();
 
-        expect(error).toBeInstanceOf(DomainError);
-        expect(error.code).toBe('TOO_MANY_REQUESTS');
-        expect(error.category).toBe('TooManyRequests');
+        expect(error).toBeInstanceOf(RateLimitExceededError);
         expect(error.message).toBe('Too many requests, please try again later.');
     });
 });

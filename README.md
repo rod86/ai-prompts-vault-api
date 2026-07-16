@@ -272,6 +272,8 @@ npm run dev
 - `npm run build`: Compile TypeScript to `dist/`
 - `npm start`: Run the compiled app
 - `npm test`: Run all tests
+- `npm run test:unit`: Run unit tests
+- `npm run test:integration`: Run integration tests
 - `npm run lint`: ESLint (incl. hexagonal boundaries)
 - `npm run typecheck`: Type-check without emitting
 - `npm run db:migrate`: Apply database migrations

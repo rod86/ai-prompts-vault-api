@@ -3,6 +3,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
+import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
 import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/DomainError.js';
 
@@ -59,6 +60,23 @@ describe('errorMiddleware', () => {
             message: 'Internal server error',
         });
         expect(consoleErrorSpy).toHaveBeenCalledWith(fixtureError);
+    });
+
+    it('renders the RateLimitExceededError contract', async () => {
+        const app = express();
+        app.get('/limited', () => {
+            throw new RateLimitExceededError();
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/limited');
+
+        expect(response.status).toBe(429);
+        expect(response.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
     });
 
     it('renders a DomainError through the category status map', async () => {

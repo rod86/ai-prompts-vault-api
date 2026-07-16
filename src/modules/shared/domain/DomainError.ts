@@ -1,9 +1,4 @@
-export type ErrorCategory =
-    | 'NotFound'
-    | 'Forbidden'
-    | 'Unauthorized'
-    | 'Unprocessable'
-    | 'TooManyRequests';
+export type ErrorCategory = 'NotFound' | 'Forbidden' | 'Unauthorized' | 'Unprocessable';
 
 export abstract class DomainError extends Error {
     abstract readonly code: string;
