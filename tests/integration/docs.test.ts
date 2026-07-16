@@ -91,3 +91,14 @@ describe('GET /logo.png', () => {
         expect(response.headers['content-type']).toBe('image/png');
     });
 });
+
+describe('GET /docs/', () => {
+    it('serves the documentation page referencing the description document and the icon', async () => {
+        const response = await request(app).get('/docs/');
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toMatch(/text\/html/);
+        expect(response.text).toContain('/openapi.json');
+        expect(response.text).toContain('/logo.png');
+    });
+});

@@ -78,7 +78,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: add `express.static(path.join(process.cwd(), 'public'))` to `src/app.ts`; create `public/logo.png` (generated solid-color 256×256 placeholder)
   - Covers: AC11 "Given a file in the public-files area (the icon), when a client requests its address, then the file is served as-is with its correct content type."
 
-- [ ] T12. Docs HTML page
+- [x] T12. Docs HTML page
   - Type: static assets
   - Depends on: T7, T11
   - Red: in `docs.test.ts`, a test: `GET /docs/` returns 200 with content type `text/html`, body containing `/openapi.json` and `/logo.png` — fails with 404 (file absent)
