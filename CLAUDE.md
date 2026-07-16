@@ -202,7 +202,7 @@ middleware pattern.
 
 ## Business Logic
 
-Busines logic lives in `src/modules` and follows *Domain Driven Design* conventions from `domain-driven-design` skill
+Business logic lives in `src/modules` and follows *Domain Driven Design* conventions from `domain-driven-design` skill
 
 ---
 
