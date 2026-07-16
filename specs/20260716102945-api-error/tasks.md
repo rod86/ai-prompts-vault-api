@@ -8,7 +8,7 @@ Plan: specs/20260716102945-api-error/plan.md
   - Green: create `src/errors/ApiError.ts` (constructor per plan §3); add the `instanceof ApiError` branch to `src/middleware/errorMiddleware.ts` rendering `{ status, code, message }` only (no `details` handling yet), placed before the `DomainError` branch.
   - Covers: AC4 "Given a controlled boundary failure that carries no additional detail, when it is rendered, then the reply contains the standard shape and no detail property at all — the property is absent, not empty."
 
-- [ ] T2. `ApiError` detail included when present
+- [x] T2. `ApiError` detail included when present
   - Type: middleware
   - Depends on: T1
   - Red: new test in `tests/integration/middleware/errorMiddleware.test.ts` — a route throws `new ApiError(400, 'STUB_CODE', 'stub message', { field: 'bad' })`; expects body strictly equal to `{ status: 400, code: 'STUB_CODE', message: 'stub message', details: { field: 'bad' } }`. Fails: T1's branch ignores `details`.

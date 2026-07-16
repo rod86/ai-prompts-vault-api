@@ -7,7 +7,12 @@ import { DomainError } from '@src/modules/shared/domain/DomainError.js';
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof ApiError) {
-        res.status(err.status).json({ status: err.status, code: err.code, message: err.message });
+        res.status(err.status).json({
+            status: err.status,
+            code: err.code,
+            message: err.message,
+            ...(err.details != null && { details: err.details }),
+        });
         return;
     }
 

@@ -98,6 +98,24 @@ describe('errorMiddleware', () => {
         expect(response.body).toEqual({ status: 418, code: 'STUB_CODE', message: 'stub message' });
     });
 
+    it('renders an ApiError with details included when present', async () => {
+        const app = express();
+        app.get('/stub-api-error-with-details', () => {
+            throw new ApiError(400, 'STUB_CODE', 'stub message', { field: 'bad' });
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/stub-api-error-with-details');
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+            status: 400,
+            code: 'STUB_CODE',
+            message: 'stub message',
+            details: { field: 'bad' },
+        });
+    });
+
     it('renders a DomainError through the category status map', async () => {
         const app = express();
         app.get('/stub', () => {
