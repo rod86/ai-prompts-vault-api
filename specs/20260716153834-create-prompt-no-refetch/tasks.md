@@ -1,7 +1,7 @@
 # Tasks: Create prompt without re-reading the created prompt
 Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
 
-- [ ] T1. `PromptUser` type + user-lookup port
+- [x] T1. `PromptUser` type + user-lookup port
   - Type: domain
   - Depends on: none
   - Red: none — `src/modules/prompt/domain/Prompt.ts` (type addition) and
