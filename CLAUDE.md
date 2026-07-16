@@ -3,7 +3,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**,
-**Domain-Driven Design (DDD)**, and **TDD**. Node 20+, TypeScript 5, Express 5,
+**Domain-Driven Design (DDD)**, and **TDD**. Node 24+, TypeScript 5, Express 5,
 PostgreSQL 18 + Drizzle ORM, Vitest.
 
 ## Golden rules

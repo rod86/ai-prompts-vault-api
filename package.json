@@ -4,7 +4,7 @@
     "description": "A REST API to manage AI prompts, built with Spec-Driven Development and hexagonal architecture.",
     "type": "module",
     "engines": {
-        "node": ">=20"
+        "node": ">=24"
     },
     "scripts": {
         "dev": "tsx watch src/index.ts",
