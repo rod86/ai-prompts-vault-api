@@ -29,7 +29,7 @@ Plan: specs/20260716102945-api-error/plan.md
   - Green: `src/middleware/rateLimit/createRateLimitMiddleware.ts` handler forwards `next(new ApiError(429, 'TOO_MANY_REQUESTS', 'Too many requests, please try again later.'))`; delete `src/middleware/rateLimit/RateLimitExceededError.ts`; remove its import and branch from `src/middleware/errorMiddleware.ts`; update the one test that imports the deleted class (`tests/integration/middleware/errorMiddleware.test.ts`, "renders the RateLimitExceededError contract") to construct the same `ApiError` directly — its envelope assertions stay unchanged.
   - Covers: AC2 "Given a client that has used its full allowance within the current window, when it makes a further request, then it is rejected with E2 in the standard error shape, with no detail property present."; E2
 
-- [ ] T5. Unknown route raised as `ApiError`
+- [x] T5. Unknown route raised as `ApiError`
   - Type: middleware
   - Depends on: T2
   - Red: none — behavior-preserving swap; AC3's contract is already pinned by the existing not-found test in `tests/integration/app.test.ts` (`{ status: 404, code: 'NOT_FOUND', message: 'Cannot GET /does-not-exist' }`), which must stay green **unmodified**.
