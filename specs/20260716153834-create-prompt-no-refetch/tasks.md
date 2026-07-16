@@ -104,7 +104,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     then they receive the 'category not found' error (E1), nothing is stored, and the
     creator's details are not looked up."; V1, E1
 
-- [ ] T8. End-to-end contract unchanged
+- [x] T8. End-to-end contract unchanged
   - Type: route handler
   - Depends on: T4, T5
   - Red: none — `tests/integration/handlers/prompts/createPromptHandler.test.ts`
