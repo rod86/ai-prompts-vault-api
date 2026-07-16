@@ -21,7 +21,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: add `'TooManyRequests'` to `ErrorCategory` (`src/modules/shared/domain/DomainError.ts`) and `TooManyRequests: 429` to `CATEGORY_STATUS` (`src/middleware/domainErrorStatus.ts`)
   - Covers: E1 "under this error's own stable identifier … distinguishes it from every other error" (status mapping half)
 
-- [ ] T4. RateLimitExceededError
+- [x] T4. RateLimitExceededError
   - Type: middleware (error class)
   - Depends on: T3
   - Red: new `tests/unit/middleware/rateLimit/RateLimitExceededError.test.ts` asserting a new instance has `code === 'TOO_MANY_REQUESTS'`, `category === 'TooManyRequests'`, `message === 'Too many requests, please try again later.'`, and is an `instanceof DomainError` — fails: module does not exist
