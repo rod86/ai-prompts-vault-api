@@ -17,7 +17,7 @@ describe('rate limit middleware', () => {
         expect(response.headers['ratelimit']).toBeDefined();
     });
 
-    it('rejects a request once the allowance is exhausted with the E1 envelope', async () => {
+    it('rejects a request once the allowance is exhausted with the standard error envelope', async () => {
         let response;
 
         for (let i = 0; i < config.rateLimit.max + 1; i++) {

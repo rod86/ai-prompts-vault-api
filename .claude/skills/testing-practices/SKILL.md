@@ -94,8 +94,22 @@ tests/
   middleware, the health check). Per-route behavior still belongs in that route's own
   file.
 - File suffix is always `.test.ts`.
-- `describe` names the unit under test; `it` states the behavior as an
-  expectation: `it('returns 404 when the entity does not exist')`.
+- `describe` names the unit under test; `it` states the behavior as a plain-language
+  expectation, not a technical restatement of the implementation:
+  `it('returns 404 when the entity does not exist')`. Keep titles simple and as
+  non-technical as possible — describe what the test proves, from the caller's
+  point of view, not how the code achieves it. Never embed a reference code from a
+  user story or task list (`AC3`, `T7`, `E1`, a ticket id, …): it's meaningless
+  without that document open and goes stale the moment specs are renumbered. If
+  you're tempted to cite one, spell out in plain words what it stood for instead.
+
+  ```ts
+  // Avoid — cites a spec/task code instead of saying what's verified
+  it('rejects with the E1 envelope', async () => { ... });
+
+  // Prefer — plain language, reveals intent
+  it('rejects a request once the allowance is exhausted with the standard error envelope', async () => { ... });
+  ```
 - Structure every test as Arrange / Act / Assert.
 - No `try/catch` (or `try/finally`) blocks inside tests. Use setup and cleanup
   hooks so setup, teardown, and any database changes (seeding, cleanup) run
