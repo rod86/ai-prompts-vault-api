@@ -1,5 +1,5 @@
 # Spec: Create prompt without re-reading the created prompt
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a prompt author, I want the create-prompt flow to return my newly created prompt assembled from the data already at hand so that creation is simpler and has no failure mode where a just-created prompt cannot be found.
 
 ## 1. Behavior
