@@ -93,6 +93,10 @@ tests/
   handler (the 404 / not-found contract, the centralized error middleware, generic
   middleware, the health check). Per-route behavior still belongs in that route's own
   file.
+- The same one-file-per-cohesive-surface principle applies to a non-router HTTP surface
+  that also isn't owned by a single handler — static file serving, a generated API
+  description endpoint. Give it its own file (don't shoehorn it into `app.test.ts`, and
+  don't split it per served file).
 - File suffix is always `.test.ts`.
 - `describe` names the unit under test; `it` states the behavior as a plain-language
   expectation, not a technical restatement of the implementation:

@@ -105,9 +105,10 @@ src/
       prompt.schema.ts  #   (prompts → users FK is a sibling import here)
       schema.ts         # internal aggregation (export *) — drizzle-kit points here
       index.ts          # barrel: `schema` object + DatabaseSchema/DatabaseConnection/PromptSchema/UserSchema
-  routes/               # per-resource routers + request schemas (*.routes.ts / *.schema.ts)
+  routes/               # per-resource routers + request/response schemas (*.routes.ts / *.schema.ts / *.response.schema.ts)
   handlers/<resource>/  # HTTP handlers: wire-shape mapping, reach contexts via services.ts
   middleware/           # error / 404 / auth / validation / rate-limit middleware
+  docs/                 # OpenAPI document composition root (zod-openapi) + one paths file per functional area
   errors/               # ApiError — HTTP-boundary error (explicit status + code)
   types/                # express.d.ts — custom `req` property typing
   app.ts                # HTTP app: middleware stack + routes (no listen)
@@ -116,6 +117,9 @@ tests/
   lib/                  # shared helpers: model factories, fixtures, DB read-back helpers
   unit/                 # unit tests (mocked deps)
   integration/          # integration tests (real DB, supertest)
+public/                 # static files served as-is (express.static); docs page + service icon
+  docs/index.html       # interactive API docs page (Scalar, loaded from a pinned CDN)
+  logo.png              # service icon — replaceable by swapping the file
 specs/                  # SDD specs, one timestamped folder per feature
 drizzle/                # generated SQL migrations
 coverage/               # Test coverage reports
@@ -134,10 +138,13 @@ validation, centralized error handling + 404, and custom `req` typing — are ow
 by the **`node-express-typescript` skill**; follow it when adding routes back.
 
 `src/app.ts` wires the app in this order: `app.set('trust proxy',
-config.trustProxyHops)`, `express.json()`, the global rate limiter,
+config.trustProxyHops)`, `express.json()`, the documentation surface —
+`GET /openapi.json` then `express.static(public/)` — the global rate limiter,
 `GET /health` → `200 { status: 'ok' }`, the API router (`src/routes/index.ts`,
 composing the per-resource routers), then `notFoundMiddleware` and
-`errorMiddleware` last. Each router (`src/routes/*.routes.ts`) chains per-route
+`errorMiddleware` last. The documentation surface is mounted **before** the
+rate limiter, so it carries no allowance information; every other endpoint's
+behavior is unchanged. Each router (`src/routes/*.routes.ts`) chains per-route
 middleware — `validateRequestMiddleware` with the sibling `*.schema.ts` schema,
 `requireAuthMiddleware` where the route needs a user — into a handler under
 `src/handlers/<resource>/`.
@@ -198,6 +205,24 @@ unexpected/technical failure falls through to a generic
 (`console.error`) but never sent to the client. See `domain-driven-design`
 for the `DomainError` subclassing rules and `node-express-typescript` for the
 middleware pattern.
+
+**API documentation.** `src/docs/api.ts` is the composition root: `zod-openapi`'s
+`createDocument` assembles `info`, `servers`, the `bearerAuth` security scheme,
+and `paths` spread in from one file per functional area
+(`src/docs/health.ts`, `auth.ts`, `users.ts`, `prompts.ts`), served at
+`GET /openapi.json`. Paths reuse the **existing** request-validation schemas
+(`*.schema.ts`, via `.shape`) plus a sibling `*.response.schema.ts` per
+resource (and `src/routes/shared.response.schema.ts` for the common
+error/validation-error/health shapes) — so documented request and response
+shapes cannot drift from what the API actually validates and returns.
+Handlers type their response body from the response schema's inferred type
+(`RequestHandler<Params, ResBody>`) and map `Date` fields via
+`.toISOString()`; the schemas are declaration-only at runtime (no `.parse()`
+in production code) — truthfulness is proven instead by a per-endpoint
+`<X>ResponseSchema.parse(response.body)` assertion in that handler's
+integration test. The interactive UI (`GET /docs/`) is a static page
+(`public/docs/index.html`) loading Scalar from a pinned jsDelivr CDN URL and
+pointing it at `/openapi.json`.
 
 ---
 
@@ -313,7 +338,10 @@ shared reference categories), `deletePromptHandler.test.ts` (route test wiring
 category/user/prompt fixtures), `app.test.ts` (app-level concerns: not-found
 contract, error/generic middleware, health check — not per-route tests),
 `loginRateLimitMiddleware.test.ts` (middleware behavior pinned per acceptance
-criterion, unique `X-Forwarded-For` per test).
+criterion, unique `X-Forwarded-For` per test), `docs.test.ts` (a non-handler
+HTTP surface — `/openapi.json` content, the `/docs/` static page, static
+files, and the rate-limit exemption — not tied to a single handler, so it
+isn't folded into `app.test.ts`).
 
 **Schema** is managed outside test scope — migrations must be applied before
 running the suite (`npm run db:migrate`).
@@ -323,6 +351,9 @@ provider, configured in `vitest.config.ts`), reporting into `coverage/` in four
 formats. When checking coverage, only read `coverage/coverage-summary.json`
 (per-file totals) and `coverage/lcov.info` (line/branch detail) — those are
 the formats meant for you; ignore other formats, which are for the user.
+`src/docs` is excluded from coverage — it's declarative composition, not
+logic; its behavior is pinned only through the tests of the endpoints it
+documents.
 
 ---
 

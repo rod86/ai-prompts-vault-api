@@ -11,7 +11,7 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
 </p>
 
 - [Tech stack](#tech-stack)
-- [API endpoints](#api-endpoints)
+- [API Documentation](#api-documentation)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Scripts](#scripts)
@@ -29,225 +29,20 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
 - PostgreSQL v18.4 + Drizzle ORM
 - Vitest + Supertest
 
-## API endpoints
+## API Documentation
 
-All request and response bodies are JSON with `snake_case` field names.
+Once the API is running, interactive documentation is available at
+[`/docs`](http://localhost:3000/docs) — a browsable reference generated from the same
+request/response schemas the API validates against, with a built-in **"try it"**
+playground for every endpoint.
 
-Prompt endpoints require authentication: obtain a JWT from `POST /authenticate`
-and send it as a bearer token in the `Authorization` header
-(`Authorization: Bearer <token>`). Every error shares a uniform envelope —
-`{ status, code, message }`, plus a `details` object for request-validation
-failures. See [Error responses](#error-responses) for the full list.
-
-### Health check
-
-- **Method:** `GET`
-- **URL:** `/health`
-- **Success response — `200 OK`:**
-
-```json
-{ "status": "ok" }
-```
-
-### Register a user
-
-- **Method:** `POST`
-- **URL:** `/users`
-- **Content-Type:** `application/json`
-- **Request body** (`password` must be at least 8 characters):
-
-```json
-{
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
-  "password": "correct horse battery"
-}
-```
-
-- **Success response — `201 Created`:**
-
-```json
-{
-  "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
-  "created_at": "2026-07-14T10:30:00.000Z",
-  "updated_at": "2026-07-14T10:30:00.000Z"
-}
-```
-
-- **Errors:** `422 EMAIL_ALREADY_IN_USE` if the email is already registered;
-  `400 VALIDATION_ERROR` for invalid input.
-
-### Authenticate
-
-Exchange credentials for a JWT bearer token used on the prompt endpoints.
-
-- **Method:** `POST`
-- **URL:** `/authenticate`
-- **Content-Type:** `application/json`
-- **Request body:**
-
-```json
-{
-  "email": "ada@example.com",
-  "password": "correct horse battery"
-}
-```
-
-- **Success response — `200 OK`:**
-
-```json
-{ "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
-```
-
-- **Errors:** `401 INVALID_CREDENTIALS` if the email or password is wrong;
-  `400 VALIDATION_ERROR` for invalid input; `429 TOO_MANY_REQUESTS` after too
-  many failed logins from the same client — further attempts (even with correct
-  credentials) are rejected until the window resets, with a `Retry-After`
-  header. See [Rate limiting](#rate-limiting).
-
-### List prompt categories
-
-- **Method:** `GET`
-- **URL:** `/prompt-categories`
-- **Success response — `200 OK`:**
-
-```json
-[
-  { "id": "3f2a6c1e-9b4d-4f0a-8c7e-1d2b3a4c5d6e", "name": "Writing" },
-  { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" }
-]
-```
-
-### Create a prompt
-
-- **Method:** `POST`
-- **URL:** `/prompts`
-- **Auth:** required — `Authorization: Bearer <token>`. The authenticated user
-  becomes the prompt's creator.
-- **Content-Type:** `application/json`
-- **Request body** (`description` is optional):
-
-```json
-{
-  "title": "Refactor helper",
-  "prompt": "Refactor the following function for readability: {{code}}",
-  "category_id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
-  "description": "Cleans up a code snippet"
-}
-```
-
-- **Success response — `201 Created`:**
-
-```json
-{
-  "id": "c4d5e6f7-a8b9-4c0d-8e1f-2a3b4c5d6e7f",
-  "title": "Refactor helper",
-  "prompt": "Refactor the following function for readability: {{code}}",
-  "description": "Cleans up a code snippet",
-  "category": { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" },
-  "user": { "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e", "name": "Ada Lovelace" },
-  "created_at": "2026-07-14T10:30:00.000Z",
-  "updated_at": "2026-07-14T10:30:00.000Z"
-}
-```
-
-### Update a prompt
-
-- **Method:** `PUT`
-- **URL:** `/prompts/:id`
-- **Auth:** required — `Authorization: Bearer <token>`. Only the prompt's creator
-  may update it.
-- **Content-Type:** `application/json`
-- **Request body** (`description` is optional):
-
-```json
-{
-  "title": "Refactor helper (v2)",
-  "prompt": "Refactor the following function for readability and performance: {{code}}",
-  "category_id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d",
-  "description": "Cleans up and optimizes a code snippet"
-}
-```
-
-- **Success response — `200 OK`:**
-
-```json
-{
-  "id": "c4d5e6f7-a8b9-4c0d-8e1f-2a3b4c5d6e7f",
-  "title": "Refactor helper (v2)",
-  "prompt": "Refactor the following function for readability and performance: {{code}}",
-  "description": "Cleans up and optimizes a code snippet",
-  "category": { "id": "7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d", "name": "Coding" },
-  "user": { "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e", "name": "Ada Lovelace" },
-  "created_at": "2026-07-14T10:30:00.000Z",
-  "updated_at": "2026-07-14T11:15:00.000Z"
-}
-```
-
-### Delete a prompt
-
-- **Method:** `DELETE`
-- **URL:** `/prompts/:id`
-- **Auth:** required — `Authorization: Bearer <token>`. Only the prompt's creator
-  may delete it.
-- **Success response — `204 No Content`** (empty body).
-
-### Rate limiting
-
-- All endpoints share a general per-client limit (default **100 requests / 15 minutes**).
-- `POST /authenticate` enforces a stricter failed-login allowance (default **5 failed attempts / 15 minutes**). once it is exhausted every further login attempt
-  is rejected — even with correct credentials — until the window resets
-- Clients are identified by IP, honouring trusted proxies (`TRUST_PROXY_HOPS`).
-- Responses carry standard (draft-8) `RateLimit-*` headers. When a rate limit is reached, the response has also `Retry-After` header.
-- Limits are set up in ``.env`` file.
-
-### Error responses
-
-Every error returns the same envelope — `{ status, code, message }` — with the
-transport status mirrored in `status`. Request-validation failures (`400`) add a
-`details` object keyed by request part (`body`, `params`, `query`).
-
-| Status | `code`                 | When                                                            |
-| ------ | ---------------------- | --------------------------------------------------------------- |
-| 400    | `VALIDATION_ERROR`     | Request body/params failed schema validation (includes `details`). |
-| 401    | `INVALID_CREDENTIALS`  | Wrong email or password at `POST /authenticate`.                |
-| 401    | `MISSING_TOKEN`        | No/blank bearer token on an authenticated route.                |
-| 401    | `INVALID_TOKEN`        | Token is malformed or its signature is invalid.                 |
-| 401    | `TOKEN_EXPIRED`        | Token has expired.                                              |
-| 403    | `PROMPT_OWNERSHIP`     | Updating/deleting a prompt you did not create.                  |
-| 404    | `PROMPT_NOT_FOUND`     | No prompt exists with the given id.                             |
-| 422    | `CATEGORY_NOT_FOUND`   | `category_id` does not match an existing category.              |
-| 422    | `EMAIL_ALREADY_IN_USE` | Email already registered at `POST /users`.                      |
-| 429    | `TOO_MANY_REQUESTS`    | Rate limit exceeded — the general limit, or the stricter failed-login limit on `POST /authenticate`. |
-| 500    | `INTERNAL_ERROR`       | Unexpected server error (cause logged server-side, not exposed). |
-
-Example business error (`403`):
-
-```json
-{
-  "status": 403,
-  "code": "PROMPT_OWNERSHIP",
-  "message": "You are not allowed to modify or delete this prompt: c4d5e6f7-a8b9-4c0d-8e1f-2a3b4c5d6e7f"
-}
-```
-
-Example validation error (`400`):
-
-```json
-{
-  "status": 400,
-  "code": "VALIDATION_ERROR",
-  "message": "Request Validation data failed",
-  "details": {
-    "body": {
-      "title": "Missing required value",
-      "category_id": "Invalid UUID value"
-    }
-  }
-}
-```
+- Protected endpoints need a token: call `POST /authenticate`, then paste the returned
+  token into the page's authorization control.
+- The underlying OpenAPI 3.1 description is served as JSON at
+  [`/openapi.json`](http://localhost:3000/openapi.json) — point Postman (or any other API
+  client) at that address, or use the page's download control, to import it directly.
+- Requests to `/docs`, its files, and `/openapi.json` don't count against the request
+  rate limit.
 
 ## Requirements
 
@@ -302,8 +97,9 @@ src/
     services.ts            # Context services setup (DI wiring)
   handlers/                # HTTP route handler
   middleware/              # Express 
+  docs/                    # OpenAPI document (zod-openapi) + one paths file per functional area
   errors/                  # HTTP-boundary error (e. g. ApiError)
-  routes/                  # Express routers + request-validation schemas
+  routes/                  # Express routers + request/response validation schemas
   config/
     config.ts              # env vars + fixed params (no schema)
     drizzle/               # Drizzle config (per-context schema files + index.ts barrel with types and config)
@@ -314,6 +110,7 @@ tests/
   lib/                     # shared helpers: DB helpers, model factories
   unit/                    
   integration/             
+public/                    # static files served as-is — API docs page + service icon
 specs/                     # spec-driven development specs, one folder per feature
 drizzle/                   # generated SQL migrations
 coverage/               # Test coverage reports

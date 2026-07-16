@@ -245,6 +245,8 @@ Runs top-to-bottom. Correct order, and **why cheap-before-expensive matters**:
 
 **Scope middleware as narrowly as possible** — apply auth per-route so public endpoints stay public; only genuinely cross-cutting concerns go global. Put cheap rejections (rate-limit, auth) before expensive work. Never block the event loop with heavy sync work. **A middleware either calls `next()` or sends a response — never both, never neither** (forgetting `next()` hangs the request).
 
+**Exempting specific routes from a global middleware.** A cross-cutting middleware (rate-limiting, auth) doesn't have to special-case routes internally — mount the routes that should skip it *before* it in the chain instead (e.g. static assets, a generated API description). Order is the exemption mechanism; the middleware itself stays generic.
+
 ## 6. Custom middleware
 
 **Naming — the `Middleware` suffix.** A middleware's identifier ends with `Middleware` (`requireAuthMiddleware`, `validateMiddleware`, `notFoundMiddleware`, `errorMiddleware`) — this includes factories that *return* a middleware. Name a single-middleware file for its export (`middleware/requireAuthMiddleware.ts`); a module grouping closely related middleware may take a domain name (e.g. `middleware/error.ts` exporting `notFoundMiddleware` + `errorMiddleware`). This mirrors the `Handler` suffix on handlers (§4), so the two HTTP layers stay distinguishable by name alone.
@@ -420,6 +422,8 @@ export const createUserHandler: RequestHandler<unknown, UserResponse, CreateUser
 ```
 
 **Wire casing is a project convention.** Pick one wire field casing (this project uses snake_case — `created_at`, `category_id`) and apply it to both request schemas and responses. When it differs from the domain object's shape, the handler maps domain→wire while shaping the response (the example above passes the object straight through only because the two happen to match). Response shaping is the handler's job (§4).
+
+**The same inference works for responses, too.** A sibling response schema per route (e.g. `users.schema.ts` + `users.response.schema.ts`) lets you infer `ResBody` the same way you infer the request body — instead of hand-writing a `UserResponse` interface — and it composes with the pattern above: `RequestHandler<Params, ResBody, ReqBody>` typed from two schemas instead of one. Once responses are schema-derived, those same schemas can double as the source for a generated API description (e.g. an OpenAPI document) — the documentation and the runtime validation/typing can't drift apart because they're the same schema.
 
 Type errors as `unknown` in the error handler and narrow with `instanceof` — never assume `err` is an `Error`.
 
