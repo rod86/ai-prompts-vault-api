@@ -43,7 +43,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: add `PromptCategoryListResponseSchema` (array of `{id, name}`, `.meta({id: 'PromptCategory'})` on the item) to `src/routes/prompts.response.schema.ts`; replace `listPromptCategoriesHandler`'s pass-through with an explicit typed `{id, name}` mapping
   - Covers: AC9 "Given existing categories, when a client lists prompt categories, then the response matches the documented category-list shape exactly."
 
-- [ ] T7. OpenAPI document skeleton + `GET /openapi.json`
+- [x] T7. OpenAPI document skeleton + `GET /openapi.json`
   - Type: docs
   - Depends on: T1
   - Red: new `tests/integration/docs.test.ts`: `GET /openapi.json` returns 200, content type JSON, body with `openapi` starting `3.1`, `info.title = 'AI Prompts Vault API'`, `info.version = '0.1.0'` — fails with 404 (route absent)

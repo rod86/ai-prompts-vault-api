@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from 'express';
 import config from '@src/config/config.js';
+import { openApiDocument } from '@src/docs/api.js';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
 import notFoundMiddleware from '@src/middleware/notFoundMiddleware.js';
 import createRateLimitMiddleware from '@src/middleware/rateLimit/createRateLimitMiddleware.js';
@@ -14,6 +15,10 @@ app.use(createRateLimitMiddleware(config.rateLimit));
 
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });
+});
+
+app.get('/openapi.json', (_req: Request, res: Response) => {
+    res.status(200).json(openApiDocument);
 });
 
 app.use(apiRouter);
