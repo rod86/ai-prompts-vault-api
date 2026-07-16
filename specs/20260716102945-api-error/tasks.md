@@ -36,7 +36,7 @@ Plan: specs/20260716102945-api-error/plan.md
   - Green: `src/middleware/notFoundMiddleware.ts` gains `next` and forwards `next(new ApiError(404, 'NOT_FOUND', \`Cannot ${req.method} ${req.path}\`))` instead of rendering the envelope itself; no `app.ts` change (mounting order already `notFoundMiddleware` → `errorMiddleware`).
   - Covers: AC3 "Given a request to a route the service does not expose, when it is made, then it is rejected with E3 in the standard error shape whose message names the attempted action and path, with no detail property present."; E3
 
-- [ ] T6. Document the `ApiError` pattern
+- [x] T6. Document the `ApiError` pattern
   - Type: docs
   - Depends on: T5
   - Red: none — documentation only, no runtime behavior.

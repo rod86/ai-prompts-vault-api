@@ -333,6 +333,39 @@ export function errorMiddleware(err: unknown, req: Request, res: Response, _next
 
 This is why handlers don't need `try/catch`: they `throw new OrderNotFoundError(...)` and the mapping to a status + envelope happens in exactly one place. Adding a business error that reuses an existing `category` needs **zero** middleware edits — only its own file under `domain/errors/`; adding a genuinely new outcome family means adding one row to `CATEGORY_STATUS`. The generic fallback branch is the security boundary: it must never forward `err.message`, `err.stack`, or a wrapped `cause` to the client, only the fixed `INTERNAL_ERROR` code and message — swap `console.error` for your logger, but always log the real error server-side so it stays diagnosable.
 
+#### `ApiError` — controlled boundary failures (not business errors)
+
+Business errors (`DomainError` subclasses) model outcomes from the business-logic layer; a **boundary** failure — invalid request data, an exhausted rate limit, an unknown route — is detected in Express middleware itself, before any business logic runs. Model these with one concrete `ApiError(status, code, message, details?)`, thrown or forwarded inline at the exact point of detection, and add a single `instanceof ApiError` branch to the centralized handler (before the `DomainError` branch) that renders `{ status, code, message }`, spreading in `details` only when it is not `null`/`undefined`:
+
+```typescript
+// errors/ApiError.ts
+export class ApiError extends Error {
+    constructor(
+        readonly status: number,
+        readonly code: string,
+        message: string,
+        readonly details?: unknown,
+    ) {
+        super(message);
+        this.name = 'ApiError';
+    }
+}
+```
+
+```typescript
+if (err instanceof ApiError) {
+    res.status(err.status).json({
+        status: err.status,
+        code: err.code,
+        message: err.message,
+        ...(err.details != null && { details: err.details }),
+    });
+    return;
+}
+```
+
+`details` is passed only for request-validation failures — every other `ApiError` throw site omits it. `status` stays a plain `number`, never `500`: `ApiError` is for *controlled* 4xx failures; an unexpected/technical failure is thrown raw (or left unwrapped) so it falls through to the generic branch instead. While a `code` has exactly one throw site, an inline tuple at that call site is fine; if a code ever needs a second throw site, extract a static factory (e.g. `ApiError.rateLimited()`) instead of duplicating the tuple.
+
 ## 7. Adding custom values to `req`
 
 Attaching data in middleware (auth user, request id, validated payload) is idiomatic. Set it early; namespace carefully. Prefer a single `req.context` object if you attach many things.
