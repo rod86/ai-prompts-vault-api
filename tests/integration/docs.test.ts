@@ -102,3 +102,19 @@ describe('GET /docs/', () => {
         expect(response.text).toContain('/logo.png');
     });
 });
+
+describe('Documentation surface rate-limit exemption', () => {
+    it('carries no allowance information for the docs page and description document, unlike a normal endpoint', async () => {
+        const clientIp = '10.9.9.9';
+
+        const openApiResponse = await request(app)
+            .get('/openapi.json')
+            .set('X-Forwarded-For', clientIp);
+        const docsResponse = await request(app).get('/docs/').set('X-Forwarded-For', clientIp);
+        const healthResponse = await request(app).get('/health').set('X-Forwarded-For', clientIp);
+
+        expect(openApiResponse.headers['ratelimit']).toBeUndefined();
+        expect(docsResponse.headers['ratelimit']).toBeUndefined();
+        expect(healthResponse.headers['ratelimit']).toBeDefined();
+    });
+});

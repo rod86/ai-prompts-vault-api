@@ -12,17 +12,18 @@ const app = express();
 app.set('trust proxy', config.trustProxyHops);
 
 app.use(express.json());
-app.use(createRateLimitMiddleware(config.rateLimit));
-
-app.get('/health', (_req: Request, res: Response) => {
-    res.status(200).json({ status: 'ok' });
-});
 
 app.get('/openapi.json', (_req: Request, res: Response) => {
     res.status(200).json(openApiDocument);
 });
 
 app.use(express.static(path.join(process.cwd(), 'public')));
+
+app.use(createRateLimitMiddleware(config.rateLimit));
+
+app.get('/health', (_req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 app.use(apiRouter);
 app.use(notFoundMiddleware);

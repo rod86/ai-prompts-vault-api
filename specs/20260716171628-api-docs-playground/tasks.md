@@ -85,7 +85,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `public/docs/index.html` — Scalar loaded from jsDelivr pinned to the latest stable version, `Scalar.createApiReference('#app', { url: '/openapi.json', favicon: '/logo.png' })`, `<link rel="icon" href="/logo.png">`
   - Covers: AC10 "Given the service is running, when a client requests the documentation page, then it receives a browsable page that loads the description document from its published address and references the service's icon."
 
-- [ ] T13. Rate-limit exemption for the documentation surface
+- [x] T13. Rate-limit exemption for the documentation surface
   - Type: route
   - Depends on: T7, T11, T12
   - Red: in `docs.test.ts`, a test (unique `X-Forwarded-For`): responses from `GET /openapi.json` and `GET /docs/` carry no `RateLimit` header, while `GET /health` from the same client does — fails while the docs surface is registered after the global limiter
