@@ -36,7 +36,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: type `updatePromptHandler`'s response body as `PromptResponse` and map dates via `.toISOString()`
   - Covers: AC8 "Given an authenticated owner and valid prompt data, when the owner updates a prompt, then the response matches the documented prompt shape exactly."
 
-- [ ] T6. Category-list response schema + explicit wire mapping
+- [x] T6. Category-list response schema + explicit wire mapping
   - Type: response schema
   - Depends on: none
   - Red: in `tests/integration/handlers/prompts/listPromptCategoriesHandler.test.ts`, a new test "response matches the documented shape": list categories, assert `PromptCategoryListResponseSchema.parse(response.body)` succeeds — fails because the schema does not exist

@@ -14,3 +14,14 @@ export const PromptResponseSchema = z
     .meta({ id: 'Prompt' });
 
 export type PromptResponse = z.infer<typeof PromptResponseSchema>;
+
+const PromptCategorySchema = z
+    .object({
+        id: z.string(),
+        name: z.string(),
+    })
+    .meta({ id: 'PromptCategory' });
+
+export const PromptCategoryListResponseSchema = z.array(PromptCategorySchema);
+
+export type PromptCategoryListResponse = z.infer<typeof PromptCategoryListResponseSchema>;

@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
+import { PromptCategoryListResponseSchema } from '@src/routes/prompts.response.schema.js';
 import { createPromptCategoryFixture } from '@tests/lib/config.js';
 
 describe('GET /prompt-categories', () => {
@@ -26,6 +27,14 @@ describe('GET /prompt-categories', () => {
             );
 
             expect(fixturesInResponse).toEqual([apple, banana, cherry]);
+        });
+
+        it('response matches the documented shape', async () => {
+            await categoryFixture.insert();
+
+            const response = await request(app).get('/prompt-categories');
+
+            expect(() => PromptCategoryListResponseSchema.parse(response.body)).not.toThrow();
         });
     });
 });
