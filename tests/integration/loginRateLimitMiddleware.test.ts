@@ -114,4 +114,31 @@ describe('login rate limit middleware', () => {
             message: 'Too many requests, please try again later.',
         });
     });
+
+    it('holds independent login allowances per client', async () => {
+        const lockedClientIp = '10.10.0.5';
+        const otherClientIp = '10.10.0.6';
+
+        for (let i = 0; i < config.loginRateLimit.max; i++) {
+            await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', lockedClientIp)
+                .send({ email: knownUser.email, password: 'wrong-password' });
+        }
+
+        const lockedResponse = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', lockedClientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(lockedResponse.status).toBe(429);
+
+        const otherResponse = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', otherClientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(otherResponse.status).toBe(200);
+        expect(otherResponse.body).toEqual({ token: expect.any(String) });
+    });
 });

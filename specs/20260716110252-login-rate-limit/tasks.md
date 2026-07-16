@@ -36,7 +36,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: none — test-only pinning task; production code unchanged
   - Covers: AC4 "Given a client one failure short of its allowance that then logs in successfully, when it fails once more and afterwards attempts to log in, then the attempt is rejected with E1 — the success did not clear the counted failures."
 
-- [ ] T6. Lock is independent per client (pinning)
+- [x] T6. Lock is independent per client (pinning)
   - Type: integration test (pinning)
   - Depends on: T3
   - Red: in `loginRateLimitMiddleware.test.ts`, lock client `X-Forwarded-For: 10.10.0.5` (`max` wrong-password attempts, then assert its next attempt is `429`), then client `X-Forwarded-For: 10.10.0.6` submits correct credentials — assert `200` with `{ token: expect.any(String) }` — expected to pass on arrival (plan §7.4): per-client buckets come from the existing factory + `trust proxy` setup; a failure reveals broken client keying
