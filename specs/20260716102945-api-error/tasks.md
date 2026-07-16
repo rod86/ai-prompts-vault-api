@@ -15,7 +15,7 @@ Plan: specs/20260716102945-api-error/plan.md
   - Green: extend the `ApiError` branch with the conditional spread `...(err.details != null && { details: err.details })` (plan §3).
   - Covers: AC5 "Given a controlled boundary failure that carries additional detail, when it is rendered, then the reply includes that detail alongside the standard shape."
 
-- [ ] T3. Validation failure raised as `ApiError`
+- [x] T3. Validation failure raised as `ApiError`
   - Type: middleware
   - Depends on: T2
   - Red: none — behavior-preserving swap; AC1's contract is already pinned by the existing tests `tests/integration/middleware/errorMiddleware.test.ts` ("renders the RequestValidationError contract and never reaches the handler") and `tests/integration/middleware/validateRequest/validateRequestMiddleware.test.ts`, which must stay green **unmodified**.
