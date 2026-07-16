@@ -410,7 +410,7 @@ Planning (docs only)  ──approval──▶  Implementation (code, test-first)
 ```
 
 > **.env secrets**: AI has access blocked to all ``.env`` files except ``.env.example``.
-> If a plan needs to modify an ``.env`` file, AI will ask user to modify MANUALLY the file.
+> If a plan needs to modify an ``.env`` file, AI will ask user to modify the file MANUALLY.
 
 ### Where specs live
 
