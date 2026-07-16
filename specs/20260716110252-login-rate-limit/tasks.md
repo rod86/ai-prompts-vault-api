@@ -1,7 +1,7 @@
 # Tasks: Login attempt rate limiting
 Plan: specs/20260716110252-login-rate-limit/plan.md
 
-- [ ] T1. Login rate-limit config values
+- [x] T1. Login rate-limit config values
   - Type: config
   - Depends on: none
   - Red: none — `src/config/config.ts` is pure env mapping (composition; matching the existing file); values are proven behaviorally by T2–T7
