@@ -8,7 +8,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: `npm install zod-openapi` (latest stable, prod dependency)
   - Covers: prerequisite for T7–T10
 
-- [ ] T2. Authenticate response schema + typed handler
+- [x] T2. Authenticate response schema + typed handler
   - Type: response schema
   - Depends on: none
   - Red: in `tests/integration/handlers/auth/authenticateHandler.test.ts`, a new test "response matches the documented shape": authenticate with valid credentials, assert `AuthenticateResponseSchema.parse(response.body)` succeeds — fails because `src/routes/auth.response.schema.ts` does not exist

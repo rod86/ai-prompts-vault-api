@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { passwordHasher } from '@src/modules/shared/services.js';
 import { type User } from '@src/modules/user/domain/User.js';
+import { AuthenticateResponseSchema } from '@src/routes/auth.response.schema.js';
 import { createUserFixture } from '@tests/lib/config.js';
 
 describe('POST /authenticate', () => {
@@ -30,6 +31,14 @@ describe('POST /authenticate', () => {
         expect(response.body.token).not.toHaveLength(0);
         expect(response.body.password).toBeUndefined();
         expect(Object.keys(response.body)).toEqual(['token']);
+    });
+
+    it('response matches the documented shape', async () => {
+        const response = await request(app)
+            .post('/authenticate')
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(() => AuthenticateResponseSchema.parse(response.body)).not.toThrow();
     });
 
     it('returns a 401 invalid-credentials failure when the email is unknown', async () => {
