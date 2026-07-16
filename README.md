@@ -102,7 +102,10 @@ Exchange credentials for a JWT bearer token used on the prompt endpoints.
 ```
 
 - **Errors:** `401 INVALID_CREDENTIALS` if the email or password is wrong;
-  `400 VALIDATION_ERROR` for invalid input.
+  `400 VALIDATION_ERROR` for invalid input; `429 TOO_MANY_REQUESTS` after too
+  many failed logins from the same client — further attempts (even with correct
+  credentials) are rejected until the window resets, with a `Retry-After`
+  header. See [Rate limiting](#rate-limiting).
 
 ### List prompt categories
 
@@ -191,6 +194,15 @@ Exchange credentials for a JWT bearer token used on the prompt endpoints.
   may delete it.
 - **Success response — `204 No Content`** (empty body).
 
+### Rate limiting
+
+- All endpoints share a general per-client limit (default **100 requests / 15 minutes**).
+- `POST /authenticate` enforces a stricter failed-login allowance (default **5 failed attempts / 15 minutes**). once it is exhausted every further login attempt
+  is rejected — even with correct credentials — until the window resets
+- Clients are identified by IP, honouring trusted proxies (`TRUST_PROXY_HOPS`).
+- Responses carry standard (draft-8) `RateLimit-*` headers. When a rate limit is reached, the response has also `Retry-After` header.
+- Limits are set up in ``.env`` file.
+
 ### Error responses
 
 Every error returns the same envelope — `{ status, code, message }` — with the
@@ -208,6 +220,7 @@ transport status mirrored in `status`. Request-validation failures (`400`) add a
 | 404    | `PROMPT_NOT_FOUND`     | No prompt exists with the given id.                             |
 | 422    | `CATEGORY_NOT_FOUND`   | `category_id` does not match an existing category.              |
 | 422    | `EMAIL_ALREADY_IN_USE` | Email already registered at `POST /users`.                      |
+| 429    | `TOO_MANY_REQUESTS`    | Rate limit exceeded — the general limit, or the stricter failed-login limit on `POST /authenticate`. |
 | 500    | `INTERNAL_ERROR`       | Unexpected server error (cause logged server-side, not exposed). |
 
 Example business error (`403`):
@@ -288,7 +301,8 @@ src/
     infrastructure/        # Adapters (drizzle repositories, Token Generators,...)
     services.ts            # Context services setup (DI wiring)
   handlers/                # HTTP route handler
-  middleware/              # Express middleware
+  middleware/              # Express 
+  errors/                  # HTTP-boundary error (e. g. ApiError)
   routes/                  # Express routers + request-validation schemas
   config/
     config.ts              # env vars + fixed params (no schema)

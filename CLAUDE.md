@@ -105,7 +105,12 @@ src/
       prompt.schema.ts  #   (prompts → users FK is a sibling import here)
       schema.ts         # internal aggregation (export *) — drizzle-kit points here
       index.ts          # barrel: `schema` object + DatabaseSchema/DatabaseConnection/PromptSchema/UserSchema
-  app.ts                # HTTP app: routes (no listen)
+  routes/               # per-resource routers + request schemas (*.routes.ts / *.schema.ts)
+  handlers/<resource>/  # HTTP handlers: wire-shape mapping, reach contexts via services.ts
+  middleware/           # error / 404 / auth / validation / rate-limit middleware
+  errors/               # ApiError — HTTP-boundary error (explicit status + code)
+  types/                # express.d.ts — custom `req` property typing
+  app.ts                # HTTP app: middleware stack + routes (no listen)
   index.ts              # server bootstrap + graceful shutdown
 tests/
   lib/                  # shared helpers: model factories, fixtures, DB read-back helpers
@@ -127,10 +132,38 @@ Express 5 conventions — app/server boot, routers, middleware ordering, request
 validation, centralized error handling + 404, and custom `req` typing — are owned
 by the **`node-express-typescript` skill**; follow it when adding routes back.
 
-`src/app.ts` currently mounts only `GET /health` → `200 { status: 'ok' }`. There
-are no handlers, schemas, or request-validation middleware yet — they were
-removed as legacy scaffolding and are reintroduced, per the skill's conventions,
-as routes/handlers get migrated onto `src/modules/`.
+`src/app.ts` wires the app in this order: `app.set('trust proxy',
+config.trustProxyHops)`, `express.json()`, the global rate limiter,
+`GET /health` → `200 { status: 'ok' }`, the API router (`src/routes/index.ts`,
+composing the per-resource routers), then `notFoundMiddleware` and
+`errorMiddleware` last. Each router (`src/routes/*.routes.ts`) chains per-route
+middleware — `validateRequestMiddleware` with the sibling `*.schema.ts` schema,
+`requireAuthMiddleware` where the route needs a user — into a handler under
+`src/handlers/<resource>/`.
+
+**Rate limiting.** Two limiters, both built by the shared factory
+`src/middleware/rateLimit/createRateLimitMiddleware.ts` (wraps
+`express-rate-limit`; `standardHeaders: 'draft-8'`, no legacy headers; on an
+exhausted allowance it forwards `new ApiError(429, 'TOO_MANY_REQUESTS', …)` so
+`errorMiddleware` emits the uniform envelope, alongside `Retry-After` and the
+draft-8 `RateLimit-*` headers):
+
+- **Global** — `app.use(createRateLimitMiddleware(config.rateLimit))` in
+  `app.ts`; every request on every endpoint counts. Defaults: 100 requests /
+  15 min (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`).
+- **Login** — first handler of `POST /authenticate`
+  (`src/routes/auth.routes.ts`), built from `config.loginRateLimit` with
+  `skipSuccessfulRequests: true`, so only failed attempts (status ≥ 400)
+  consume the allowance; once exhausted, even correct credentials get the same
+  429 — deliberately indistinguishable from the general limit. Defaults: 5
+  failed attempts / 15 min (`LOGIN_RATE_LIMIT_MAX`,
+  `LOGIN_RATE_LIMIT_WINDOW_MS`).
+
+Client identity is the connection IP, or the forwarded IP when behind trusted
+proxies — governed by `TRUST_PROXY_HOPS` (default 0; keep ≥ 1 behind a proxy
+and for the integration suite, see `.env.example`). Counters live in
+`express-rate-limit`'s default in-memory store: per process, reset on restart,
+no DB tables.
 
 **Wire params are `snake_case`.** Every client-facing endpoint parameter uses
 `snake_case`, not `camelCase`:
@@ -155,7 +188,11 @@ base (`src/modules/shared/domain/DomainError.ts`), declaring a `code` and a
 `src/middleware/errorMiddleware.ts` maps `category → status` via
 `CATEGORY_STATUS` (`src/middleware/domainErrorStatus.ts`) in one central
 branch — a new business error that reuses an existing `category` needs no
-middleware edit. An unexpected/technical failure falls through to a generic
+middleware edit. HTTP-boundary errors that aren't business errors use
+`ApiError` (`src/errors/ApiError.ts`), which carries an explicit transport
+`status` + `code` (e.g. the rate limiters' 429 `TOO_MANY_REQUESTS`);
+`errorMiddleware` maps it into the same envelope. An
+unexpected/technical failure falls through to a generic
 `INTERNAL_ERROR` 500; the underlying cause is logged server-side
 (`console.error`) but never sent to the client. See `domain-driven-design`
 for the `DomainError` subclassing rules and `node-express-typescript` for the
@@ -239,6 +276,12 @@ isolated-vs-real distinction):
   **routes/handlers** (wired in `app.ts`) → **integration**, against a real
   DB/HTTP.
 
+**Rate limits in route tests:** the app under test mounts both rate limiters,
+so requests in a test file count against a shared per-client allowance. Give
+each test its own client identity via a unique `X-Forwarded-For` IP — this
+needs `TRUST_PROXY_HOPS` ≥ 1, which `.env.example` already sets — so tests
+never share a bucket.
+
 **Test helpers (`tests/lib`):**
 - `tests/lib/config.ts` re-exports the shared `databaseClient` and its
   `TestDatabaseClient`/`TestDatabaseConnection` types, exports the singleton
@@ -267,7 +310,9 @@ isolated-vs-real distinction):
 `DrizzlePromptCategoryRepository.test.ts` (integration DB lifecycle + fixtures +
 shared reference categories), `deletePromptHandler.test.ts` (route test wiring
 category/user/prompt fixtures), `app.test.ts` (app-level concerns: not-found
-contract, error/generic middleware, health check — not per-route tests).
+contract, error/generic middleware, health check — not per-route tests),
+`loginRateLimitMiddleware.test.ts` (middleware behavior pinned per acceptance
+criterion, unique `X-Forwarded-For` per test).
 
 **Schema** is managed outside test scope — migrations must be applied before
 running the suite (`npm run db:migrate`).
