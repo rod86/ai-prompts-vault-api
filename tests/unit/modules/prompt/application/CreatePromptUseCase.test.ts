@@ -102,20 +102,9 @@ describe('CreatePromptUseCase', () => {
         const fixtureCategory = promptCategoryModelFactory.create();
         const query = buildQuery({ categoryId: fixtureCategory.id, description: undefined });
         const fixtureUser = { id: query.userId, name: faker.person.fullName() };
-        const resolvedPrompt: Prompt = {
-            id: generatedId,
-            category: fixtureCategory,
-            user: fixtureUser,
-            title: query.title,
-            prompt: query.prompt,
-            description: undefined,
-            createdAt: now,
-            updatedAt: now,
-        };
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         userRepository.findById.mockResolvedValue(fixtureUser);
         promptRepository.create.mockResolvedValue(undefined);
-        promptRepository.findById.mockResolvedValue(resolvedPrompt);
 
         const result = await useCase.invoke(query);
 

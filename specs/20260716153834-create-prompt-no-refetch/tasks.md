@@ -80,7 +80,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     was assembled from the data already at hand and the stored prompt was not read back
     after being stored."
 
-- [ ] T6. No-description creation still yields no description
+- [x] T6. No-description creation still yields no description
   - Type: application
   - Depends on: T5
   - Red: adapt the existing "creates a prompt with no description unchanged" unit test:
