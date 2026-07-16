@@ -92,7 +92,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
   - Covers: AC6 "Given valid prompt data with no description, when the user creates the
     prompt, then the created prompt they receive has no description."
 
-- [ ] T7. Category-not-found precedence over the creator lookup
+- [x] T7. Category-not-found precedence over the creator lookup
   - Type: application
   - Depends on: T4
   - Red: extend the existing category-not-found unit test with the assertion that the

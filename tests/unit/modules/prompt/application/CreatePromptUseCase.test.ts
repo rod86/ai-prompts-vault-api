@@ -96,6 +96,7 @@ describe('CreatePromptUseCase', () => {
             `Category not found: ${query.categoryId}`,
         );
         expect(promptRepository.create).not.toHaveBeenCalled();
+        expect(userRepository.findById).not.toHaveBeenCalled();
     });
 
     it('creates a prompt with no description unchanged', async () => {
