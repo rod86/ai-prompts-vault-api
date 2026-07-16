@@ -388,3 +388,20 @@ await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.use
   is racy against sibling integration test files touching the same table. Always
   filter the actual/expected data down to the test's own fixture ids before
   asserting.
+
+
+## Coverage
+
+If coverage reporting is enabled, prefer emitting these formats — each serves a different reader:
+
+| Format       | Who uses it | Description                                    |
+|--------------|-------------|--------------------------------------------------|
+| text         | User        | Per-file summary printed to the terminal          |
+| html         | User        | Browsable, line-by-line coverage report           |
+| json-summary | AI          | Quick per-file totals — fast to check for gaps     |
+| lcov         | AI          | Line/branch-level detail — pinpoints uncovered lines |
+
+Treat any configured threshold as a floor, not a target: don't chase 100%, and don't add tests
+to a file with no logic of its own (composition roots, re-exports, type-only files) just to pad
+the number.
+

@@ -316,6 +316,7 @@ tests/
   integration/             
 specs/                     # spec-driven development specs, one folder per feature
 drizzle/                   # generated SQL migrations
+coverage/               # Test coverage reports
 ```
 
 ## Testing
@@ -345,11 +346,24 @@ npm run db:migrate       # apply the latest migrations
 - Run the tests.
 
 ```shell
-npm test                                   # run the whole suite once (the CI command)
-npx vitest                                 # watch mode — re-runs on file changes (TDD loop)
-npx vitest run tests/unit/.../X.test.ts    # run a single test file
-npx vitest run -t 'returns 404'            # run tests whose name matches a string
+npm test                               # run the whole suite once (includes coverage reports)
+vitest                                 # watch mode — re-runs on file changes (TDD loop)
+vitest run tests/unit/.../X.test.ts    # run a single test file
+vitest run -t 'returns 404'            # run tests whose name matches a string
 ```
+
+### Coverage
+
+- The coverage treshold is **80%*.
+- Coverage reports files are output in ``coverage/`` directory.
+- The coverage formats are:
+  - *text*: See coverage info in terminal.
+  - *html*: See coverage details in browser. Open ``coverage/index.html``.
+  - *json-summary*: Generates a ``coverage/coverage-summary.json`` (per-file totals).
+  - *lcov*: Generates a `coverage/lcov.info` (line/branch detail).
+
+> Formats **json-summary** and **lcov** are used by AI. When you ask AI "Explain why the statement "throw new PromptCreationError" (after creation) in @tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts appears as uncovered",
+> AI will use the JSON and lcov files to see the coverage info and analyze the case.
 
 ## Git workflow
 

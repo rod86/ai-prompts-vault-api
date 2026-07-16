@@ -118,6 +118,7 @@ tests/
   integration/          # integration tests (real DB, supertest)
 specs/                  # SDD specs, one timestamped folder per feature
 drizzle/                # generated SQL migrations
+coverage/               # Test coverage reports
 ```
 
 Path aliases (`tsconfig.json`): `@src/*`, `@tests/*`. Contexts under
@@ -316,6 +317,12 @@ criterion, unique `X-Forwarded-For` per test).
 
 **Schema** is managed outside test scope — migrations must be applied before
 running the suite (`npm run db:migrate`).
+
+**Coverage:** `npm test` runs with coverage on (`vitest run --coverage`, v8
+provider, configured in `vitest.config.ts`), reporting into `coverage/` in four
+formats. When checking coverage, only read `coverage/coverage-summary.json`
+(per-file totals) and `coverage/lcov.info` (line/branch detail) — those are
+the formats meant for you; ignore other formats, which are for the user.
 
 ---
 
