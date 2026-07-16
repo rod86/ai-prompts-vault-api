@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import app from '@src/app.js';
+import config from '@src/config/config.js';
 
 describe('rate limit middleware', () => {
     it('serves the request normally and carries the allowance state headers', async () => {
@@ -14,5 +15,21 @@ describe('rate limit middleware', () => {
         });
         expect(response.headers['ratelimit-policy']).toBeDefined();
         expect(response.headers['ratelimit']).toBeDefined();
+    });
+
+    it('rejects a request once the allowance is exhausted with the E1 envelope', async () => {
+        let response;
+
+        for (let i = 0; i < config.rateLimit.max + 1; i++) {
+            response = await request(app).get('/does-not-exist');
+        }
+
+        expect(response?.status).toBe(429);
+        expect(response?.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
+        expect(response?.headers['retry-after']).toBeDefined();
     });
 });

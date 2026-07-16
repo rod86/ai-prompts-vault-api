@@ -35,7 +35,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: `src/middleware/rateLimit/createRateLimitMiddleware.ts` — default-exported factory `createRateLimitMiddleware({ windowMs, max })` returning `rateLimit({ windowMs, limit: max, standardHeaders: 'draft-8', legacyHeaders: false })` (no custom handler yet); mount `createRateLimitMiddleware(config.rateLimit)` in `src/app.ts` after the `/health` route, before `apiRouter` (minimal placement to pass the probe test; final placement set by T7)
   - Covers: AC1 "Given a client with remaining allowance, when it makes a request to any limited endpoint, then the request is served normally and the response carries the client's current allowance state."
 
-- [ ] T6. Over-limit requests rejected with the E1 envelope
+- [x] T6. Over-limit requests rejected with the E1 envelope
   - Type: middleware + app wiring
   - Depends on: T3, T4, T5
   - Red: in `rateLimitMiddleware.test.ts`, send `config.rateLimit.max + 1` requests to `GET /does-not-exist` and assert the **final** response (order-tolerant, plan §7.4) is `429` with body exactly `{ status: 429, code: 'TOO_MANY_REQUESTS', message: 'Too many requests, please try again later.' }` and a `retry-after` header — fails: the library's default handler returns its own body, not the envelope
