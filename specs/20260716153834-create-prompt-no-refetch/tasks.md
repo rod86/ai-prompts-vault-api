@@ -13,7 +13,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     (mirror `PromptCategoryRepositoryInterface`)
   - Covers: creator field (plan §2/§3); groundwork for V2
 
-- [ ] T2. Drizzle user-lookup adapter — unknown user
+- [x] T2. Drizzle user-lookup adapter — unknown user
   - Type: infrastructure
   - Depends on: T1
   - Red: new integration test
