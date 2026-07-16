@@ -37,7 +37,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     `eq(users.id, id)`, `limit(1)` (mirror `DrizzleUserCredentialsRepository.findById`)
   - Covers: V2 (lookup mechanics); supports AC1 (creator name in the assembled prompt)
 
-- [ ] T4. Use case rejects a missing creator
+- [x] T4. Use case rejects a missing creator
   - Type: application
   - Depends on: T1, T3
   - Red: new unit test in `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts`:
