@@ -1,4 +1,4 @@
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit, type RateLimitRequestHandler } from 'express-rate-limit';
 import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 
 export default function createRateLimitMiddleware({
@@ -7,7 +7,7 @@ export default function createRateLimitMiddleware({
 }: {
     windowMs: number;
     max: number;
-}) {
+}): RateLimitRequestHandler {
     return rateLimit({
         windowMs,
         limit: max,
