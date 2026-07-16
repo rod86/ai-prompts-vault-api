@@ -22,7 +22,7 @@ Plan: specs/20260716102945-api-error/plan.md
   - Green: `src/middleware/validateRequest/validateRequestMiddleware.ts` throws `new ApiError(400, 'VALIDATION_ERROR', 'Request Validation data failed', result.errors)`; delete `src/middleware/validateRequest/RequestValidationError.ts`; remove its import and branch from `src/middleware/errorMiddleware.ts`.
   - Covers: AC1 "Given a request whose data fails validation, when it is submitted, then it is rejected with E1 in the standard error shape, including the per-field detail of what failed."; E1
 
-- [ ] T4. Rate-limit failure raised as `ApiError`
+- [x] T4. Rate-limit failure raised as `ApiError`
   - Type: middleware
   - Depends on: T2
   - Red: none — behavior-preserving swap; AC2's contract is already pinned by the existing test `tests/integration/rateLimitMiddleware.test.ts` (drives the real app), which must stay green **unmodified**.

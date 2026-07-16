@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { ApiError } from '@src/errors/ApiError.js';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
-import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
 import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/DomainError.js';
 
@@ -71,7 +70,7 @@ describe('errorMiddleware', () => {
     it('renders the RateLimitExceededError contract', async () => {
         const app = express();
         app.get('/limited', () => {
-            throw new RateLimitExceededError();
+            throw new ApiError(429, 'TOO_MANY_REQUESTS', 'Too many requests, please try again later.');
         });
         app.use(errorMiddleware);
 

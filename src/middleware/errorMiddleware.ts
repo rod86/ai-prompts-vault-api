@@ -1,7 +1,6 @@
 import { type NextFunction, type Request, type Response } from 'express';
 import { ApiError } from '@src/errors/ApiError.js';
 import { CATEGORY_STATUS } from '@src/middleware/domainErrorStatus.js';
-import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import { DomainError } from '@src/modules/shared/domain/DomainError.js';
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
@@ -12,11 +11,6 @@ function errorMiddleware(err: unknown, _req: Request, res: Response, _next: Next
             message: err.message,
             ...(err.details != null && { details: err.details }),
         });
-        return;
-    }
-
-    if (err instanceof RateLimitExceededError) {
-        res.status(429).json({ status: 429, code: 'TOO_MANY_REQUESTS', message: err.message });
         return;
     }
 
