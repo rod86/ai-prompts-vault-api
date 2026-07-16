@@ -1,5 +1,5 @@
 # Spec: Login attempt rate limiting
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API operator, I want repeated failed login attempts from a client to be limited, so that attackers cannot brute-force user credentials.
 
 > Related: `specs/20260716084012-api-rate-limit` (IMPLEMENTED) introduced the
