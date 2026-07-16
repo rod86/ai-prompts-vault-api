@@ -28,7 +28,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: `src/middleware/rateLimit/RateLimitExceededError.ts` extending `DomainError` (plan §3), named-class default pattern mirroring `RequestValidationError.ts`
   - Covers: E1 "The client is told 'Too many requests, please try again later.' … under this error's own stable identifier"
 
-- [ ] T5. Limiter factory mounted; responses carry allowance headers
+- [x] T5. Limiter factory mounted; responses carry allowance headers
   - Type: middleware + app wiring
   - Depends on: T1, T2
   - Red: new `tests/integration/rateLimitMiddleware.test.ts`: a single `GET /does-not-exist` (limited probe path — no auth/DB needed, plan §8) returns its normal 404 contract **and** carries the `ratelimit-policy` and `ratelimit` headers — fails: no limiter mounted, headers absent
