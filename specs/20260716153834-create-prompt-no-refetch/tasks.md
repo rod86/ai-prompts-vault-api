@@ -60,7 +60,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     a prompt, then they receive the 'user not found' error (E2) and nothing is stored.";
     AC5 (existing rejection test adapted and kept green); V2, E2, E3
 
-- [ ] T5. Use case returns the assembled prompt without re-reading it
+- [x] T5. Use case returns the assembled prompt without re-reading it
   - Type: application
   - Depends on: T4
   - Red: rewrite the happy-path unit test: drop the `promptRepository.findById` mock;

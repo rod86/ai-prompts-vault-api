@@ -58,15 +58,6 @@ export class CreatePromptUseCase {
             throw new PromptCreationError(common.id, error);
         }
 
-        const createdPrompt = await this.promptRepository.findById(common.id);
-
-        if (!createdPrompt) {
-            throw new PromptCreationError(
-                common.id,
-                new Error('Prompt not found immediately after being created'),
-            );
-        }
-
-        return createdPrompt;
+        return { ...common, category, user: creator };
     }
 }

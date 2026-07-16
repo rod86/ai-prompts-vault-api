@@ -51,11 +51,11 @@ describe('CreatePromptUseCase', () => {
         );
     });
 
-    it('creates the prompt with the caller as creator and returns the re-read prompt', async () => {
+    it('creates the prompt with the caller as creator and returns the assembled prompt', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
         const query = buildQuery({ categoryId: fixtureCategory.id });
         const fixtureUser = { id: query.userId, name: faker.person.fullName() };
-        const resolvedPrompt: Prompt = {
+        const expectedPrompt: Prompt = {
             id: generatedId,
             category: fixtureCategory,
             user: fixtureUser,
@@ -68,11 +68,10 @@ describe('CreatePromptUseCase', () => {
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         userRepository.findById.mockResolvedValue(fixtureUser);
         promptRepository.create.mockResolvedValue(undefined);
-        promptRepository.findById.mockResolvedValue(resolvedPrompt);
 
         const result = await useCase.invoke(query);
 
-        expect(result).toEqual(resolvedPrompt);
+        expect(result).toEqual(expectedPrompt);
         expect(promptRepository.create).toHaveBeenCalledOnce();
         expect(promptRepository.create).toHaveBeenCalledWith({
             id: generatedId,
@@ -84,7 +83,7 @@ describe('CreatePromptUseCase', () => {
             createdAt: now,
             updatedAt: now,
         });
-        expect(promptRepository.findById).toHaveBeenCalledWith(generatedId);
+        expect(promptRepository.findById).not.toHaveBeenCalled();
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
