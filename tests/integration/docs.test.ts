@@ -82,3 +82,12 @@ describe('GET /openapi.json', () => {
         expect(paths['/prompts/{id}'].delete.security).toEqual([{ bearerAuth: [] }]);
     });
 });
+
+describe('GET /logo.png', () => {
+    it('serves the public icon file as-is', async () => {
+        const response = await request(app).get('/logo.png');
+
+        expect(response.status).toBe(200);
+        expect(response.headers['content-type']).toBe('image/png');
+    });
+});

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import express, { type Request, type Response } from 'express';
 import config from '@src/config/config.js';
 import { openApiDocument } from '@src/docs/api.js';
@@ -20,6 +21,8 @@ app.get('/health', (_req: Request, res: Response) => {
 app.get('/openapi.json', (_req: Request, res: Response) => {
     res.status(200).json(openApiDocument);
 });
+
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.use(apiRouter);
 app.use(notFoundMiddleware);

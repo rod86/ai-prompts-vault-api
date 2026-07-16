@@ -71,7 +71,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/docs/prompts.ts` (reusing the prompts request schemas' `.shape`, `PromptResponseSchema`, `PromptCategoryListResponseSchema`, shared error schemas); spread into `api.ts`
   - Covers: AC4 "Given the description document, when its prompt entries are inspected, then category listing, prompt creation, prompt update, and prompt deletion are all present, each listing exactly its real outcomes (including not-found, not-owner, and unknown-category/user where the endpoint can produce them), the document declares the token-based authentication scheme, and prompt creation, update, and deletion are marked as requiring it."
 
-- [ ] T11. Public static folder + placeholder icon
+- [x] T11. Public static folder + placeholder icon
   - Type: static assets
   - Depends on: none
   - Red: in `docs.test.ts`, a test: `GET /logo.png` returns 200 with content type `image/png` — fails with 404 (no static mount, no file)
