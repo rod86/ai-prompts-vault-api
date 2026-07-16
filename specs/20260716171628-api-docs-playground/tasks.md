@@ -29,7 +29,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/routes/prompts.response.schema.ts` (`PromptResponseSchema`, `.meta({id: 'Prompt'})`); type `createPromptHandler`'s response body and map dates via `.toISOString()`
   - Covers: AC7 "Given an authenticated user and valid prompt data, when the user creates a prompt, then the response matches the documented prompt shape exactly."
 
-- [ ] T5. Typed update-prompt handler
+- [x] T5. Typed update-prompt handler
   - Type: response schema
   - Depends on: T4
   - Red: in `tests/integration/handlers/prompts/updatePromptHandler.test.ts`, a new test "response matches the documented shape": update a prompt, assert `PromptResponseSchema.parse(response.body)` succeeds — fails while the handler emits `Date` objects untyped (dates pass JSON-serialized, so the red is the missing typed mapping; if the parse happens to pass, assert the handler's `ResBody` typing via `npm run typecheck` failing before the Green)
