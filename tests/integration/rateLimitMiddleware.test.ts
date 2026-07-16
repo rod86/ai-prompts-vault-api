@@ -43,4 +43,22 @@ describe('rate limit middleware', () => {
             message: 'Too many requests, please try again later.',
         });
     });
+
+    it('holds independent allowances per forwarded client behind a trusted proxy', async () => {
+        let exhaustedResponse;
+
+        for (let i = 0; i < config.rateLimit.max + 1; i++) {
+            exhaustedResponse = await request(app)
+                .get('/does-not-exist')
+                .set('X-Forwarded-For', '10.1.1.1');
+        }
+
+        expect(exhaustedResponse?.status).toBe(429);
+
+        const otherClientResponse = await request(app)
+            .get('/does-not-exist')
+            .set('X-Forwarded-For', '10.2.2.2');
+
+        expect(otherClientResponse.status).toBe(404);
+    });
 });

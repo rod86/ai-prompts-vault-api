@@ -49,7 +49,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: move the limiter mount in `src/app.ts` to right after `express.json()`, before every route (plan §1 final ordering, decision #12)
   - Covers: AC3 "Given a client that has used its full allowance within the current window, when it calls the health check, then the request is rejected with E1 like any other endpoint."
 
-- [ ] T8. Trust proxy: allowances independent per forwarded client
+- [x] T8. Trust proxy: allowances independent per forwarded client
   - Type: app wiring
   - Depends on: T2, T6
   - Red: in `rateLimitMiddleware.test.ts`, exhaust the allowance for forwarded client `X-Forwarded-For: 10.1.1.1` (`max + 1` requests, final one `429`), then a single request with `X-Forwarded-For: 10.2.2.2` is **not** `429` — fails: without `trust proxy`, both key to the direct connection's exhausted bucket (requires `TRUST_PROXY_HOPS=1` in `.env`, T2/plan R1)

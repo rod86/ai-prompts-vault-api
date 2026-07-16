@@ -7,6 +7,8 @@ import { apiRouter } from '@src/routes/index.js';
 
 const app = express();
 
+app.set('trust proxy', config.trustProxyHops);
+
 app.use(express.json());
 app.use(createRateLimitMiddleware(config.rateLimit));
 
