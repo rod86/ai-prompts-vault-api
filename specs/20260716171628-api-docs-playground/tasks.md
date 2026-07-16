@@ -15,7 +15,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/routes/auth.response.schema.ts` (`AuthenticateResponseSchema` = `{token: string}`, `.meta({id: 'AuthToken'})`); type `authenticateHandler`'s response body as `AuthenticateResponse`
   - Covers: AC5 "Given valid credentials, when a client authenticates, then the response matches the documented authentication success shape exactly."
 
-- [ ] T3. User response schema + typed handler
+- [x] T3. User response schema + typed handler
   - Type: response schema
   - Depends on: none
   - Red: in `tests/integration/handlers/users/createUserHandler.test.ts`, a new test "response matches the documented shape": register a user, assert `UserResponseSchema.parse(response.body)` succeeds (`created_at`/`updated_at` as `z.iso.datetime()`) — fails because the schema does not exist
