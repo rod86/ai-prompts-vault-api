@@ -31,4 +31,15 @@ describe('GET /openapi.json', () => {
             '429',
         ]);
     });
+
+    it('documents user registration with exactly its real outcomes', async () => {
+        const response = await request(app).get('/openapi.json');
+
+        expect(Object.keys(response.body.paths['/users'].post.responses).sort()).toEqual([
+            '201',
+            '400',
+            '422',
+            '429',
+        ]);
+    });
 });

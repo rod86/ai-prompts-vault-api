@@ -57,7 +57,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/docs/health.ts` and `src/docs/auth.ts` (reusing `AuthenticateSchema.shape.body`, `AuthenticateResponseSchema`, shared error schemas — creating `src/routes/shared.response.schema.ts` here with `ErrorResponseSchema`/`ValidationErrorResponseSchema`/`HealthResponseSchema`); spread into `api.ts`
   - Covers: AC2 "Given the description document, when its health and authentication entries are inspected, then the health endpoint and the authentication endpoint are present, each listing exactly its real outcomes: health — success and allowance exceeded; authentication — success, invalid input, invalid credentials, and allowance exceeded."
 
-- [ ] T9. Users path entry
+- [x] T9. Users path entry
   - Type: docs
   - Depends on: T3, T8
   - Red: in `docs.test.ts`, a test asserting `paths['/users'].post` exists with exactly responses {201, 400, 422, 429} — fails while absent
