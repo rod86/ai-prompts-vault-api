@@ -7,8 +7,10 @@ import {
 } from '@src/modules/prompt/application/CreatePromptUseCase.js';
 import { CategoryNotFoundError } from '@src/modules/prompt/domain/errors/CategoryNotFoundError.js';
 import { PromptCreationError } from '@src/modules/prompt/domain/errors/PromptCreationError.js';
+import { UserNotFoundError } from '@src/modules/prompt/domain/errors/UserNotFoundError.js';
 import type PromptCategoryRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptCategoryRepositoryInterface.js';
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
+import type PromptUserRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptUserRepositoryInterface.js';
 import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
@@ -25,6 +27,7 @@ const buildQuery = (data: Partial<CreatePromptQuery> = {}): CreatePromptQuery =>
 describe('CreatePromptUseCase', () => {
     let promptRepository: MockProxy<PromptRepositoryInterface>;
     let categoryRepository: MockProxy<PromptCategoryRepositoryInterface>;
+    let userRepository: MockProxy<PromptUserRepositoryInterface>;
     let dateTime: MockProxy<DateTimeInterface>;
     let idGenerator: MockProxy<IdGeneratorInterface>;
     let useCase: CreatePromptUseCase;
@@ -34,6 +37,7 @@ describe('CreatePromptUseCase', () => {
     beforeEach(() => {
         promptRepository = mock<PromptRepositoryInterface>();
         categoryRepository = mock<PromptCategoryRepositoryInterface>();
+        userRepository = mock<PromptUserRepositoryInterface>();
         dateTime = mock<DateTimeInterface>();
         idGenerator = mock<IdGeneratorInterface>();
         dateTime.now.mockReturnValue(now);
@@ -41,18 +45,20 @@ describe('CreatePromptUseCase', () => {
         useCase = new CreatePromptUseCase(
             promptRepository,
             categoryRepository,
+            userRepository,
             dateTime,
             idGenerator,
         );
     });
 
-    it('creates the prompt with the caller as creator and returns the re-read prompt', async () => {
+    it('creates the prompt with the caller as creator and returns the assembled prompt', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
         const query = buildQuery({ categoryId: fixtureCategory.id });
-        const resolvedPrompt: Prompt = {
+        const fixtureUser = { id: query.userId, name: faker.person.fullName() };
+        const expectedPrompt: Prompt = {
             id: generatedId,
             category: fixtureCategory,
-            user: { id: query.userId, name: faker.person.fullName() },
+            user: fixtureUser,
             title: query.title,
             prompt: query.prompt,
             description: query.description,
@@ -60,12 +66,12 @@ describe('CreatePromptUseCase', () => {
             updatedAt: now,
         };
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        userRepository.findById.mockResolvedValue(fixtureUser);
         promptRepository.create.mockResolvedValue(undefined);
-        promptRepository.findById.mockResolvedValue(resolvedPrompt);
 
         const result = await useCase.invoke(query);
 
-        expect(result).toEqual(resolvedPrompt);
+        expect(result).toEqual(expectedPrompt);
         expect(promptRepository.create).toHaveBeenCalledOnce();
         expect(promptRepository.create).toHaveBeenCalledWith({
             id: generatedId,
@@ -77,7 +83,7 @@ describe('CreatePromptUseCase', () => {
             createdAt: now,
             updatedAt: now,
         });
-        expect(promptRepository.findById).toHaveBeenCalledWith(generatedId);
+        expect(promptRepository.findById).not.toHaveBeenCalled();
         expect(dateTime.now).toHaveBeenCalledOnce();
     });
 
@@ -90,24 +96,16 @@ describe('CreatePromptUseCase', () => {
             `Category not found: ${query.categoryId}`,
         );
         expect(promptRepository.create).not.toHaveBeenCalled();
+        expect(userRepository.findById).not.toHaveBeenCalled();
     });
 
     it('creates a prompt with no description unchanged', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
         const query = buildQuery({ categoryId: fixtureCategory.id, description: undefined });
-        const resolvedPrompt: Prompt = {
-            id: generatedId,
-            category: fixtureCategory,
-            user: { id: query.userId, name: faker.person.fullName() },
-            title: query.title,
-            prompt: query.prompt,
-            description: undefined,
-            createdAt: now,
-            updatedAt: now,
-        };
+        const fixtureUser = { id: query.userId, name: faker.person.fullName() };
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        userRepository.findById.mockResolvedValue(fixtureUser);
         promptRepository.create.mockResolvedValue(undefined);
-        promptRepository.findById.mockResolvedValue(resolvedPrompt);
 
         const result = await useCase.invoke(query);
 
@@ -117,13 +115,28 @@ describe('CreatePromptUseCase', () => {
     it('throws PromptCreationError wrapping the original error when the repository rejects while creating', async () => {
         const fixtureCategory = promptCategoryModelFactory.create();
         const fixtureError = new Error('connection lost');
-        categoryRepository.findById.mockResolvedValue(fixtureCategory);
-        promptRepository.create.mockRejectedValue(fixtureError);
         const query = buildQuery({ categoryId: fixtureCategory.id });
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        userRepository.findById.mockResolvedValue({
+            id: query.userId,
+            name: faker.person.fullName(),
+        });
+        promptRepository.create.mockRejectedValue(fixtureError);
 
         const error: unknown = await useCase.invoke(query).catch((thrown: unknown) => thrown);
 
         expect(error).toBeInstanceOf(PromptCreationError);
         expect((error as PromptCreationError).cause).toBe(fixtureError);
+    });
+
+    it('throws UserNotFoundError and does not persist when the creator does not exist', async () => {
+        const fixtureCategory = promptCategoryModelFactory.create();
+        const query = buildQuery({ categoryId: fixtureCategory.id });
+        categoryRepository.findById.mockResolvedValue(fixtureCategory);
+        userRepository.findById.mockResolvedValue(undefined);
+
+        await expect(useCase.invoke(query)).rejects.toThrow(UserNotFoundError);
+        await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.userId}`);
+        expect(promptRepository.create).not.toHaveBeenCalled();
     });
 });

@@ -1,7 +1,9 @@
+export type PromptUser = { id: string; name: string };
+
 export type Prompt = {
     id: string;
     category: { id: string; name: string };
-    user: { id: string; name: string };
+    user: PromptUser;
     title: string;
     prompt: string;
     description?: string;

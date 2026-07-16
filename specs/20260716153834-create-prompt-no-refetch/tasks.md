@@ -1,7 +1,7 @@
 # Tasks: Create prompt without re-reading the created prompt
 Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
 
-- [ ] T1. `PromptUser` type + user-lookup port
+- [x] T1. `PromptUser` type + user-lookup port
   - Type: domain
   - Depends on: none
   - Red: none — `src/modules/prompt/domain/Prompt.ts` (type addition) and
@@ -13,7 +13,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     (mirror `PromptCategoryRepositoryInterface`)
   - Covers: creator field (plan §2/§3); groundwork for V2
 
-- [ ] T2. Drizzle user-lookup adapter — unknown user
+- [x] T2. Drizzle user-lookup adapter — unknown user
   - Type: infrastructure
   - Depends on: T1
   - Red: new integration test
@@ -27,7 +27,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     minimal `findById` that returns `undefined` when no row matches
   - Covers: V2 (lookup mechanics); supports AC4
 
-- [ ] T3. Drizzle user-lookup adapter — existing user
+- [x] T3. Drizzle user-lookup adapter — existing user
   - Type: infrastructure
   - Depends on: T2
   - Red: add to the T2 test file: insert a user via `createUserFixture()`, `findById`
@@ -37,7 +37,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     `eq(users.id, id)`, `limit(1)` (mirror `DrizzleUserCredentialsRepository.findById`)
   - Covers: V2 (lookup mechanics); supports AC1 (creator name in the assembled prompt)
 
-- [ ] T4. Use case rejects a missing creator
+- [x] T4. Use case rejects a missing creator
   - Type: application
   - Depends on: T1, T3
   - Red: new unit test in `tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts`:
@@ -60,7 +60,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     a prompt, then they receive the 'user not found' error (E2) and nothing is stored.";
     AC5 (existing rejection test adapted and kept green); V2, E2, E3
 
-- [ ] T5. Use case returns the assembled prompt without re-reading it
+- [x] T5. Use case returns the assembled prompt without re-reading it
   - Type: application
   - Depends on: T4
   - Red: rewrite the happy-path unit test: drop the `promptRepository.findById` mock;
@@ -80,7 +80,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     was assembled from the data already at hand and the stored prompt was not read back
     after being stored."
 
-- [ ] T6. No-description creation still yields no description
+- [x] T6. No-description creation still yields no description
   - Type: application
   - Depends on: T5
   - Red: adapt the existing "creates a prompt with no description unchanged" unit test:
@@ -92,7 +92,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
   - Covers: AC6 "Given valid prompt data with no description, when the user creates the
     prompt, then the created prompt they receive has no description."
 
-- [ ] T7. Category-not-found precedence over the creator lookup
+- [x] T7. Category-not-found precedence over the creator lookup
   - Type: application
   - Depends on: T4
   - Red: extend the existing category-not-found unit test with the assertion that the
@@ -104,7 +104,7 @@ Plan: specs/20260716153834-create-prompt-no-refetch/plan.md
     then they receive the 'category not found' error (E1), nothing is stored, and the
     creator's details are not looked up."; V1, E1
 
-- [ ] T8. End-to-end contract unchanged
+- [x] T8. End-to-end contract unchanged
   - Type: route handler
   - Depends on: T4, T5
   - Red: none — `tests/integration/handlers/prompts/createPromptHandler.test.ts`
