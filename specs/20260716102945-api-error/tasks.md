@@ -1,7 +1,7 @@
 # Tasks: Unified boundary error (ApiError)
 Plan: specs/20260716102945-api-error/plan.md
 
-- [ ] T1. `ApiError` rendered by the central handler (no detail)
+- [x] T1. `ApiError` rendered by the central handler (no detail)
   - Type: middleware
   - Depends on: none
   - Red: new test in `tests/integration/middleware/errorMiddleware.test.ts` — a route throws `new ApiError(418, 'STUB_CODE', 'stub message')`; expects status 418 and body strictly equal to `{ status: 418, code: 'STUB_CODE', message: 'stub message' }` (strict `toEqual` proves no `details` key). Fails: `src/errors/ApiError.ts` does not exist.

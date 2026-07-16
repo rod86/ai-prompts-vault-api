@@ -1,10 +1,16 @@
 import { type NextFunction, type Request, type Response } from 'express';
+import { ApiError } from '@src/errors/ApiError.js';
 import { CATEGORY_STATUS } from '@src/middleware/domainErrorStatus.js';
 import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import RequestValidationError from '@src/middleware/validateRequest/RequestValidationError.js';
 import { DomainError } from '@src/modules/shared/domain/DomainError.js';
 
 function errorMiddleware(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
+    if (err instanceof ApiError) {
+        res.status(err.status).json({ status: err.status, code: err.code, message: err.message });
+        return;
+    }
+
     if (err instanceof RequestValidationError) {
         res.status(400).json({
             status: 400,
