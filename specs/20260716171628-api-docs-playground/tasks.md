@@ -1,7 +1,7 @@
 # Tasks: Interactive API documentation & playground
 Plan: specs/20260716171628-api-docs-playground/plan.md
 
-- [ ] T1. Install `zod-openapi`
+- [x] T1. Install `zod-openapi`
   - Type: dependency
   - Depends on: none
   - Red: none — dependency-change task from plan §6, no test
