@@ -45,4 +45,19 @@ describe('login rate limit middleware', () => {
         });
         expect(response.headers['retry-after']).toBeDefined();
     });
+
+    it('never consumes the allowance on successful logins', async () => {
+        const clientIp = '10.10.0.2';
+        let response;
+
+        for (let i = 0; i < config.loginRateLimit.max + 1; i++) {
+            response = await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', clientIp)
+                .send({ email: knownUser.email, password: knownPassword });
+        }
+
+        expect(response?.status).toBe(200);
+        expect(response?.body).toEqual({ token: expect.any(String) });
+    });
 });

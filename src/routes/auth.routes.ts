@@ -9,7 +9,7 @@ export const authRouter = Router();
 
 authRouter.post(
     '/authenticate',
-    createRateLimitMiddleware(config.loginRateLimit),
+    createRateLimitMiddleware({ ...config.loginRateLimit, skipSuccessfulRequests: true }),
     validateRequestMiddleware(AuthenticateSchema),
     authenticateHandler,
 );

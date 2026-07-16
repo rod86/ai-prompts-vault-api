@@ -15,7 +15,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: in `src/routes/auth.routes.ts`, mount `createRateLimitMiddleware(config.loginRateLimit)` as the first handler of `POST /authenticate`, before `validateRequestMiddleware` (no `skipSuccessfulRequests` yet — T3 adds it)
   - Covers: AC2 "Given a client that has used its full failed-attempt allowance within the current window, when it makes a further login attempt with correct credentials, then the attempt is rejected with E1 in the standard error shape, including an indication of when to retry."; E1
 
-- [ ] T3. Successful logins never consume the allowance
+- [x] T3. Successful logins never consume the allowance
   - Type: middleware + route wiring
   - Depends on: T2
   - Red: in `loginRateLimitMiddleware.test.ts`, client `X-Forwarded-For: 10.10.0.2` logs in successfully `config.loginRateLimit.max + 1` times — assert the final response is `200` with `{ token: expect.any(String) }` — fails: T2's plain limiter counts every request, so the `max + 1`-th is `429`
