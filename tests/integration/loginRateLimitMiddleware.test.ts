@@ -79,4 +79,39 @@ describe('login rate limit middleware', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ token: expect.any(String) });
     });
+
+    it('rejects with E1 when a success interleaved with failures did not clear the counted failures', async () => {
+        const clientIp = '10.10.0.4';
+
+        for (let i = 0; i < config.loginRateLimit.max - 1; i++) {
+            await request(app)
+                .post('/authenticate')
+                .set('X-Forwarded-For', clientIp)
+                .send({ email: knownUser.email, password: 'wrong-password' });
+        }
+
+        const successResponse = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(successResponse.status).toBe(200);
+
+        await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: 'wrong-password' });
+
+        const response = await request(app)
+            .post('/authenticate')
+            .set('X-Forwarded-For', clientIp)
+            .send({ email: knownUser.email, password: knownPassword });
+
+        expect(response.status).toBe(429);
+        expect(response.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
+    });
 });

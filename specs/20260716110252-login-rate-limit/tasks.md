@@ -29,7 +29,7 @@ Plan: specs/20260716110252-login-rate-limit/plan.md
   - Green: none — test-only pinning task; production code unchanged
   - Covers: AC1 "Given a client with fewer failed login attempts than its allowance in the current window, when it submits correct credentials, then it is authenticated normally."
 
-- [ ] T5. A success does not clear counted failures (pinning)
+- [x] T5. A success does not clear counted failures (pinning)
   - Type: integration test (pinning)
   - Depends on: T3
   - Red: in `loginRateLimitMiddleware.test.ts`, client `X-Forwarded-For: 10.10.0.4` sends `max - 1` wrong-password attempts, one successful login (assert `200`), one more wrong-password attempt (reaching the full allowance), then an attempt with correct credentials — assert the final response is `429` with the E1 envelope — expected to pass on arrival (plan §7.4): the library decrements only the successful request, never resetting the bucket; a failure reveals wrong lock semantics
