@@ -1,7 +1,7 @@
 # Tasks: API rate limiting
 Plan: specs/20260716084012-api-rate-limit/plan.md
 
-- [ ] T1. Install express-rate-limit
+- [x] T1. Install express-rate-limit
   - Type: dependency
   - Depends on: none
   - Red: none — dependency install, no logic to test; verified by `npm run typecheck` passing (logic-less exception; see testing-practices)
