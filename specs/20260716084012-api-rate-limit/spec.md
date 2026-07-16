@@ -1,5 +1,5 @@
 # Spec: API rate limiting
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API operator, I want incoming requests rate-limited per client, so that the service stays available and no single client can overload it.
 
 ## 1. Behavior

@@ -3,6 +3,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import errorMiddleware from '@src/middleware/errorMiddleware.js';
+import { RateLimitExceededError } from '@src/middleware/rateLimit/RateLimitExceededError.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
 import { DomainError, type ErrorCategory } from '@src/modules/shared/domain/DomainError.js';
 
@@ -16,6 +17,11 @@ class StubDomainError extends DomainError {
 }
 
 describe('errorMiddleware', () => {
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('renders the RequestValidationError contract and never reaches the handler', async () => {
         const schema = z.object({
             body: z.object({ name: z.string().min(1, 'name invalid') }),
@@ -61,6 +67,23 @@ describe('errorMiddleware', () => {
         expect(consoleErrorSpy).toHaveBeenCalledWith(fixtureError);
     });
 
+    it('renders the RateLimitExceededError contract', async () => {
+        const app = express();
+        app.get('/limited', () => {
+            throw new RateLimitExceededError();
+        });
+        app.use(errorMiddleware);
+
+        const response = await request(app).get('/limited');
+
+        expect(response.status).toBe(429);
+        expect(response.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
+    });
+
     it('renders a DomainError through the category status map', async () => {
         const app = express();
         app.get('/stub', () => {
@@ -76,9 +99,5 @@ describe('errorMiddleware', () => {
             code: 'STUB',
             message: 'stub failed',
         });
-    });
-
-    afterEach(() => {
-        vi.restoreAllMocks();
     });
 });
