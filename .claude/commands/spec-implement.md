@@ -63,9 +63,18 @@ and write no code.
       immutable, refuse and tell me to open a **new** spec folder via `/spec-plan`.
     - The **Coverage check** table in `tasks.md` must be complete — every `AC#` maps to
       at least one task. A missing row means the plan is incomplete: stop, re-plan.
-5. **Cut the feature branch** — create and switch to **FEATURE_BRANCH** for this
+5. **`.env` guard** — scan the resolved spec's `plan.md` (and `tasks.md`) for
+   changes that require adding or updating the local **`.env`** file. If any are
+   found: print the exact edit I must make (var names, values, and any
+   comment/context from the plan), then **stop and wait** — ask me via
+   AskUserQuestion to confirm I applied it, and do not cut the branch or write any
+   code until I confirm. **Never edit `.env` yourself** at any point in the run.
+   This covers only the local untracked `.env`; the tracked `.env.example` remains
+   a normal implementation task you perform yourself. No `.env` changes required →
+   silent no-op.
+6. **Cut the feature branch** — create and switch to **FEATURE_BRANCH** for this
    spec, cut off **BASE_BRANCH**. If the branch already exists, switch to it.
-6. **Database up** — run `docker compose up -d`. Integration tests hit a real
+7. **Database up** — run `docker compose up -d`. Integration tests hit a real
    Postgres. If Postgres **cannot be initialized / brought up** (compose fails or the
    DB never becomes reachable), **finish with an error** and stop — never implement
    against a dead database.
@@ -106,7 +115,11 @@ on the feature branch, not on the target branch / in the PR. In order:
 
 1. **Push FEATURE_BRANCH** to its remote (send all committed changes up).
 2. **Check out BASE_BRANCH** and `git pull` to get the latest changes.
-3. **Check out FEATURE_BRANCH** and **`git merge BASE_BRANCH`**.
+3. **Check out FEATURE_BRANCH** and **`git merge BASE_BRANCH`**. If the merge is
+   **empty** (`Already up to date` — no new commits merged), **skip steps 4–5 and
+   the re-push in step 6**: the tree is byte-identical to what step 8 already
+   verified, and the branch already went up in step 1 — go straight to opening
+   the PR.
 4. **Resolve any conflicts** within the spec's scope, then complete the merge commit.
 5. **Re-run the full verification suite** after the merge — `npm test`,
    `npm run lint`, `npm run typecheck` — to prove the merge broke nothing. **Never**
