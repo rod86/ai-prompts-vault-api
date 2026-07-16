@@ -42,7 +42,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: add `handler: (_req, _res, next) => next(new RateLimitExceededError())` to the factory's `rateLimit(...)` options
   - Covers: AC2 "Given a client that has used its full allowance within the current window, when it makes a further request, then the request is rejected with E1 in the standard error shape, including an indication of when to retry."
 
-- [ ] T7. Health check included in the rate limit
+- [x] T7. Health check included in the rate limit
   - Type: app wiring
   - Depends on: T5, T6
   - Red: in `rateLimitMiddleware.test.ts` (after T6's test has exhausted the direct client's allowance), `GET /health` returns `429` with the E1 envelope `{ status: 429, code: 'TOO_MANY_REQUESTS', message: 'Too many requests, please try again later.' }` — fails: limiter currently mounted below `/health`, so health still answers `200 { status: 'ok' }`

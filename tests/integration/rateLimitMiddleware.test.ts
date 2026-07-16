@@ -32,4 +32,15 @@ describe('rate limit middleware', () => {
         });
         expect(response?.headers['retry-after']).toBeDefined();
     });
+
+    it('rejects the health check like any other endpoint once exhausted', async () => {
+        const response = await request(app).get('/health');
+
+        expect(response.status).toBe(429);
+        expect(response.body).toEqual({
+            status: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message: 'Too many requests, please try again later.',
+        });
+    });
 });

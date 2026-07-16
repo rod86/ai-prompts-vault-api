@@ -8,12 +8,12 @@ import { apiRouter } from '@src/routes/index.js';
 const app = express();
 
 app.use(express.json());
+app.use(createRateLimitMiddleware(config.rateLimit));
 
 app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({ status: 'ok' });
 });
 
-app.use(createRateLimitMiddleware(config.rateLimit));
 app.use(apiRouter);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
