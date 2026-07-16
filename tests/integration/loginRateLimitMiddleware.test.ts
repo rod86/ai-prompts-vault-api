@@ -21,7 +21,7 @@ describe('login rate limit middleware', () => {
         await userFixture.cleanup();
     });
 
-    it('rejects further attempts with E1 once the failed-attempt allowance is exhausted, even with correct credentials', async () => {
+    it('rejects further attempts as too many requests once the failed-attempt allowance is exhausted, even with correct credentials', async () => {
         const clientIp = '10.10.0.1';
         let response;
 
@@ -80,7 +80,7 @@ describe('login rate limit middleware', () => {
         expect(response.body).toEqual({ token: expect.any(String) });
     });
 
-    it('rejects with E1 when a success interleaved with failures did not clear the counted failures', async () => {
+    it('rejects with too many requests when a success interleaved with failures did not clear the counted failures', async () => {
         const clientIp = '10.10.0.4';
 
         for (let i = 0; i < config.loginRateLimit.max - 1; i++) {
