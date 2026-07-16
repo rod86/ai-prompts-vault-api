@@ -42,4 +42,43 @@ describe('GET /openapi.json', () => {
             '429',
         ]);
     });
+
+    it('documents the prompt endpoints with exactly their real outcomes and bearer security', async () => {
+        const response = await request(app).get('/openapi.json');
+        const { paths, components } = response.body;
+
+        expect(Object.keys(paths['/prompt-categories'].get.responses).sort()).toEqual([
+            '200',
+            '429',
+        ]);
+        expect(Object.keys(paths['/prompts'].post.responses).sort()).toEqual([
+            '201',
+            '400',
+            '401',
+            '422',
+            '429',
+        ]);
+        expect(Object.keys(paths['/prompts/{id}'].put.responses).sort()).toEqual([
+            '200',
+            '400',
+            '401',
+            '403',
+            '404',
+            '422',
+            '429',
+        ]);
+        expect(Object.keys(paths['/prompts/{id}'].delete.responses).sort()).toEqual([
+            '204',
+            '400',
+            '401',
+            '403',
+            '404',
+            '429',
+        ]);
+
+        expect(components.securitySchemes.bearerAuth).toBeDefined();
+        expect(paths['/prompts'].post.security).toEqual([{ bearerAuth: [] }]);
+        expect(paths['/prompts/{id}'].put.security).toEqual([{ bearerAuth: [] }]);
+        expect(paths['/prompts/{id}'].delete.security).toEqual([{ bearerAuth: [] }]);
+    });
 });

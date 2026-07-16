@@ -64,7 +64,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/docs/users.ts` (reusing `CreateUserSchema.shape.body`, `UserResponseSchema`, shared error schemas); spread into `api.ts`
   - Covers: AC3 "Given the description document, when its users entry is inspected, then user registration is present, listing exactly its real outcomes: success, invalid input, email already in use, and allowance exceeded."
 
-- [ ] T10. Prompt path entries + security markings
+- [x] T10. Prompt path entries + security markings
   - Type: docs
   - Depends on: T4, T5, T6, T8
   - Red: in `docs.test.ts`, a test asserting: `paths['/prompt-categories'].get` {200, 429}; `paths['/prompts'].post` {201, 400, 401, 422, 429}; `paths['/prompts/{id}'].put` {200, 400, 401, 403, 404, 422, 429} and `.delete` {204, 400, 401, 403, 404, 429}; `components.securitySchemes.bearerAuth` declared; create/update/delete each carry `security: [{bearerAuth: []}]` — fails while absent
