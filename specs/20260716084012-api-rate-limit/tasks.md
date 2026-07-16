@@ -14,7 +14,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Green: add `rateLimit.windowMs` (`RATE_LIMIT_WINDOW_MS` ?? 900000), `rateLimit.max` (`RATE_LIMIT_MAX` ?? 100), `trustProxyHops` (`TRUST_PROXY_HOPS` ?? 0) to `src/config/config.ts`; add the three vars to `.env.example` (`TRUST_PROXY_HOPS=1` with its comment, per plan §2) and to the local `.env` (plan R1)
   - Covers: spec §2 fields "window duration", "request allowance", "trusted intermediary hops"
 
-- [ ] T3. TooManyRequests category maps to 429
+- [x] T3. TooManyRequests category maps to 429
   - Type: domain + middleware (error mapping)
   - Depends on: none
   - Red: extend the `toEqual` assertion in `tests/unit/middleware/domainErrorStatus.test.ts` to include `TooManyRequests: 429` — fails: key absent from `CATEGORY_STATUS`

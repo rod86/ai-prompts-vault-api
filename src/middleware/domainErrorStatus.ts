@@ -5,4 +5,5 @@ export const CATEGORY_STATUS = {
     Forbidden: 403,
     Unauthorized: 401,
     Unprocessable: 422,
+    TooManyRequests: 429,
 } satisfies Record<ErrorCategory, number>;
