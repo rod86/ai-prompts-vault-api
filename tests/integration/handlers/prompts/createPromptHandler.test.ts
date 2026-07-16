@@ -3,6 +3,7 @@ import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { type User } from '@src/modules/user/domain/User.js';
+import { PromptResponseSchema } from '@src/routes/prompts.response.schema.js';
 import {
     createPromptCategoryFixture,
     createPromptFixture,
@@ -93,6 +94,24 @@ describe('POST /prompts', () => {
                 prompt: body.prompt,
                 description: body.description,
             });
+        });
+
+        it('response matches the documented shape', async () => {
+            const category = await categoryFixture.insert();
+            const body = {
+                title: 'My prompt title',
+                prompt: 'My prompt text',
+                category_id: category.id,
+                description: 'My prompt description',
+            };
+
+            const response = await request(app)
+                .post('/prompts')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(body);
+
+            promptFixture.register(response.body.id);
+            expect(() => PromptResponseSchema.parse(response.body)).not.toThrow();
         });
 
         it('returns description: null and stores it as null when not submitted', async () => {

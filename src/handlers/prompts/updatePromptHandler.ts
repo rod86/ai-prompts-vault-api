@@ -1,9 +1,13 @@
 import { type RequestHandler } from 'express';
 import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { updatePromptUseCase } from '@src/modules/prompt/services.js';
+import { type PromptResponse } from '@src/routes/prompts.response.schema.js';
 import { type UpdatePromptRequest } from '@src/routes/prompts.schema.js';
 
-const updatePromptHandler: RequestHandler = async (req, res) => {
+const updatePromptHandler: RequestHandler<Record<string, string>, PromptResponse> = async (
+    req,
+    res,
+) => {
     const { params, body } = req.parsedRequest as UpdatePromptRequest;
 
     if (!req.auth) {
@@ -26,8 +30,8 @@ const updatePromptHandler: RequestHandler = async (req, res) => {
         description: prompt.description || null,
         category: prompt.category,
         user: prompt.user,
-        created_at: prompt.createdAt,
-        updated_at: prompt.updatedAt,
+        created_at: prompt.createdAt.toISOString(),
+        updated_at: prompt.updatedAt.toISOString(),
     });
 };
 

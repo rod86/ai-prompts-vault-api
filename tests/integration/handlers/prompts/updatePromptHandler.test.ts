@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { type User } from '@src/modules/user/domain/User.js';
+import { PromptResponseSchema } from '@src/routes/prompts.response.schema.js';
 import {
     createPromptCategoryFixture,
     createPromptFixture,
@@ -85,6 +86,27 @@ describe('PUT /prompts/:id', () => {
             prompt: body.prompt,
             description: body.description,
         });
+    });
+
+    it('response matches the documented shape', async () => {
+        const fixturePrompt = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: creatorUser.id,
+        });
+
+        const body = {
+            title: 'Updated title',
+            prompt: 'Updated prompt text',
+            category_id: fixtureCategory.id,
+            description: 'Updated description',
+        };
+
+        const response = await request(app)
+            .put(`/prompts/${fixturePrompt.id}`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(body);
+
+        expect(() => PromptResponseSchema.parse(response.body)).not.toThrow();
     });
 
     it('clears the description when it is omitted from the request', async () => {

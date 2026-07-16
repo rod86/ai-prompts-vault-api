@@ -1,5 +1,5 @@
 # Spec: Interactive API documentation & playground
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API consumer, I want interactive API documentation with a try-it-out playground, generated from the API's own request/response definitions, so that I can explore and test every endpoint from the browser without external tools.
 
 ## 1. Behavior

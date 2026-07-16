@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
+import { UserResponseSchema } from '@src/routes/users.response.schema.js';
 import {
     createUserFixture,
     databaseClient,
@@ -47,6 +48,19 @@ describe('POST /users', () => {
         });
         expect(persisted?.passwordHash).toBeTruthy();
         expect(persisted?.passwordHash).not.toBe(body.password);
+    });
+
+    it('response matches the documented shape', async () => {
+        const body = {
+            name: 'Grace Hopper',
+            email: 'grace.hopper@example.com',
+            password: 'a-secure-password',
+        };
+
+        const response = await request(app).post('/users').send(body);
+        userFixture.register(response.body.id);
+
+        expect(() => UserResponseSchema.parse(response.body)).not.toThrow();
     });
 
     it('returns a 422 email-already-in-use failure when the email is already used', async () => {
