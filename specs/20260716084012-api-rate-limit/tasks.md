@@ -7,7 +7,7 @@ Plan: specs/20260716084012-api-rate-limit/plan.md
   - Red: none — dependency install, no logic to test; verified by `npm run typecheck` passing (logic-less exception; see testing-practices)
   - Green: `npm i express-rate-limit` (^8.5.2) — `package.json` + lockfile
 
-- [ ] T2. Rate-limit and trust-proxy config values
+- [x] T2. Rate-limit and trust-proxy config values
   - Type: config
   - Depends on: none
   - Red: none — `src/config/config.ts` is pure env mapping (composition; no schema, matching the existing file); values are proven behaviorally by T5–T8

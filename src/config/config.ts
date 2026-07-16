@@ -15,4 +15,9 @@ export default {
         password: process.env.DATABASE_PASSWORD ?? '',
         database: process.env.DATABASE_DB ?? '',
     },
+    rateLimit: {
+        windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 900000),
+        max: Number(process.env.RATE_LIMIT_MAX ?? 100),
+    },
+    trustProxyHops: Number(process.env.TRUST_PROXY_HOPS ?? 0),
 };
