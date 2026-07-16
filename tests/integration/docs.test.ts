@@ -16,4 +16,19 @@ describe('GET /openapi.json', () => {
             }),
         );
     });
+
+    it('documents the health and authentication endpoints with exactly their real outcomes', async () => {
+        const response = await request(app).get('/openapi.json');
+
+        expect(Object.keys(response.body.paths['/health'].get.responses).sort()).toEqual([
+            '200',
+            '429',
+        ]);
+        expect(Object.keys(response.body.paths['/authenticate'].post.responses).sort()).toEqual([
+            '200',
+            '400',
+            '401',
+            '429',
+        ]);
+    });
 });

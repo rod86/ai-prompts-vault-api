@@ -1,4 +1,6 @@
 import { createDocument } from 'zod-openapi';
+import { authPaths } from '@src/docs/auth.js';
+import { healthPaths } from '@src/docs/health.js';
 
 export const openApiDocument = createDocument({
     openapi: '3.1.0',
@@ -17,5 +19,8 @@ export const openApiDocument = createDocument({
             },
         },
     },
-    paths: {},
+    paths: {
+        ...healthPaths,
+        ...authPaths,
+    },
 });

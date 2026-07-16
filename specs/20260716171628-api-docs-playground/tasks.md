@@ -50,7 +50,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: create `src/docs/api.ts` (`createDocument` with info, `servers: [{url: '/'}]`, `bearerAuth` scheme, tags, empty paths spread); add inline `GET /openapi.json` route in `src/app.ts`
   - Covers: AC1 "Given the service is running, when a client requests the machine-readable API description, then it receives a successful, importable document that declares the description-format version and the service's title and version."
 
-- [ ] T8. Health + auth path entries
+- [x] T8. Health + auth path entries
   - Type: docs
   - Depends on: T2, T7
   - Red: in `docs.test.ts`, a test asserting the document contains `paths['/health'].get` with exactly responses {200, 429} and `paths['/authenticate'].post` with exactly {200, 400, 401, 429} — fails while `paths` lacks the entries
