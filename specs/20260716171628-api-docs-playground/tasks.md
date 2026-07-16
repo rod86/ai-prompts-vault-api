@@ -92,7 +92,7 @@ Plan: specs/20260716171628-api-docs-playground/plan.md
   - Green: in `src/app.ts`, register the static mount and the `/openapi.json` route **before** `createRateLimitMiddleware(config.rateLimit)`
   - Covers: AC12 "Given the request allowance applies to normal endpoints, when a client requests the documentation page and the description document, then those responses carry no allowance information, while a normal endpoint's response still does."
 
-- [ ] T14. Exclude `src/docs` from coverage
+- [x] T14. Exclude `src/docs` from coverage
   - Type: tooling
   - Depends on: T7
   - Red: none — config-only change (plan §2, decision #5); no runtime surface

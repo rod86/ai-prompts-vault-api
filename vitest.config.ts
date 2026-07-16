@@ -17,7 +17,7 @@ export default defineConfig({
                 functions: 80, // functions called once
                 lines: 80, // source line that ran once
             },
-            exclude: ['tests']
+            exclude: ['tests', 'src/docs'],
         },
         projects: [
             {
