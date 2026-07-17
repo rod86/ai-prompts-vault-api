@@ -22,7 +22,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `src/modules/shared/infrastructure/security/zxcvbn/ZxcvbnCheckerTypes.ts` exporting `ZxcvbnChecker { check(password: string): { score: number } }` and `ZxcvbnCheckerFactoryInterface { create(): ZxcvbnChecker }`
   - Covers: seam for V8 adapter
 
-- [ ] T4. Production zxcvbn factory
+- [x] T4. Production zxcvbn factory
   - Type: infrastructure
   - Depends on: T1, T3
   - Red: none — `ZxcvbnCheckerFactory` is logic-less composition wrapping the library (real behavior proven end-to-end in T10); see testing-practices
