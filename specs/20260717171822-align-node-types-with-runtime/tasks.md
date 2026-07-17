@@ -1,7 +1,7 @@
 # Tasks: Align development type definitions with the supported runtime
 Plan: specs/20260717171822-align-node-types-with-runtime/plan.md
 
-- [ ] T1. Bump `@types/node` to the supported runtime major
+- [x] T1. Bump `@types/node` to the supported runtime major
   - Type: tooling (dependency change)
   - Depends on: none
   - Red: none — this is a dev-dependency version bump with no logic to test; it is
