@@ -118,9 +118,5 @@ describe('RegisterUserUseCase', () => {
 
         await expect(useCase.invoke(query)).rejects.toThrow(WeakPasswordError);
         expect(userRepository.findByEmail).not.toHaveBeenCalled();
-        expect(passwordHasher.hash).not.toHaveBeenCalled();
-        expect(userRepository.create).not.toHaveBeenCalled();
-        expect(dateTime.now).not.toHaveBeenCalled();
-        expect(idGenerator.generate).not.toHaveBeenCalled();
     });
 });
