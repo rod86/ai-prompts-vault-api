@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authRouter } from '@src/routes/auth.routes.js';
+import { authRouter } from '@src/routes/auth/auth.routes.js';
 import { promptsRouter } from '@src/routes/prompts.routes.js';
 import { usersRouter } from '@src/routes/users.routes.js';
 

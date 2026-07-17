@@ -18,7 +18,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/routes/shared/fields.schema.ts` (`uuidField()`, `emailField()` factories carrying today's error-message closures) and `src/routes/shared/error.response.schema.ts` (`ErrorResponseSchema` + `ValidationErrorResponseSchema`, copied from `src/routes/shared.response.schema.ts`).
   - Covers: AC1 "Given the running API, when the full existing test suite for authenticate, register user, list prompt categories, and create/update/delete prompt is run, then every request-validation, success, and error assertion passes unchanged."; V1, V2
 
-- [ ] T2. Move the auth resource into its own folder
+- [x] T2. Move the auth resource into its own folder
   - Type: route handler
   - Depends on: T1
   - Red: none — file move + import rewire; `tests/integration/handlers/auth/authenticateHandler.test.ts` stays green (repointed to the new import paths).

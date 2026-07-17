@@ -1,6 +1,6 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
-import { AuthenticateResponseSchema } from '@src/routes/auth.response.schema.js';
-import { AuthenticateSchema } from '@src/routes/auth.schema.js';
+import { AuthenticateSchema } from '@src/routes/auth/auth.request.schema.js';
+import { AuthenticateResponseSchema } from '@src/routes/auth/auth.response.schema.js';
 import {
     ErrorResponseSchema,
     ValidationErrorResponseSchema,
