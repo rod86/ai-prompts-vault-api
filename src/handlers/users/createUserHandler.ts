@@ -1,7 +1,7 @@
 import { type RequestHandler } from 'express';
 import { registerUserUseCase } from '@src/modules/user/services.js';
-import { type UserResponse } from '@src/routes/users.response.schema.js';
-import { type CreateUserRequest } from '@src/routes/users.schema.js';
+import { type CreateUserRequest } from '@src/routes/users/users.request.schema.js';
+import { type UserResponse } from '@src/routes/users/users.response.schema.js';
 
 const createUserHandler: RequestHandler<Record<string, string>, UserResponse> = async (
     req,

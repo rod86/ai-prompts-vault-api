@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import createUserHandler from '@src/handlers/users/createUserHandler.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
-import { CreateUserSchema } from '@src/routes/users.schema.js';
+import { CreateUserSchema } from '@src/routes/users/users.request.schema.js';
 
 export const usersRouter = Router();
 

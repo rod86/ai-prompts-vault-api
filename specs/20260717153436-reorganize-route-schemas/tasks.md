@@ -25,7 +25,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/routes/auth/auth.request.schema.ts` (from `auth.schema.ts`, email via `emailField()`), `src/routes/auth/auth.response.schema.ts`, `src/routes/auth/auth.routes.ts`; repoint importers (`src/handlers/auth/authenticateHandler.ts`, `src/routes/index.ts`, `src/docs/auth.ts`, the auth handler test); delete the old flat `src/routes/auth.{schema,response.schema,routes}.ts`.
   - Covers: AC1 "Given the running API, when the full existing test suite for authenticate, register user, list prompt categories, and create/update/delete prompt is run, then every request-validation, success, and error assertion passes unchanged."; V2, V3, E1, E2
 
-- [ ] T3. Move the users resource into its own folder
+- [x] T3. Move the users resource into its own folder
   - Type: route handler
   - Depends on: T1
   - Red: none — file move + import rewire; `tests/integration/handlers/users/createUserHandler.test.ts` stays green (repointed).

@@ -3,8 +3,8 @@ import {
     ErrorResponseSchema,
     ValidationErrorResponseSchema,
 } from '@src/routes/shared.response.schema.js';
-import { UserResponseSchema } from '@src/routes/users.response.schema.js';
-import { CreateUserSchema } from '@src/routes/users.schema.js';
+import { CreateUserSchema } from '@src/routes/users/users.request.schema.js';
+import { UserResponseSchema } from '@src/routes/users/users.response.schema.js';
 
 export const usersPaths: ZodOpenApiPathsObject = {
     '/users': {
