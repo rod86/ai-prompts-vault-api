@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
-import { UserResponseSchema } from '@src/routes/users.response.schema.js';
+import { UserResponseSchema } from '@src/routes/users/users.response.schema.js';
 import {
     createUserFixture,
     databaseClient,

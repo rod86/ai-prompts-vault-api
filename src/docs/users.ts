@@ -1,10 +1,8 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
-import {
-    ErrorResponseSchema,
-    ValidationErrorResponseSchema,
-} from '@src/routes/shared.response.schema.js';
-import { UserResponseSchema } from '@src/routes/users.response.schema.js';
-import { CreateUserSchema } from '@src/routes/users.schema.js';
+import { rateLimitedResponse, validationErrorResponse } from '@src/docs/global.js';
+import { ErrorResponseSchema } from '@src/routes/shared/error.response.schema.js';
+import { CreateUserSchema } from '@src/routes/users/users.request.schema.js';
+import { UserResponseSchema } from '@src/routes/users/users.response.schema.js';
 
 export const usersPaths: ZodOpenApiPathsObject = {
     '/users': {
@@ -21,18 +19,12 @@ export const usersPaths: ZodOpenApiPathsObject = {
                     description: 'The user was registered',
                     content: { 'application/json': { schema: UserResponseSchema } },
                 },
-                '400': {
-                    description: 'Invalid input',
-                    content: { 'application/json': { schema: ValidationErrorResponseSchema } },
-                },
+                '400': validationErrorResponse('Invalid input'),
                 '422': {
                     description: 'Email already in use',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
     },

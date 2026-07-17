@@ -1,5 +1,5 @@
 # Spec: Reorganize route schemas and make the health check a first-class resource
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a maintainer of the API, I want each resource's request and response definitions grouped together, cross-resource field checks defined once, and the health check structured like every other endpoint, so that the codebase stays consistent and easy to navigate as resources grow — without changing anything an API client can observe.
 
 <!--

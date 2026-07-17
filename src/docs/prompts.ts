@@ -1,17 +1,19 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
 import {
-    PromptCategoryListResponseSchema,
-    PromptResponseSchema,
-} from '@src/routes/prompts.response.schema.js';
+    rateLimitedResponse,
+    unauthorizedResponse,
+    validationErrorResponse,
+} from '@src/docs/global.js';
 import {
     CreatePromptSchema,
     DeletePromptSchema,
     UpdatePromptSchema,
-} from '@src/routes/prompts.schema.js';
+} from '@src/routes/prompts/prompts.request.schema.js';
 import {
-    ErrorResponseSchema,
-    ValidationErrorResponseSchema,
-} from '@src/routes/shared.response.schema.js';
+    PromptCategoryListResponseSchema,
+    PromptResponseSchema,
+} from '@src/routes/prompts/prompts.response.schema.js';
+import { ErrorResponseSchema } from '@src/routes/shared/error.response.schema.js';
 
 export const promptsPaths: ZodOpenApiPathsObject = {
     '/prompt-categories': {
@@ -23,10 +25,7 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                     description: 'The list of prompt categories',
                     content: { 'application/json': { schema: PromptCategoryListResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
     },
@@ -45,22 +44,13 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                     description: 'The prompt was created',
                     content: { 'application/json': { schema: PromptResponseSchema } },
                 },
-                '400': {
-                    description: 'Invalid input',
-                    content: { 'application/json': { schema: ValidationErrorResponseSchema } },
-                },
-                '401': {
-                    description: 'Missing or invalid authentication token',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '400': validationErrorResponse('Invalid input'),
+                '401': unauthorizedResponse,
                 '422': {
                     description: 'Unknown category or user',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
     },
@@ -80,14 +70,8 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                     description: 'The prompt was updated',
                     content: { 'application/json': { schema: PromptResponseSchema } },
                 },
-                '400': {
-                    description: 'Invalid input',
-                    content: { 'application/json': { schema: ValidationErrorResponseSchema } },
-                },
-                '401': {
-                    description: 'Missing or invalid authentication token',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '400': validationErrorResponse('Invalid input'),
+                '401': unauthorizedResponse,
                 '403': {
                     description: 'Not the owner of this prompt',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
@@ -100,10 +84,7 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                     description: 'Unknown category',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
         delete: {
@@ -115,14 +96,8 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                 '204': {
                     description: 'The prompt was deleted',
                 },
-                '400': {
-                    description: 'Invalid input',
-                    content: { 'application/json': { schema: ValidationErrorResponseSchema } },
-                },
-                '401': {
-                    description: 'Missing or invalid authentication token',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '400': validationErrorResponse('Invalid input'),
+                '401': unauthorizedResponse,
                 '403': {
                     description: 'Not the owner of this prompt',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
@@ -131,10 +106,7 @@ export const promptsPaths: ZodOpenApiPathsObject = {
                     description: 'Prompt not found',
                     content: { 'application/json': { schema: ErrorResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
     },

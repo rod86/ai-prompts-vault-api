@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { type User } from '@src/modules/user/domain/User.js';
-import { PromptResponseSchema } from '@src/routes/prompts.response.schema.js';
+import { PromptResponseSchema } from '@src/routes/prompts/prompts.response.schema.js';
 import {
     createPromptCategoryFixture,
     createPromptFixture,

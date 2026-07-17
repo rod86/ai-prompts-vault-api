@@ -1,7 +1,7 @@
 import { type RequestHandler } from 'express';
 import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { deletePromptUseCase } from '@src/modules/prompt/services.js';
-import { type DeletePromptRequest } from '@src/routes/prompts.schema.js';
+import { type DeletePromptRequest } from '@src/routes/prompts/prompts.request.schema.js';
 
 const deletePromptHandler: RequestHandler = async (req, res) => {
     const { params } = req.parsedRequest as DeletePromptRequest;

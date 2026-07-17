@@ -1,5 +1,6 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
-import { ErrorResponseSchema, HealthResponseSchema } from '@src/routes/shared.response.schema.js';
+import { rateLimitedResponse } from '@src/docs/global.js';
+import { HealthResponseSchema } from '@src/routes/health/health.response.schema.js';
 
 export const healthPaths: ZodOpenApiPathsObject = {
     '/health': {
@@ -11,10 +12,7 @@ export const healthPaths: ZodOpenApiPathsObject = {
                     description: 'The service is healthy',
                     content: { 'application/json': { schema: HealthResponseSchema } },
                 },
-                '429': {
-                    description: 'Request allowance exceeded',
-                    content: { 'application/json': { schema: ErrorResponseSchema } },
-                },
+                '429': rateLimitedResponse,
             },
         },
     },

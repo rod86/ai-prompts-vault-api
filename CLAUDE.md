@@ -105,10 +105,12 @@ src/
       prompt.schema.ts  #   (prompts → users FK is a sibling import here)
       schema.ts         # internal aggregation (export *) — drizzle-kit points here
       index.ts          # barrel: `schema` object + DatabaseSchema/DatabaseConnection/PromptSchema/UserSchema
-  routes/               # per-resource routers + request/response schemas (*.routes.ts / *.schema.ts / *.response.schema.ts)
+  routes/
+    <resource>/         # per-resource: *.routes.ts + *.request.schema.ts + *.response.schema.ts
+    shared/             # cross-resource: fields.schema.ts (uuidField/emailField) + error.response.schema.ts
   handlers/<resource>/  # HTTP handlers: wire-shape mapping, reach contexts via services.ts
   middleware/           # error / 404 / auth / validation / rate-limit middleware
-  docs/                 # OpenAPI document composition root (zod-openapi) + one paths file per functional area
+  docs/                 # OpenAPI document composition root (zod-openapi) + global.ts (shared response fragments) + one paths file per functional area
   errors/               # ApiError — HTTP-boundary error (explicit status + code)
   types/                # express.d.ts — custom `req` property typing
   app.ts                # HTTP app: middleware stack + routes (no listen)
@@ -140,14 +142,17 @@ by the **`node-express-typescript` skill**; follow it when adding routes back.
 `src/app.ts` wires the app in this order: `app.set('trust proxy',
 config.trustProxyHops)`, `express.json()`, the documentation surface —
 `GET /openapi.json` then `express.static(public/)` — the global rate limiter,
-`GET /health` → `200 { status: 'ok' }`, the API router (`src/routes/index.ts`,
-composing the per-resource routers), then `notFoundMiddleware` and
-`errorMiddleware` last. The documentation surface is mounted **before** the
-rate limiter, so it carries no allowance information; every other endpoint's
-behavior is unchanged. Each router (`src/routes/*.routes.ts`) chains per-route
-middleware — `validateRequestMiddleware` with the sibling `*.schema.ts` schema,
-`requireAuthMiddleware` where the route needs a user — into a handler under
-`src/handlers/<resource>/`.
+then the API router (`src/routes/index.ts`, composing the per-resource
+routers), then `notFoundMiddleware` and `errorMiddleware` last. The
+documentation surface is mounted **before** the rate limiter, so it carries no
+allowance information; every other endpoint's behavior is unchanged. The
+health check is a first-class resource like any other — `healthRouter`
+(`src/routes/health/health.routes.ts`) is mounted first inside the API
+router, so `GET /health` → `healthHandler` → `200 { status: 'ok' }` stays
+behind the global rate limiter. Each router (`src/routes/<resource>/*.routes.ts`)
+chains per-route middleware — `validateRequestMiddleware` with the sibling
+`*.request.schema.ts` schema, `requireAuthMiddleware` where the route needs a
+user — into a handler under `src/handlers/<resource>/`.
 
 **Rate limiting.** Two limiters, both built by the shared factory
 `src/middleware/rateLimit/createRateLimitMiddleware.ts` (wraps
@@ -160,7 +165,7 @@ draft-8 `RateLimit-*` headers):
   `app.ts`; every request on every endpoint counts. Defaults: 100 requests /
   15 min (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`).
 - **Login** — first handler of `POST /authenticate`
-  (`src/routes/auth.routes.ts`), built from `config.loginRateLimit` with
+  (`src/routes/auth/auth.routes.ts`), built from `config.loginRateLimit` with
   `skipSuccessfulRequests: true`, so only failed attempts (status ≥ 400)
   consume the allowance; once exhausted, even correct credentials get the same
   429 — deliberately indistinguishable from the general limit. Defaults: 5
@@ -211,10 +216,13 @@ middleware pattern.
 and `paths` spread in from one file per functional area
 (`src/docs/health.ts`, `auth.ts`, `users.ts`, `prompts.ts`), served at
 `GET /openapi.json`. Paths reuse the **existing** request-validation schemas
-(`*.schema.ts`, via `.shape`) plus a sibling `*.response.schema.ts` per
-resource (and `src/routes/shared.response.schema.ts` for the common
-error/validation-error/health shapes) — so documented request and response
-shapes cannot drift from what the API actually validates and returns.
+(`src/routes/<resource>/*.request.schema.ts`, via `.shape`) plus a sibling
+`*.response.schema.ts` per resource (and `src/routes/shared/error.response.schema.ts`
+for the common error/validation-error shapes) — so documented request and
+response shapes cannot drift from what the API actually validates and returns.
+`src/docs/global.ts` exports spreadable response fragments
+(`unauthorizedResponse`, `rateLimitedResponse`, `validationErrorResponse(...)`)
+reused across the per-resource paths files.
 Handlers type their response body from the response schema's inferred type
 (`RequestHandler<Params, ResBody>`) and map `Date` fields via
 `.toISOString()`; the schemas are declaration-only at runtime (no `.parse()`
@@ -336,7 +344,8 @@ never share a bucket.
 `DrizzlePromptCategoryRepository.test.ts` (integration DB lifecycle + fixtures +
 shared reference categories), `deletePromptHandler.test.ts` (route test wiring
 category/user/prompt fixtures), `app.test.ts` (app-level concerns: not-found
-contract, error/generic middleware, health check — not per-route tests),
+contract, error/generic middleware — not per-route tests),
+`healthHandler.test.ts` (health check response + documented-shape assertion),
 `loginRateLimitMiddleware.test.ts` (middleware behavior pinned per acceptance
 criterion, unique `X-Forwarded-For` per test), `docs.test.ts` (a non-handler
 HTTP surface — `/openapi.json` content, the `/docs/` static page, static

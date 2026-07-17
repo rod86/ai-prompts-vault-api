@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { emailField } from '@src/routes/shared/fields.schema.js';
 
 const ALLOWED_SPECIAL_CHARACTER_CLASS = '!"#$%&\'()*+,\\-./:;<=>?@[\\\\\\]^_`{|}~';
 const ALLOWED_SPECIAL_CHARACTER_REGEX = new RegExp(`[${ALLOWED_SPECIAL_CHARACTER_CLASS}]`);
@@ -9,10 +10,7 @@ const ALLOWED_CHARACTERS_ONLY_REGEX = new RegExp(
 export const CreateUserSchema = z.object({
     body: z.object({
         name: z.string({ error: 'Missing required value' }).min(1, 'Missing required value'),
-        email: z.email({
-            error: (issue) =>
-                issue.code === 'invalid_type' ? 'Missing required value' : 'Invalid email value',
-        }),
+        email: emailField(),
         password: z
             .string({ error: 'Missing required value' })
             .min(8, 'Must be at least 8 characters')

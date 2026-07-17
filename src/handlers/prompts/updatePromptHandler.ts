@@ -1,8 +1,8 @@
 import { type RequestHandler } from 'express';
 import { MissingTokenError } from '@src/modules/auth/domain/errors/MissingTokenError.js';
 import { updatePromptUseCase } from '@src/modules/prompt/services.js';
-import { type PromptResponse } from '@src/routes/prompts.response.schema.js';
-import { type UpdatePromptRequest } from '@src/routes/prompts.schema.js';
+import { type UpdatePromptRequest } from '@src/routes/prompts/prompts.request.schema.js';
+import { type PromptResponse } from '@src/routes/prompts/prompts.response.schema.js';
 
 const updatePromptHandler: RequestHandler<Record<string, string>, PromptResponse> = async (
     req,

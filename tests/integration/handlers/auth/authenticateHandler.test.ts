@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { passwordHasher } from '@src/modules/shared/services.js';
 import { type User } from '@src/modules/user/domain/User.js';
-import { AuthenticateResponseSchema } from '@src/routes/auth.response.schema.js';
+import { AuthenticateResponseSchema } from '@src/routes/auth/auth.response.schema.js';
 import { createUserFixture } from '@tests/lib/config.js';
 
 describe('POST /authenticate', () => {
