@@ -43,7 +43,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `src/modules/user/domain/errors/WeakPasswordError.ts` extending `DomainError`, `code = 'WEAK_PASSWORD'`, `category = 'Unprocessable'`, generic message (e.g. `'Password is too weak'`)
   - Covers: E2
 
-- [ ] T7. Strength gate in RegisterUserUseCase
+- [x] T7. Strength gate in RegisterUserUseCase
   - Type: application
   - Depends on: T2, T6
   - Red: add a case to `tests/unit/modules/user/application/RegisterUserUseCase.test.ts` — inject a mocked `PasswordStrengthCheckerInterface`; when `isStrong` returns `false`, `invoke` rejects with `WeakPasswordError` and `userRepository.findByEmail`, `passwordHasher.hash`, `userRepository.create`, `dateTime.now`, `idGenerator.generate` are **not** called. Fails: use case has no strength gate / ctor arg

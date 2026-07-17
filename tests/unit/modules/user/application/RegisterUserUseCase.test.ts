@@ -4,12 +4,14 @@ import { mock, type MockProxy } from 'vitest-mock-extended';
 import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 import type PasswordHasherInterface from '@src/modules/shared/domain/interfaces/PasswordHasherInterface.js';
+import type PasswordStrengthCheckerInterface from '@src/modules/shared/domain/interfaces/PasswordStrengthCheckerInterface.js';
 import {
     type RegisterUserQuery,
     RegisterUserUseCase,
 } from '@src/modules/user/application/RegisterUserUseCase.js';
 import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
 import { UserCreationError } from '@src/modules/user/domain/errors/UserCreationError.js';
+import { WeakPasswordError } from '@src/modules/user/domain/errors/WeakPasswordError.js';
 import type UserRepositoryInterface from '@src/modules/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@src/modules/user/domain/User.js';
 
@@ -33,6 +35,7 @@ describe('RegisterUserUseCase', () => {
     let passwordHasher: MockProxy<PasswordHasherInterface>;
     let dateTime: MockProxy<DateTimeInterface>;
     let idGenerator: MockProxy<IdGeneratorInterface>;
+    let passwordStrengthChecker: MockProxy<PasswordStrengthCheckerInterface>;
     let useCase: RegisterUserUseCase;
     const generatedId = faker.string.uuid();
     const now = faker.date.recent();
@@ -42,9 +45,17 @@ describe('RegisterUserUseCase', () => {
         passwordHasher = mock<PasswordHasherInterface>();
         dateTime = mock<DateTimeInterface>();
         idGenerator = mock<IdGeneratorInterface>();
+        passwordStrengthChecker = mock<PasswordStrengthCheckerInterface>();
         dateTime.now.mockReturnValue(now);
         idGenerator.generate.mockReturnValue(generatedId);
-        useCase = new RegisterUserUseCase(userRepository, passwordHasher, dateTime, idGenerator);
+        passwordStrengthChecker.isStrong.mockReturnValue(true);
+        useCase = new RegisterUserUseCase(
+            userRepository,
+            passwordHasher,
+            dateTime,
+            idGenerator,
+            passwordStrengthChecker,
+        );
     });
 
     it('registers and returns the assembled account with a self-assigned id and timestamps', async () => {
@@ -95,6 +106,18 @@ describe('RegisterUserUseCase', () => {
 
         await expect(useCase.invoke(query)).rejects.toThrow(EmailAlreadyInUseError);
         await expect(useCase.invoke(query)).rejects.toThrow(`Email already in use: ${query.email}`);
+        expect(passwordHasher.hash).not.toHaveBeenCalled();
+        expect(userRepository.create).not.toHaveBeenCalled();
+        expect(dateTime.now).not.toHaveBeenCalled();
+        expect(idGenerator.generate).not.toHaveBeenCalled();
+    });
+
+    it('throws WeakPasswordError before checking email uniqueness when the password is weak', async () => {
+        passwordStrengthChecker.isStrong.mockReturnValue(false);
+        const query = buildQuery();
+
+        await expect(useCase.invoke(query)).rejects.toThrow(WeakPasswordError);
+        expect(userRepository.findByEmail).not.toHaveBeenCalled();
         expect(passwordHasher.hash).not.toHaveBeenCalled();
         expect(userRepository.create).not.toHaveBeenCalled();
         expect(dateTime.now).not.toHaveBeenCalled();
