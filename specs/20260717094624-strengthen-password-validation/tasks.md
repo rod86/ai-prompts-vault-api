@@ -64,7 +64,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: in `src/routes/users.schema.ts` replace `password.min(8, …)` with the chain, declared in order V1→V7: `.min(8, 'Must be at least 8 characters').max(64, …).regex(/[a-z]/, …).regex(/[A-Z]/, …).regex(/[0-9]/, …).regex(/[<special-class>]/, …).regex(/^[A-Za-z0-9<special-class>]+$/, …)`
   - Covers: AC2 "Given a password shorter than 8 characters … refused with the 'at least 8 characters' reason on password (E1, V1)."; AC3 "…longer than 64 characters … 'at most 64 characters' reason (E1, V2)."; AC4 "…no lowercase letter … 'lowercase letter' reason (E1, V3)."; AC5 "…no uppercase letter … 'uppercase letter' reason (E1, V4)."; AC6 "…no digit … 'digit' reason (E1, V5)."; AC7 "…no allowed special character … 'special character' reason (E1, V6)."; AC8 "…containing a disallowed character … 'disallowed character' reason (E1, V7)."; V1–V7, E1
 
-- [ ] T10. End-to-end strong-required registration
+- [x] T10. End-to-end strong-required registration
   - Type: route handler
   - Depends on: T8, T9
   - Red: add a case to `tests/integration/handlers/users/createUserHandler.test.ts` — POST `/users` with a well-formed but guessable password (`Qwerty123!`) and a fresh email asserts `response.status` 422, `response.body` equals `{ status: 422, code: 'WEAK_PASSWORD', message: '<generic>' }`, and no user is persisted for that email. Fails: weak password currently registers (201)

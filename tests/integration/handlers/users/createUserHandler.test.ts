@@ -25,7 +25,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Ada Lovelace',
             email: 'ada.lovelace@example.com',
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -54,7 +54,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Grace Hopper',
             email: 'grace.hopper@example.com',
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -69,7 +69,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Margaret Hamilton',
             email: existingUser.email,
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -84,6 +84,26 @@ describe('POST /users', () => {
         const stored = await selectUsersByEmail(db, existingUser.email);
         expect(stored).toHaveLength(1);
         expect(stored[0]?.id).toBe(existingUser.id);
+    });
+
+    it('returns a 422 weak-password failure for a well-formed but easily guessed password', async () => {
+        const body = {
+            name: 'Alan Turing',
+            email: 'alan.turing@example.com',
+            password: 'Qwerty123!',
+        };
+
+        const response = await request(app).post('/users').send(body);
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            status: 422,
+            code: 'WEAK_PASSWORD',
+            message: 'Password is too weak',
+        });
+
+        const stored = await selectUsersByEmail(db, body.email);
+        expect(stored).toHaveLength(0);
     });
 
     describe('Request Validation', () => {
