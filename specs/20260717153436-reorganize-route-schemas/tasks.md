@@ -11,7 +11,7 @@ real red→green steps. Order is dependency-first: shared helpers, then each res
 folder, then health, then the docs-layer cleanup, then project-doc updates.
 -->
 
-- [ ] T1. Extract shared field validators and error-envelope schemas
+- [x] T1. Extract shared field validators and error-envelope schemas
   - Type: route schema
   - Depends on: none
   - Red: none — verbatim extraction of validators/schemas that already exist; their behavior (exact validation messages, error/validation envelope shapes) is pinned by the existing endpoint integration tests referenced in AC1. Nothing imports the new files yet, so the tree stays green.
