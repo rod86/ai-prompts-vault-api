@@ -36,7 +36,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `src/modules/shared/infrastructure/security/zxcvbn/ZxcvbnPasswordStrengthChecker.ts` implementing `PasswordStrengthCheckerInterface`; ctor takes `ZxcvbnCheckerFactoryInterface`; `isStrong` returns `factory.create().check(password).score >= MIN_STRENGTH_SCORE` with `const MIN_STRENGTH_SCORE = 3`
   - Covers: AC10 "Given the strength judgement, When a password is measured, Then a password at or above the minimum strength standard is judged strong and one below it is judged weak, across the full range of strength levels."; V8
 
-- [ ] T6. Weak-password domain error
+- [x] T6. Weak-password domain error
   - Type: domain
   - Depends on: none
   - Red: none — declaration mirroring `EmailAlreadyInUseError` (behavior proven via T7/T10); see testing-practices
