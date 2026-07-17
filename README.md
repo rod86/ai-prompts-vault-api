@@ -90,16 +90,18 @@ npm run dev
 
 ```
 src/
-  modules/<context>/       # bounded contexts — the home for business logic (auth, prompt, user, shared)
+  modules/<context>/       # business logic (bounded contexts + shared context)
     domain/                # entities, domain errors, repository interfaces
     application/           # use cases
     infrastructure/        # Adapters (drizzle repositories, Token Generators,...)
     services.ts            # Context services setup (DI wiring)
-  handlers/                # HTTP route handler
+  handlers/<resource>/     # HTTP route handlers (auth, users, prompts, health)
   middleware/              # Express 
-  docs/                    # OpenAPI document (zod-openapi) + one paths file per functional area
+  docs/                    # OpenAPI document (zod-openapi) + global.ts (shared response fragments) + one paths file per resource
   errors/                  # HTTP-boundary error (e. g. ApiError)
-  routes/                  # Express routers + request/response validation schemas
+  routes/
+    <resource>/            # per-resource: router + request/response schemas (auth, users, prompts, health)
+    shared/                # cross-resource field validators + error envelope schemas
   config/
     config.ts              # env vars + fixed params (no schema)
     drizzle/               # Drizzle config (per-context schema files + index.ts barrel with types and config)
@@ -113,7 +115,7 @@ tests/
 public/                    # static files served as-is — API docs page + service icon
 specs/                     # spec-driven development specs, one folder per feature
 drizzle/                   # generated SQL migrations
-coverage/               # Test coverage reports
+coverage/                  # Test coverage reports
 ```
 
 ## Testing
@@ -133,7 +135,7 @@ There are two kinds of tests:
 
 ### Running tests
 
-- Integration tests need a running database with the schema applied. 
+- Integration tests need a running database with the schema applied.
 
 ```shell
 docker compose up -d     # start PostgreSQL
@@ -154,10 +156,10 @@ vitest run -t 'returns 404'            # run tests whose name matches a string
 - The coverage treshold is **80%*.
 - Coverage reports files are output in ``coverage/`` directory.
 - The coverage formats are:
-  - *text*: See coverage info in terminal.
-  - *html*: See coverage details in browser. Open ``coverage/index.html``.
-  - *json-summary*: Generates a ``coverage/coverage-summary.json`` (per-file totals).
-  - *lcov*: Generates a `coverage/lcov.info` (line/branch detail).
+    - *text*: See coverage info in terminal.
+    - *html*: See coverage details in browser. Open ``coverage/index.html``.
+    - *json-summary*: Generates a ``coverage/coverage-summary.json`` (per-file totals).
+    - *lcov*: Generates a `coverage/lcov.info` (line/branch detail).
 
 > Formats **json-summary** and **lcov** are used by AI. When you ask AI "Explain why the statement "throw new PromptCreationError" (after creation) in @tests/unit/modules/prompt/application/CreatePromptUseCase.test.ts appears as uncovered",
 > AI will use the JSON and lcov files to see the coverage info and analyze the case.
@@ -250,7 +252,7 @@ e.g. `specs/20260708173845-archive-prompt/`. Inside are three files:
 A feature is only "done" when every acceptance criterion in `spec.md` has a passing test.
 
 > Specs with different naming (e. g. 009-login) were created using a different spec-driven development flow.
-  See old flow here: [https://github.com/rod86/ai-prompts-vault-api/tree/spec-driven-dev-v1](https://github.com/rod86/ai-prompts-vault-api/tree/spec-driven-dev-v1)
+See old flow here: [https://github.com/rod86/ai-prompts-vault-api/tree/spec-driven-dev-v1](https://github.com/rod86/ai-prompts-vault-api/tree/spec-driven-dev-v1)
 
 ### Status lifecycle
 
