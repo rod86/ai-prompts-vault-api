@@ -57,7 +57,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: in `src/modules/shared/services.ts` export `passwordStrengthChecker = new ZxcvbnPasswordStrengthChecker(new ZxcvbnCheckerFactory())`; in `src/modules/user/services.ts` pass `passwordStrengthChecker` as the 5th argument to `RegisterUserUseCase`
   - Covers: makes V8 live end-to-end (supports AC1, AC9)
 
-- [ ] T9. Composition rules on CreateUserSchema
+- [x] T9. Composition rules on CreateUserSchema
   - Type: route schema
   - Depends on: T8
   - Red: add a `Request Validation` case (parametrized) to `tests/integration/handlers/users/createUserHandler.test.ts` — `it.each` over `[password, expectedMessage]`: too-short→"Must be at least 8 characters", 65-char→max message, no-lowercase→lowercase message, no-uppercase→uppercase message, no-digit→digit message, no-special→special message, `Pàssword1!`/`Password 1!`→disallowed-character message; each asserts `response.status` 400 and `response.body.details.body.password` equals the message. Fails: schema only enforces min length

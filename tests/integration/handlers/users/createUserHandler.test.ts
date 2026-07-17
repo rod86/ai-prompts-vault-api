@@ -116,5 +116,21 @@ describe('POST /users', () => {
                 expect.objectContaining({ password: 'Must be at least 8 characters' }),
             );
         });
+
+        it.each([
+            ['abc', 'Must be at least 8 characters'],
+            [`Aa1!${'a'.repeat(61)}`, 'Must be at most 64 characters'],
+            ['AA11!!!!', 'Must contain at least one lowercase letter'],
+            ['aa11!!!!', 'Must contain at least one uppercase letter'],
+            ['AAaa!!!!', 'Must contain at least one digit'],
+            ['AAaa1111', 'Must contain at least one special character'],
+            ['Pàssword1!', 'Must contain only letters, digits, and allowed special characters'],
+            ['Password 1!', 'Must contain only letters, digits, and allowed special characters'],
+        ])('returns "%s" -> %s for the password composition rule', async (password, expectedMessage) => {
+            const response = await request(app).post('/users').send({ password });
+
+            expect(response.status).toBe(400);
+            expect(response.body.details.body.password).toBe(expectedMessage);
+        });
     });
 });
