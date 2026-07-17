@@ -1,5 +1,5 @@
 # Spec: Align development type definitions with the supported runtime
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a maintainer of this project, I want the development runtime type definitions to match the major version of the runtime the project supports, so that type-checking reflects the APIs that are actually available at runtime and can catch real incompatibilities.
 
 <!--
