@@ -60,7 +60,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/docs/global.ts` exporting spreadable `unauthorizedResponse` / `rateLimitedResponse` / `validationErrorResponse(description)` fragments; refactor `src/docs/{auth,users,prompts,health}.ts` to use them and to import `ErrorResponseSchema` / `ValidationErrorResponseSchema` from `src/routes/shared/error.response.schema.js`; delete the now-unused `src/routes/shared.response.schema.ts`.
   - Covers: AC5 "Given the running API, when the API documentation document is retrieved, then it still validates and describes the same operations and the same request/response shapes as before."
 
-- [ ] T8. Update project documentation to the new layout
+- [x] T8. Update project documentation to the new layout
   - Type: docs
   - Depends on: T2, T3, T4, T5, T7
   - Red: none — Markdown only, no runtime surface.
