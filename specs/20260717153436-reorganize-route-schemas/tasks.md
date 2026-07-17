@@ -46,7 +46,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/routes/health/health.response.schema.ts` (`HealthResponseSchema` moved out of `shared.response.schema.ts`), `src/handlers/health/healthHandler.ts`, `src/routes/health/health.routes.ts`; mount `healthRouter` first in `src/routes/index.ts`; remove the inline `app.get('/health', …)` from `src/app.ts`; repoint `src/docs/health.ts` to import `HealthResponseSchema` from the health folder; remove the now-duplicated health assertion from `tests/integration/app.test.ts`.
   - Covers: AC2 "Given the running API, when a client requests the health check, then it returns the healthy status body exactly as before."; AC3 "Given the running API, when a client requests the health check, then the response body conforms to the health check's documented response shape."
 
-- [ ] T6. Pin that the health check stays rate-limited
+- [x] T6. Pin that the health check stays rate-limited
   - Type: route handler
   - Depends on: T5
   - Red: in the health handler test file, add a test that exhausts the global request-rate allowance for a single client identity (unique `X-Forwarded-For`) and asserts the next `/health` request returns the rate-limit response (429 with the uniform error envelope); this guards against `/health` ever being mounted ahead of the global limiter.
