@@ -25,7 +25,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Ada Lovelace',
             email: 'ada.lovelace@example.com',
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -54,7 +54,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Grace Hopper',
             email: 'grace.hopper@example.com',
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -69,7 +69,7 @@ describe('POST /users', () => {
         const body = {
             name: 'Margaret Hamilton',
             email: existingUser.email,
-            password: 'a-secure-password',
+            password: 'Xk9$mQr7vTz#Lp2w',
         };
 
         const response = await request(app).post('/users').send(body);
@@ -84,6 +84,26 @@ describe('POST /users', () => {
         const stored = await selectUsersByEmail(db, existingUser.email);
         expect(stored).toHaveLength(1);
         expect(stored[0]?.id).toBe(existingUser.id);
+    });
+
+    it('returns a 422 weak-password failure for a well-formed but easily guessed password', async () => {
+        const body = {
+            name: 'Alan Turing',
+            email: 'alan.turing@example.com',
+            password: 'Qwerty123!',
+        };
+
+        const response = await request(app).post('/users').send(body);
+
+        expect(response.status).toBe(422);
+        expect(response.body).toEqual({
+            status: 422,
+            code: 'WEAK_PASSWORD',
+            message: 'Password is too weak',
+        });
+
+        const stored = await selectUsersByEmail(db, body.email);
+        expect(stored).toHaveLength(0);
     });
 
     describe('Request Validation', () => {
@@ -115,6 +135,22 @@ describe('POST /users', () => {
             expect(response.body.details.body).toEqual(
                 expect.objectContaining({ password: 'Must be at least 8 characters' }),
             );
+        });
+
+        it.each([
+            ['abc', 'Must be at least 8 characters'],
+            [`Aa1!${'a'.repeat(61)}`, 'Must be at most 64 characters'],
+            ['AA11!!!!', 'Must contain at least one lowercase letter'],
+            ['aa11!!!!', 'Must contain at least one uppercase letter'],
+            ['AAaa!!!!', 'Must contain at least one digit'],
+            ['AAaa1111', 'Must contain at least one special character'],
+            ['Pàssword1!', 'Must contain only letters, digits, and allowed special characters'],
+            ['Password 1!', 'Must contain only letters, digits, and allowed special characters'],
+        ])('returns "%s" -> %s for the password composition rule', async (password, expectedMessage) => {
+            const response = await request(app).post('/users').send({ password });
+
+            expect(response.status).toBe(400);
+            expect(response.body.details.body.password).toBe(expectedMessage);
         });
     });
 });

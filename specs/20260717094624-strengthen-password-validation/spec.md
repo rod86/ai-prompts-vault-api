@@ -1,5 +1,5 @@
 # Spec: Strengthen password validation on registration
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a person registering an account, I want my password required to be both well-formed and hard to guess, so that my account is protected from weak-password compromise.
 
 ## 1. Behavior

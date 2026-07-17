@@ -1,8 +1,10 @@
 import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
 import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
 import type PasswordHasherInterface from '@src/modules/shared/domain/interfaces/PasswordHasherInterface.js';
+import type PasswordStrengthCheckerInterface from '@src/modules/shared/domain/interfaces/PasswordStrengthCheckerInterface.js';
 import { EmailAlreadyInUseError } from '@src/modules/user/domain/errors/EmailAlreadyInUseError.js';
 import { UserCreationError } from '@src/modules/user/domain/errors/UserCreationError.js';
+import { WeakPasswordError } from '@src/modules/user/domain/errors/WeakPasswordError.js';
 import type UserRepositoryInterface from '@src/modules/user/domain/interfaces/UserRepositoryInterface.js';
 import { type User } from '@src/modules/user/domain/User.js';
 
@@ -26,9 +28,14 @@ export class RegisterUserUseCase {
         private readonly passwordHasher: PasswordHasherInterface,
         private readonly dateTime: DateTimeInterface,
         private readonly idGenerator: IdGeneratorInterface,
+        private readonly passwordStrengthChecker: PasswordStrengthCheckerInterface,
     ) {}
 
     public async invoke(query: RegisterUserQuery): Promise<RegisterUserResponse> {
+        if (!this.passwordStrengthChecker.isStrong(query.password)) {
+            throw new WeakPasswordError();
+        }
+
         const existingUser = await this.userRepository.findByEmail(query.email);
 
         if (existingUser) {
