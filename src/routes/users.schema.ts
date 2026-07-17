@@ -24,7 +24,11 @@ export const CreateUserSchema = z.object({
             .regex(
                 ALLOWED_CHARACTERS_ONLY_REGEX,
                 'Must contain only letters, digits, and allowed special characters',
-            ),
+            )
+            .meta({
+                description:
+                    'Password should have at least 8 characters including uppercase, lowercase and a symbol.',
+            }),
     }),
 });
 
