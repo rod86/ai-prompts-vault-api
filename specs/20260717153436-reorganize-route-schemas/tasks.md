@@ -32,7 +32,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/routes/users/users.request.schema.ts` (from `users.schema.ts`, email via `emailField()`), `src/routes/users/users.response.schema.ts`, `src/routes/users/users.routes.ts`; repoint importers (`src/handlers/users/createUserHandler.ts`, `src/routes/index.ts`, `src/docs/users.ts`, the users handler test); delete the old flat `src/routes/users.{schema,response.schema,routes}.ts`.
   - Covers: AC1 "Given the running API, when the full existing test suite for authenticate, register user, list prompt categories, and create/update/delete prompt is run, then every request-validation, success, and error assertion passes unchanged."; V2, V3, E1, E2
 
-- [ ] T4. Move the prompts resource into its own folder and reuse the category schema
+- [x] T4. Move the prompts resource into its own folder and reuse the category schema
   - Type: route handler
   - Depends on: T1
   - Red: none — file move + import rewire; the prompt handler tests (`createPromptHandler`, `updatePromptHandler`, `deletePromptHandler`, `listPromptCategoriesHandler`) stay green (repointed). The `category` field reuse produces the identical wire shape.

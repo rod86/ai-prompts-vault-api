@@ -1,6 +1,6 @@
 import { type RequestHandler } from 'express';
 import { listPromptCategoriesUseCase } from '@src/modules/prompt/services.js';
-import { type PromptCategoryListResponse } from '@src/routes/prompts.response.schema.js';
+import { type PromptCategoryListResponse } from '@src/routes/prompts/prompts.response.schema.js';
 
 const listPromptCategoriesHandler: RequestHandler<
     Record<string, string>,

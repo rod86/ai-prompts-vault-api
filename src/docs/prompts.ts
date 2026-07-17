@@ -1,13 +1,13 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
 import {
-    PromptCategoryListResponseSchema,
-    PromptResponseSchema,
-} from '@src/routes/prompts.response.schema.js';
-import {
     CreatePromptSchema,
     DeletePromptSchema,
     UpdatePromptSchema,
-} from '@src/routes/prompts.schema.js';
+} from '@src/routes/prompts/prompts.request.schema.js';
+import {
+    PromptCategoryListResponseSchema,
+    PromptResponseSchema,
+} from '@src/routes/prompts/prompts.response.schema.js';
 import {
     ErrorResponseSchema,
     ValidationErrorResponseSchema,

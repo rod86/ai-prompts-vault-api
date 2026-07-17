@@ -9,7 +9,7 @@ import {
     CreatePromptSchema,
     DeletePromptSchema,
     UpdatePromptSchema,
-} from '@src/routes/prompts.schema.js';
+} from '@src/routes/prompts/prompts.request.schema.js';
 
 export const promptsRouter = Router();
 
