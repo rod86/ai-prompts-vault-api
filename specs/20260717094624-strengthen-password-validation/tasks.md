@@ -8,7 +8,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: install `@zxcvbn-ts/core`, `@zxcvbn-ts/language-common`, `@zxcvbn-ts/language-en` at latest stable; confirm they land in `package.json`
   - Covers: enables V8 (no AC directly)
 
-- [ ] T2. Password strength checker port
+- [x] T2. Password strength checker port
   - Type: domain
   - Depends on: none
   - Red: none — `PasswordStrengthCheckerInterface` is a pure interface declaration; see testing-practices
