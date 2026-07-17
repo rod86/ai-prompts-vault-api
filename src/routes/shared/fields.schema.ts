@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-export const uuidField = () =>
+export const uuidField = (): z.ZodType<string> =>
     z.uuid({
         error: (issue) =>
             issue.code === 'invalid_type' ? 'Missing required value' : 'Invalid UUID value',
     });
 
-export const emailField = () =>
+export const emailField = (): z.ZodType<string> =>
     z.email({
         error: (issue) =>
             issue.code === 'invalid_type' ? 'Missing required value' : 'Invalid email value',

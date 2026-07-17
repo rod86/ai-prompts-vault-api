@@ -53,7 +53,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: no production change needed — `/health` is already mounted inside `apiRouter` behind the global limiter (T5); the test passes and locks that placement in.
   - Covers: AC4 "Given a client that has exhausted the general request-rate allowance, when it requests the health check, then it receives the rate-limit response."; E3
 
-- [ ] T7. Deduplicate the documentation response fragments
+- [x] T7. Deduplicate the documentation response fragments
   - Type: docs
   - Depends on: T2, T3, T4, T5
   - Red: none — `src/docs` is excluded from coverage and declaration-only; the documentation surface is guarded by the existing `tests/integration/docs.test.ts` (the `/openapi.json` document builds and validates) plus every handler test's `<X>ResponseSchema.parse(...)`, all of which stay green.
