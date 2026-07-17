@@ -1,5 +1,6 @@
 import { type ZodOpenApiPathsObject } from 'zod-openapi';
-import { ErrorResponseSchema, HealthResponseSchema } from '@src/routes/shared.response.schema.js';
+import { HealthResponseSchema } from '@src/routes/health/health.response.schema.js';
+import { ErrorResponseSchema } from '@src/routes/shared.response.schema.js';
 
 export const healthPaths: ZodOpenApiPathsObject = {
     '/health': {

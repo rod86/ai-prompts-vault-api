@@ -39,7 +39,7 @@ folder, then health, then the docs-layer cleanup, then project-doc updates.
   - Green: create `src/routes/prompts/prompts.request.schema.ts` (from `prompts.schema.ts`, ids via `uuidField()`), `src/routes/prompts/prompts.response.schema.ts` (with `category` reusing `PromptCategorySchema`), `src/routes/prompts/prompts.routes.ts`; repoint importers (the four prompt handlers, `src/routes/index.ts`, `src/docs/prompts.ts`, the four prompt handler tests); delete the old flat `src/routes/prompts.{schema,response.schema,routes}.ts`.
   - Covers: AC1 "Given the running API, when the full existing test suite for authenticate, register user, list prompt categories, and create/update/delete prompt is run, then every request-validation, success, and error assertion passes unchanged."; V1, V3, E1, E2
 
-- [ ] T5. Make the health check a first-class resource
+- [x] T5. Make the health check a first-class resource
   - Type: route handler
   - Depends on: T1
   - Red: add `tests/integration/handlers/health/healthHandler.test.ts` asserting `GET /health` returns `200 { status: 'ok' }` and that `HealthResponseSchema.parse(response.body)` does not throw, importing the schema from `src/routes/health/health.response.schema.js`; fails because that module and the handler/router do not exist yet.
