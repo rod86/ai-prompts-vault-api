@@ -1,7 +1,7 @@
 # Tasks: Strengthen password validation on registration
 Plan: specs/20260717094624-strengthen-password-validation/plan.md
 
-- [ ] T1. Install zxcvbn-ts packages
+- [x] T1. Install zxcvbn-ts packages
   - Type: dependency
   - Depends on: none
   - Red: none — dependency change, no test
