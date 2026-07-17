@@ -15,7 +15,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `src/modules/shared/domain/interfaces/PasswordStrengthCheckerInterface.ts` with `isStrong(password: string): boolean`
   - Covers: contract for V8
 
-- [ ] T3. zxcvbn seam types
+- [x] T3. zxcvbn seam types
   - Type: infrastructure
   - Depends on: none
   - Red: none — `ZxcvbnChecker` and `ZxcvbnCheckerFactoryInterface` are pure type declarations; see testing-practices
