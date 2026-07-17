@@ -50,7 +50,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `passwordStrengthChecker: PasswordStrengthCheckerInterface` as the 5th ctor dependency; as the first line of `invoke`, `if (!this.passwordStrengthChecker.isStrong(query.password)) throw new WeakPasswordError();`. Update the three existing use-case tests to construct with a mocked checker returning `true`
   - Covers: AC11 "Given a weak password and an email that is already in use, When the person registers, Then registration is refused as too weak (E2), the too-weak refusal takes precedence over the already-in-use refusal, and no email lookup or account creation occurs."; V8, E2
 
-- [ ] T8. Wire the strength checker into composition roots
+- [x] T8. Wire the strength checker into composition roots
   - Type: composition root
   - Depends on: T4, T5, T7
   - Red: none — composition roots are logic-less wiring; see testing-practices

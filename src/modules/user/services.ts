@@ -4,6 +4,7 @@ import {
     dateTimeService,
     idGenerator,
     passwordHasher,
+    passwordStrengthChecker,
 } from '@src/modules/shared/services.js';
 import { RegisterUserUseCase } from '@src/modules/user/application/RegisterUserUseCase.js';
 import { DrizzleUserRepository } from '@src/modules/user/infrastructure/database/DrizzleUserRepository.js';
@@ -15,4 +16,5 @@ export const registerUserUseCase = new RegisterUserUseCase(
     passwordHasher,
     dateTimeService,
     idGenerator,
+    passwordStrengthChecker,
 );
