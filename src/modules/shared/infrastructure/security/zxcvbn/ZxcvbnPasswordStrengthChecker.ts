@@ -1,5 +1,4 @@
 import type PasswordStrengthCheckerInterface from '@src/modules/shared/domain/interfaces/PasswordStrengthCheckerInterface.js';
-
 import type { ZxcvbnCheckerFactoryInterface } from './ZxcvbnCheckerTypes.js';
 
 const MIN_STRENGTH_SCORE = 3;
