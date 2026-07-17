@@ -29,7 +29,7 @@ Plan: specs/20260717094624-strengthen-password-validation/plan.md
   - Green: add `src/modules/shared/infrastructure/security/zxcvbn/ZxcvbnCheckerFactory.ts`; `create()` returns `new ZxcvbnFactory({ translations: en.translations, graphs: common.adjacencyGraphs, dictionary: { ...common.dictionary, ...en.dictionary } })`
   - Covers: real scoring wiring for V8
 
-- [ ] T5. Strength-checker adapter (threshold mapping)
+- [x] T5. Strength-checker adapter (threshold mapping)
   - Type: infrastructure
   - Depends on: T2, T3
   - Red: `tests/unit/modules/shared/infrastructure/security/zxcvbn/ZxcvbnPasswordStrengthChecker.test.ts` — a mocked `ZxcvbnCheckerFactoryInterface` whose `create()` returns a mocked `ZxcvbnChecker`; `it.each([[0,false],[1,false],[2,false],[3,true],[4,true]])` asserts `isStrong` returns the expected boolean per score. Fails: adapter does not exist
