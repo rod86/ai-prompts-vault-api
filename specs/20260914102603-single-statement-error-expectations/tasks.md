@@ -120,7 +120,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     proves the failure is the *token expired* / *invalid token* failure with its wording.";
     V1, V3, V6
 
-- [ ] T8. Data store client: tighten both not-connected checks
+- [x] T8. Data store client: tighten both not-connected checks
   - Type: infrastructure (test)
   - Depends on: none
   - Red: none in the classic sense — run
