@@ -17,7 +17,7 @@ were confirmed against it during planning (plan §7 assumption 4). If a message 
 at Red, copy the library's actual wording into the expectation. Never loosen it to a
 class-only or substring check.
 
-- [ ] T1. A fully valid environment is returned typed
+- [x] T1. A fully valid environment is returned typed
   - Type: config
   - Depends on: none
   - Red: `expect(parseEnv(validEnv)).toEqual({ ...every key with its coerced value })`. Numbers are numbers (`PORT: 8080`, `TRUST_PROXY_HOPS: 2`, …), strings are strings, `ENVIRONMENT: 'production'`. Fails now: `@src/config/env.js` does not exist.
