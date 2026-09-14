@@ -91,9 +91,8 @@ describe('CreatePromptUseCase', () => {
         categoryRepository.findById.mockResolvedValue(undefined);
         const query = buildQuery();
 
-        await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
         await expect(useCase.invoke(query)).rejects.toThrow(
-            `Category not found: ${query.categoryId}`,
+            new CategoryNotFoundError(query.categoryId),
         );
         expect(promptRepository.create).not.toHaveBeenCalled();
         expect(userRepository.findById).not.toHaveBeenCalled();
@@ -135,8 +134,7 @@ describe('CreatePromptUseCase', () => {
         categoryRepository.findById.mockResolvedValue(fixtureCategory);
         userRepository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke(query)).rejects.toThrow(UserNotFoundError);
-        await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.userId}`);
+        await expect(useCase.invoke(query)).rejects.toThrow(new UserNotFoundError(query.userId));
         expect(promptRepository.create).not.toHaveBeenCalled();
     });
 });

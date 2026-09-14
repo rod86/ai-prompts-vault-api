@@ -104,8 +104,9 @@ describe('RegisterUserUseCase', () => {
         userRepository.findByEmail.mockResolvedValue(existingUser);
         const query = buildQuery();
 
-        await expect(useCase.invoke(query)).rejects.toThrow(EmailAlreadyInUseError);
-        await expect(useCase.invoke(query)).rejects.toThrow(`Email already in use: ${query.email}`);
+        await expect(useCase.invoke(query)).rejects.toThrow(
+            new EmailAlreadyInUseError(query.email),
+        );
         expect(passwordHasher.hash).not.toHaveBeenCalled();
         expect(userRepository.create).not.toHaveBeenCalled();
         expect(dateTime.now).not.toHaveBeenCalled();
@@ -116,7 +117,7 @@ describe('RegisterUserUseCase', () => {
         passwordStrengthChecker.isStrong.mockReturnValue(false);
         const query = buildQuery();
 
-        await expect(useCase.invoke(query)).rejects.toThrow(WeakPasswordError);
+        await expect(useCase.invoke(query)).rejects.toThrow(new WeakPasswordError());
         expect(userRepository.findByEmail).not.toHaveBeenCalled();
     });
 });

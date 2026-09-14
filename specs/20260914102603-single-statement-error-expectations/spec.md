@@ -1,5 +1,5 @@
 # Spec: Single-statement error expectations in tests
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As a developer maintaining this codebase, I want every test of a failing operation to state its expected failure as one complete expectation, so that a single readable step proves both the kind of failure and its wording, and the two can never drift apart.
 
 ## 1. Behavior

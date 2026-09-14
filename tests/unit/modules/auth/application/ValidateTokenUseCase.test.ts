@@ -39,6 +39,6 @@ describe('ValidateTokenUseCase', () => {
         tokenVerifier.verifyToken.mockResolvedValue({ userId });
         userCredentialsRepository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke(TOKEN)).rejects.toThrow(InvalidTokenError);
+        await expect(useCase.invoke(TOKEN)).rejects.toThrow(new InvalidTokenError());
     });
 });

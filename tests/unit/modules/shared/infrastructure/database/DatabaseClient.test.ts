@@ -59,7 +59,7 @@ describe('DatabaseClient', () => {
     });
 
     it('refuses to hand out a connection before establish', () => {
-        expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
+        expect(() => client.getConnection()).toThrow(new DatabaseNotConnectedError());
         expect(PoolMock).not.toHaveBeenCalled();
     });
 
@@ -75,7 +75,7 @@ describe('DatabaseClient', () => {
         await client.close();
 
         expect(pool.end).toHaveBeenCalledTimes(1);
-        expect(() => client.getConnection()).toThrow(DatabaseNotConnectedError);
+        expect(() => client.getConnection()).toThrow(new DatabaseNotConnectedError());
     });
 
     it('constructs a fresh pool and connection after a close', async () => {

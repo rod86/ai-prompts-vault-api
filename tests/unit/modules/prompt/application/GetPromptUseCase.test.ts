@@ -37,9 +37,8 @@ describe('GetPromptUseCase', () => {
     it('throws PromptNotFoundError when the repository finds nothing', async () => {
         repository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke({ id: 'missing-id' })).rejects.toThrow(PromptNotFoundError);
         await expect(useCase.invoke({ id: 'missing-id' })).rejects.toThrow(
-            'Prompt not found: missing-id',
+            new PromptNotFoundError('missing-id'),
         );
     });
 

@@ -24,7 +24,7 @@ describe('JwtTokenVerifier', () => {
         it('rejects with TokenExpiredError when the token has expired', async () => {
             const token = createSignedToken({ sub: 'fixture-user-id', expiresInSeconds: -10 });
 
-            await expect(verifier.verifyToken(token)).rejects.toThrow(TokenExpiredError);
+            await expect(verifier.verifyToken(token)).rejects.toThrow(new TokenExpiredError());
         });
 
         it('rejects with InvalidTokenError when the signature is not authentic', async () => {
@@ -33,17 +33,19 @@ describe('JwtTokenVerifier', () => {
                 secret: 'a-different-secret',
             });
 
-            await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
+            await expect(verifier.verifyToken(token)).rejects.toThrow(new InvalidTokenError());
         });
 
         it('rejects with InvalidTokenError when the token is unreadable', async () => {
-            await expect(verifier.verifyToken('not-a-jwt')).rejects.toThrow(InvalidTokenError);
+            await expect(verifier.verifyToken('not-a-jwt')).rejects.toThrow(
+                new InvalidTokenError(),
+            );
         });
 
         it('rejects with InvalidTokenError when the token carries no sub claim', async () => {
             const token = createSignedToken();
 
-            await expect(verifier.verifyToken(token)).rejects.toThrow(InvalidTokenError);
+            await expect(verifier.verifyToken(token)).rejects.toThrow(new InvalidTokenError());
         });
     });
 });

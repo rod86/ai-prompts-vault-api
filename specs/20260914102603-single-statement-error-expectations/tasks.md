@@ -10,7 +10,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
 > holds. Tasks are ordered leaf-first (unit, then integration, then whole-suite
 > verification); none depends on a later one.
 
-- [ ] T1. Prompt read: collapse the not-found pair
+- [x] T1. Prompt read: collapse the not-found pair
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — this is a test-only refactor. Run
@@ -24,7 +24,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     exercised, Then one expectation proves the failure is a *prompt not found* failure whose
     wording names the requested identifier."; V1, V2, V3, V4
 
-- [ ] T2. Prompt creation: collapse the category and creator pairs
+- [x] T2. Prompt creation: collapse the category and creator pairs
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -42,7 +42,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     expectations that nothing was persisted and no further lookup happened still hold.";
     V1, V2, V3, V4
 
-- [ ] T3. Prompt update: collapse two pairs and tighten the ownership check
+- [x] T3. Prompt update: collapse two pairs and tighten the ownership check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -61,7 +61,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     offending identifier, and the follow-up expectations that nothing was looked up,
     persisted, or timestamped still hold."; V1, V2, V3, V4, V6
 
-- [ ] T4. Prompt deletion: collapse the not-found pair and tighten the ownership check
+- [x] T4. Prompt deletion: collapse the not-found pair and tighten the ownership check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -76,7 +76,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     names the offending identifier, and the follow-up expectation that nothing was deleted
     still holds."; V1, V2, V3, V4, V6
 
-- [ ] T5. User registration: collapse the duplicate-email pair and tighten the weak-password check
+- [x] T5. User registration: collapse the duplicate-email pair and tighten the weak-password check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -92,7 +92,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     *password too weak* failure with its wording, and the follow-up expectations that
     nothing was hashed, persisted, timestamped, or looked up still hold."; V1, V2, V3, V4, V6
 
-- [ ] T6. Token validation: tighten the unknown-user check
+- [x] T6. Token validation: tighten the unknown-user check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -104,7 +104,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     one expectation proves the failure is the *invalid token* failure with its wording.";
     V1, V3, V6
 
-- [ ] T7. Token verification: tighten all four rejection checks
+- [x] T7. Token verification: tighten all four rejection checks
   - Type: infrastructure (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -120,7 +120,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     proves the failure is the *token expired* / *invalid token* failure with its wording.";
     V1, V3, V6
 
-- [ ] T8. Data store client: tighten both not-connected checks
+- [x] T8. Data store client: tighten both not-connected checks
   - Type: infrastructure (test)
   - Depends on: none
   - Red: none in the classic sense — run
@@ -135,7 +135,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     expectation each proves the failure is the *not connected* failure with its wording.";
     V1, V3, V6
 
-- [ ] T9. Verify the untouched cause-carrying tests and the whole suite
+- [x] T9. Verify the untouched cause-carrying tests and the whole suite
   - Type: verification
   - Depends on: T1, T2, T3, T4, T5, T6, T7, T8
   - Red: none in the classic sense — this task adds no test; it proves the refactor left the
