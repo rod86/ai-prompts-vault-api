@@ -1,5 +1,5 @@
 # Spec: Get a prompt by id
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API consumer, I want to fetch a single prompt by its identifier so that I can read its full details without retrieving the whole collection.
 
 ## 1. Behavior
