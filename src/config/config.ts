@@ -1,7 +1,7 @@
 import path from 'node:path';
 import process from 'node:process';
-import { loadEnvFileIfPresent, parseEnv, type Env } from '@src/config/env.js';
-import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
+import { loadEnvFileIfPresent, parseEnv, type Env } from '@src/config/env/env.js';
+import { InvalidEnvironmentError } from '@src/config/env/InvalidEnvironmentError.js';
 
 function loadEnv(): Env {
     try {

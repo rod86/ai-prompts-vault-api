@@ -99,8 +99,9 @@ src/
     infrastructure/     # Drizzle repos, adapters (schema lives in src/config/drizzle/)
     services.ts         # composition root for the context (DI wiring)
   config/
-    env.ts              # Zod EnvSchema + parseEnv (validates process.env) + loadEnvFileIfPresent
-    InvalidEnvironmentError.ts  # thrown by parseEnv on an invalid/missing setting
+    env/                # environment validation
+      env.ts            # Zod EnvSchema + parseEnv (validates process.env) + loadEnvFileIfPresent
+      InvalidEnvironmentError.ts  # thrown by parseEnv on an invalid/missing setting
     config.ts           # validates env at boot (exits 1 on failure); fixed params (default-exported, no schema)
     drizzle/            # centralized Drizzle schema (outside every bounded context)
       user.schema.ts    # per-context table definitions

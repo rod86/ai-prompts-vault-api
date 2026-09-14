@@ -3,8 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { faker } from '@faker-js/faker';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { loadEnvFileIfPresent, parseEnv } from '@src/config/env.js';
-import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
+import { loadEnvFileIfPresent, parseEnv } from '@src/config/env/env.js';
+import { InvalidEnvironmentError } from '@src/config/env/InvalidEnvironmentError.js';
 
 const validEnv = {
     ENVIRONMENT: 'production',

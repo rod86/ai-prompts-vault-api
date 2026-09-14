@@ -119,8 +119,9 @@ src/
     <resource>/            # per-resource: router + request/response schemas (auth, users, prompts, health)
     shared/                # cross-resource field validators + error envelope schemas
   config/
-    env.ts                 # Zod EnvSchema + parseEnv (validates process.env) + loadEnvFileIfPresent
-    InvalidEnvironmentError.ts  # thrown by parseEnv on an invalid/missing setting
+    env/                   # environment validation
+      env.ts               # Zod EnvSchema + parseEnv (validates process.env) + loadEnvFileIfPresent
+      InvalidEnvironmentError.ts  # thrown by parseEnv on an invalid/missing setting
     config.ts              # validates env at boot (exits 1 on failure); fixed params (no schema)
     drizzle/               # Drizzle config (per-context schema files + index.ts barrel with types and config)
   types/                   # Additional TypeScript types declarations (e.g. custom req typing)

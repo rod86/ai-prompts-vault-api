@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { Env } from '@src/config/env.js';
+import type { Env } from '@src/config/env/env.js';
 
 export class InvalidEnvironmentError extends Error {
     constructor(public readonly details: ReturnType<typeof z.treeifyError<Env>>) {

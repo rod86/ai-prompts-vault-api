@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import process from 'node:process';
 import { z } from 'zod';
-import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
+import { InvalidEnvironmentError } from '@src/config/env/InvalidEnvironmentError.js';
 
 export const EnvSchema = z.object({
     ENVIRONMENT: z.enum(['development', 'test', 'production']).default('development'),
