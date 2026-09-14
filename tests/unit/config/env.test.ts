@@ -1,5 +1,8 @@
+import os from 'node:os';
+import path from 'node:path';
+import { faker } from '@faker-js/faker';
 import { describe, expect, it } from 'vitest';
-import { parseEnv } from '@src/config/env.js';
+import { loadEnvFileIfPresent, parseEnv } from '@src/config/env.js';
 import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
 
 const validEnv = {
@@ -144,5 +147,13 @@ describe('parseEnv', () => {
 
     it('accepts a blank DATABASE_PASSWORD', () => {
         expect(parseEnv({ ...validEnv, DATABASE_PASSWORD: '' }).DATABASE_PASSWORD).toBe('');
+    });
+});
+
+describe('loadEnvFileIfPresent', () => {
+    it('does not throw when the settings file is missing', () => {
+        const missingPath = path.join(os.tmpdir(), faker.string.uuid());
+
+        expect(() => loadEnvFileIfPresent(missingPath)).not.toThrow();
     });
 });

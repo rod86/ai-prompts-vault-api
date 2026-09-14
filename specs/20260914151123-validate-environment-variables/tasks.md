@@ -80,7 +80,7 @@ class-only or substring check.
   - Green: none expected. `z.string().default('')` from T1.
   - Covers: AC9 "Given `DATABASE_PASSWORD` is supplied blank, When the settings are checked, Then it is accepted as empty text."; V6
 
-- [ ] T10. A missing settings file is skipped silently
+- [x] T10. A missing settings file is skipped silently
   - Type: config
   - Depends on: none
   - Red: in a new `describe('loadEnvFileIfPresent')`, build a path under `os.tmpdir()` that does not exist (unique name via `faker.string.uuid()`), and assert `expect(() => loadEnvFileIfPresent(missingPath)).not.toThrow()`. Fails now: `loadEnvFileIfPresent` is not exported.

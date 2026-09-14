@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import process from 'node:process';
 import { z } from 'zod';
 import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
 
@@ -26,4 +28,10 @@ export function parseEnv(env: NodeJS.ProcessEnv): Env {
         throw new InvalidEnvironmentError(z.treeifyError(result.error));
     }
     return result.data;
+}
+
+export function loadEnvFileIfPresent(filePath: string): void {
+    if (existsSync(filePath)) {
+        process.loadEnvFile(filePath);
+    }
 }
