@@ -15,7 +15,7 @@ Plan: specs/20260914105014-get-prompt-by-id/plan.md
   - Green: none — `getPromptHandler` from T1 already types its body from `PromptResponse` and maps every field; the assertion passes once T1 is green.
   - Covers: AC5 "Given a prompt exists, When a consumer fetches it by its identifier, Then the returned details conform to the documented shape of a prompt result."
 
-- [ ] T3. A prompt without a description reports an empty description
+- [x] T3. A prompt without a description reports an empty description
   - Type: route handler
   - Depends on: T1
   - Red: In the same test file, insert a prompt with `description: undefined` explicitly passed to `promptFixture.insert({ categoryId, userId, description: undefined })` and fetch it; assert `response.status === 200` and `response.body.description` is `null`. Fails today because `PromptModelFactory.create` substitutes a faker description for an explicitly-passed `undefined`, so the row is stored with a description.

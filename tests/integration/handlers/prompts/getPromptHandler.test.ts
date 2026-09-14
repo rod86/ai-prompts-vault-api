@@ -62,4 +62,17 @@ describe('GET /prompts/:id', () => {
 
         expect(() => PromptResponseSchema.parse(response.body)).not.toThrow();
     });
+
+    it('reports an empty description when the prompt has none', async () => {
+        const fixturePrompt = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+            description: undefined,
+        });
+
+        const response = await request(app).get(`/prompts/${fixturePrompt.id}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.description).toBeNull();
+    });
 });

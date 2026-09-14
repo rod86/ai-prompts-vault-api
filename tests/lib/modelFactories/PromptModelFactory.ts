@@ -15,7 +15,7 @@ export class PromptModelFactory extends AbstractModelFactory<PromptModel> {
             userId: data.userId ?? faker.string.uuid(),
             title: data.title ?? faker.lorem.sentence(),
             prompt: data.prompt ?? faker.lorem.paragraph(),
-            description: data.description ?? faker.lorem.sentence(),
+            description: 'description' in data ? data.description : faker.lorem.sentence(),
             createdAt: data.createdAt ?? faker.date.past({ years: 2 }),
             updatedAt: data.updatedAt ?? faker.date.recent(),
         };
