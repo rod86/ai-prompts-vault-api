@@ -92,7 +92,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     *password too weak* failure with its wording, and the follow-up expectations that
     nothing was hashed, persisted, timestamped, or looked up still hold."; V1, V2, V3, V4, V6
 
-- [ ] T6. Token validation: tighten the unknown-user check
+- [x] T6. Token validation: tighten the unknown-user check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
