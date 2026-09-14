@@ -33,7 +33,7 @@ pooled.
   - Green: none expected — `DrizzlePromptRepository.findAll` already orders `desc(createdAt), id`. If the test fails, the defect is in the handler preserving the use case's order.
   - Covers: AC2 "Given prompts created at different instants, When a consumer asks for the collection, Then they are returned most-recently-created first."
 
-- [ ] T3. A category filter narrows the collection to that category
+- [x] T3. A category filter narrows the collection to that category
   - Type: route handler
   - Depends on: T1
   - Red: insert one prompt in category A and one in category B, then `GET /prompts?category_id=<A.id>`; assert `200` and that the response contains the category-A prompt's id and not the category-B prompt's id.

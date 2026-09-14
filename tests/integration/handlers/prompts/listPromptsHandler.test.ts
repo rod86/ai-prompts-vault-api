@@ -98,4 +98,28 @@ describe('GET /prompts', () => {
 
         expect(orderedFixtureIds).toEqual([newer.id, older.id]);
     });
+
+    it('narrows the collection to prompts belonging to the given category', async () => {
+        const otherCategory = await categoryFixture.insert();
+        const inCategoryA = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+        });
+        const inCategoryB = await promptFixture.insert({
+            categoryId: otherCategory.id,
+            userId: fixtureUser.id,
+        });
+
+        const response = await request(app)
+            .get('/prompts')
+            .query({ category_id: fixtureCategory.id })
+            .set('X-Forwarded-For', '10.90.0.3');
+
+        expect(response.status).toBe(200);
+
+        const responseIds = response.body.map((prompt: { id: string }) => prompt.id);
+
+        expect(responseIds).toContain(inCategoryA.id);
+        expect(responseIds).not.toContain(inCategoryB.id);
+    });
 });
