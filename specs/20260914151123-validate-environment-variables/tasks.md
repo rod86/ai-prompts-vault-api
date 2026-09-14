@@ -66,7 +66,7 @@ class-only or substring check.
   - Green: none expected.
   - Covers: AC7 "Given a negative `TRUST_PROXY_HOPS`, When the settings are checked, Then an invalid-settings error (E1) is raised naming `TRUST_PROXY_HOPS` with its reason."; V5, E1
 
-- [ ] T8. An unknown environment choice is rejected
+- [x] T8. An unknown environment choice is rejected
   - Type: config
   - Depends on: T3
   - Red: `expect(() => parseEnv({ ...validEnv, ENVIRONMENT: 'prod' })).toThrow(new InvalidEnvironmentError({ errors: [], properties: { ENVIRONMENT: { errors: ['Invalid option: expected one of "development"|"test"|"production"'] } } }))`.

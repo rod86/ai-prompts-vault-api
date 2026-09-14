@@ -126,4 +126,19 @@ describe('parseEnv', () => {
             }),
         );
     });
+
+    it('rejects an unknown ENVIRONMENT choice', () => {
+        expect(() => parseEnv({ ...validEnv, ENVIRONMENT: 'prod' })).toThrow(
+            new InvalidEnvironmentError({
+                errors: [],
+                properties: {
+                    ENVIRONMENT: {
+                        errors: [
+                            'Invalid option: expected one of "development"|"test"|"production"',
+                        ],
+                    },
+                },
+            }),
+        );
+    });
 });
