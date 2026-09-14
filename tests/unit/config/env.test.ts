@@ -141,4 +141,8 @@ describe('parseEnv', () => {
             }),
         );
     });
+
+    it('accepts a blank DATABASE_PASSWORD', () => {
+        expect(parseEnv({ ...validEnv, DATABASE_PASSWORD: '' }).DATABASE_PASSWORD).toBe('');
+    });
 });

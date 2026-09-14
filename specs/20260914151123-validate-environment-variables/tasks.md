@@ -73,7 +73,7 @@ class-only or substring check.
   - Green: none expected. `z.enum([...])` from T1.
   - Covers: AC8 "Given an `ENVIRONMENT` that is not one of development, test, or production, When the settings are checked, Then an invalid-settings error (E1) is raised naming `ENVIRONMENT` with its reason."; V1, E1
 
-- [ ] T9. A blank database password is accepted
+- [x] T9. A blank database password is accepted
   - Type: config
   - Depends on: T1
   - Red: `expect(parseEnv({ ...validEnv, DATABASE_PASSWORD: '' }).DATABASE_PASSWORD).toBe('')`.
