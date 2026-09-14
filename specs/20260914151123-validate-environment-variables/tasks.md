@@ -59,7 +59,7 @@ class-only or substring check.
   - Green: none expected. `nonnegative()` from T1.
   - Covers: AC6 "Given `TRUST_PROXY_HOPS` is `0`, When the settings are checked, Then it is accepted as the number zero."; V5
 
-- [ ] T7. Negative trusted proxy hops are rejected
+- [x] T7. Negative trusted proxy hops are rejected
   - Type: config
   - Depends on: T3
   - Red: `expect(() => parseEnv({ ...validEnv, TRUST_PROXY_HOPS: '-1' })).toThrow(new InvalidEnvironmentError({ errors: [], properties: { TRUST_PROXY_HOPS: { errors: ['Too small: expected number to be >=0'] } } }))`.

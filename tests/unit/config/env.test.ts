@@ -115,4 +115,15 @@ describe('parseEnv', () => {
     it('accepts zero trusted proxy hops', () => {
         expect(parseEnv({ ...validEnv, TRUST_PROXY_HOPS: '0' }).TRUST_PROXY_HOPS).toBe(0);
     });
+
+    it('rejects negative trusted proxy hops', () => {
+        expect(() => parseEnv({ ...validEnv, TRUST_PROXY_HOPS: '-1' })).toThrow(
+            new InvalidEnvironmentError({
+                errors: [],
+                properties: {
+                    TRUST_PROXY_HOPS: { errors: ['Too small: expected number to be >=0'] },
+                },
+            }),
+        );
+    });
 });
