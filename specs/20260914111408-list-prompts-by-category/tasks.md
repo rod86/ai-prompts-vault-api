@@ -61,7 +61,7 @@ pooled.
   - Green: none expected — T1's `description || null` mapping covers it.
   - Covers: AC6 "Given a prompt that has no description, When a consumer asks for the collection, Then that prompt's description is reported as empty rather than omitted."; §2 field `description`
 
-- [ ] T7. The collection conforms to its documented shape
+- [x] T7. The collection conforms to its documented shape
   - Type: route handler
   - Depends on: T1
   - Red: insert a prompt, `GET /prompts`, and assert `expect(() => PromptListResponseSchema.parse(response.body)).not.toThrow()` — the per-endpoint truthfulness assertion required by CLAUDE.md, mirroring `listPromptCategoriesHandler.test.ts`.

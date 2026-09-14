@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { type User } from '@src/modules/user/domain/User.js';
+import { PromptListResponseSchema } from '@src/routes/prompts/prompts.response.schema.js';
 import {
     createPromptCategoryFixture,
     createPromptFixture,
@@ -169,5 +170,16 @@ describe('GET /prompts', () => {
         );
 
         expect(entry.description).toBeNull();
+    });
+
+    it('response matches the documented shape', async () => {
+        await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+        });
+
+        const response = await request(app).get('/prompts').set('X-Forwarded-For', '10.90.0.7');
+
+        expect(() => PromptListResponseSchema.parse(response.body)).not.toThrow();
     });
 });
