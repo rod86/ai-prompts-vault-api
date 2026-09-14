@@ -76,4 +76,17 @@ describe('parseEnv', () => {
             }),
         );
     });
+
+    it('rejects a too-short JWT_SECRET without echoing the supplied secret', () => {
+        expect(() => parseEnv({ ...validEnv, JWT_SECRET: 'a'.repeat(31) })).toThrow(
+            new InvalidEnvironmentError({
+                errors: [],
+                properties: {
+                    JWT_SECRET: {
+                        errors: ['Too small: expected string to have >=32 characters'],
+                    },
+                },
+            }),
+        );
+    });
 });

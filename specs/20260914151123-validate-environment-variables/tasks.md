@@ -38,7 +38,7 @@ class-only or substring check.
   - Green: create `src/config/InvalidEnvironmentError.ts` (plan §3: `extends Error`, message `'Invalid environment variables'`, `this.name = 'InvalidEnvironmentError'`, `public readonly details`). Change `parseEnv` to `EnvSchema.safeParse(env)`: return `result.data` on success, otherwise `throw new InvalidEnvironmentError(z.treeifyError(result.error))`.
   - Covers: AC3 "Given `JWT_SECRET`, `DATABASE_USER`, and `DATABASE_DB` are all absent, When the settings are checked, Then an invalid-settings error (E1) is raised that names all three settings together, each with its reason."; V2, V3, E1
 
-- [ ] T4. A too-short secret is rejected without echoing it
+- [x] T4. A too-short secret is rejected without echoing it
   - Type: config
   - Depends on: T3
   - Red: `expect(() => parseEnv({ ...validEnv, JWT_SECRET: 'a'.repeat(31) })).toThrow(new InvalidEnvironmentError({ errors: [], properties: { JWT_SECRET: { errors: ['Too small: expected string to have >=32 characters'] } } }))`. The exact-tree equality proves that no other text, including the secret, is in the details.
