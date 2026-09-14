@@ -54,7 +54,7 @@ pooled.
   - Green: none expected — `uuidField().optional()` from T1 produces this. If the message differs, correct the schema, not the assertion.
   - Covers: AC5 "Given a malformed category filter, When a consumer asks for the collection narrowed to it, Then an invalid-filter error (E1) is returned."; V1, E1
 
-- [ ] T6. A prompt with no description reports it as empty
+- [x] T6. A prompt with no description reports it as empty
   - Type: route handler
   - Depends on: T1, T3
   - Red: insert a prompt with `description: null` in its own category, `GET /prompts?category_id=<that category>`, and assert the returned entry's `description` is `null`.

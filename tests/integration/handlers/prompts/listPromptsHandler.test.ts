@@ -148,4 +148,26 @@ describe('GET /prompts', () => {
             details: { query: { category_id: 'Invalid UUID value' } },
         });
     });
+
+    it('reports an empty description when the prompt has none', async () => {
+        const descriptionlessCategory = await categoryFixture.insert();
+        const fixturePrompt = await promptFixture.insert({
+            categoryId: descriptionlessCategory.id,
+            userId: fixtureUser.id,
+            description: undefined,
+        });
+
+        const response = await request(app)
+            .get('/prompts')
+            .query({ category_id: descriptionlessCategory.id })
+            .set('X-Forwarded-For', '10.90.0.6');
+
+        expect(response.status).toBe(200);
+
+        const entry = response.body.find(
+            (prompt: { id: string }) => prompt.id === fixturePrompt.id,
+        );
+
+        expect(entry.description).toBeNull();
+    });
 });
