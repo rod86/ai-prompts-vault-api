@@ -74,4 +74,28 @@ describe('GET /prompts', () => {
             ]),
         );
     });
+
+    it('returns the collection ordered most-recently-created first', async () => {
+        const older = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+            createdAt: new Date('2020-01-01T00:00:00.000Z'),
+        });
+        const newer = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+            createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        });
+
+        const response = await request(app).get('/prompts').set('X-Forwarded-For', '10.90.0.2');
+
+        expect(response.status).toBe(200);
+
+        const fixtureIds = [older.id, newer.id];
+        const orderedFixtureIds = response.body
+            .map((prompt: { id: string }) => prompt.id)
+            .filter((id: string) => fixtureIds.includes(id));
+
+        expect(orderedFixtureIds).toEqual([newer.id, older.id]);
+    });
 });

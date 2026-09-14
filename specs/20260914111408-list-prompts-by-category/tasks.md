@@ -26,7 +26,7 @@ pooled.
   - Green: add `ListPromptsSchema` + `ListPromptsRequest` to `src/routes/prompts/prompts.request.schema.ts` (`query.category_id` as `uuidField().optional()`); add `PromptListResponseSchema` + `PromptListResponse` to `src/routes/prompts/prompts.response.schema.ts` (`z.array(PromptResponseSchema)`); add `src/handlers/prompts/listPromptsHandler.ts` calling `listPromptsUseCase.invoke({ categoryId: query.category_id })` and mapping each prompt to the wire shape (`description || null`, instants via `.toISOString()`); register `promptsRouter.get('/prompts', validateRequestMiddleware(ListPromptsSchema), listPromptsHandler)` in `src/routes/prompts/prompts.routes.ts`, without `requireAuthMiddleware`.
   - Covers: AC1 "Given prompts exist, When a consumer asks for the collection **without supplying any credentials** and without a filter, Then every one of those prompts is returned with its full details: identifier, title, prompt text, description, category (identifier and name), owner (identifier and name), and creation and last-update instants."; §2 returned fields
 
-- [ ] T2. The collection is ordered most-recently-created first
+- [x] T2. The collection is ordered most-recently-created first
   - Type: route handler
   - Depends on: T1
   - Red: insert an older prompt (`createdAt` in the past) and a newer one (`createdAt` recent), `GET /prompts`, and assert the ids of this suite's two fixtures appear in the response in newest-first order.
