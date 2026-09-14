@@ -1,5 +1,5 @@
 # Spec: List prompts, optionally filtered by category
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an API consumer, I want to retrieve the collection of prompts and optionally narrow it to a single category so that I can browse the catalogue and find the prompts relevant to one topic without fetching them one by one.
 
 ## 1. Behavior
