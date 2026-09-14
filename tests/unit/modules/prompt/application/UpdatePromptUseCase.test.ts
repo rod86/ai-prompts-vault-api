@@ -89,8 +89,7 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(undefined);
         const query = buildQuery({ userId: faker.string.uuid() });
 
-        await expect(useCase.invoke(query)).rejects.toThrow(PromptNotFoundError);
-        await expect(useCase.invoke(query)).rejects.toThrow(`Prompt not found: ${query.id}`);
+        await expect(useCase.invoke(query)).rejects.toThrow(new PromptNotFoundError(query.id));
         expect(categoryRepository.findById).not.toHaveBeenCalled();
         expect(promptRepository.update).not.toHaveBeenCalled();
         expect(dateTime.now).not.toHaveBeenCalled();
@@ -102,9 +101,8 @@ describe('UpdatePromptUseCase', () => {
         categoryRepository.findById.mockResolvedValue(undefined);
         const query = buildQuery({ id: existingPrompt.id, userId: existingPrompt.user.id });
 
-        await expect(useCase.invoke(query)).rejects.toThrow(CategoryNotFoundError);
         await expect(useCase.invoke(query)).rejects.toThrow(
-            `Category not found: ${query.categoryId}`,
+            new CategoryNotFoundError(query.categoryId),
         );
         expect(promptRepository.update).not.toHaveBeenCalled();
         expect(dateTime.now).not.toHaveBeenCalled();
@@ -186,7 +184,7 @@ describe('UpdatePromptUseCase', () => {
         promptRepository.findById.mockResolvedValue(existingPrompt);
         const query = buildQuery({ id: existingPrompt.id, userId: faker.string.uuid() });
 
-        await expect(useCase.invoke(query)).rejects.toThrow(PromptOwnershipError);
+        await expect(useCase.invoke(query)).rejects.toThrow(new PromptOwnershipError(query.id));
         expect(categoryRepository.findById).not.toHaveBeenCalled();
         expect(promptRepository.update).not.toHaveBeenCalled();
     });

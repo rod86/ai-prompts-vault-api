@@ -42,7 +42,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     expectations that nothing was persisted and no further lookup happened still hold.";
     V1, V2, V3, V4
 
-- [ ] T3. Prompt update: collapse two pairs and tighten the ownership check
+- [x] T3. Prompt update: collapse two pairs and tighten the ownership check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
