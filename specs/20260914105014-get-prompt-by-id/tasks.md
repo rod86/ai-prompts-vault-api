@@ -36,7 +36,7 @@ Plan: specs/20260914105014-get-prompt-by-id/plan.md
   - Green: none — `GetPromptSchema` + `validateRequestMiddleware` from T1, mapped by `errorMiddleware`, already produce this.
   - Covers: AC4 "Given a malformed identifier, When a consumer fetches by that identifier, Then an invalid-identifier error (E2) is returned."; V1, E2
 
-- [ ] T6. The API description documents the read operation with exactly its real outcomes
+- [x] T6. The API description documents the read operation with exactly its real outcomes
   - Type: route handler
   - Depends on: T1
   - Red: In `tests/integration/docs.test.ts`, inside the existing `it('documents the prompt endpoints with exactly their real outcomes and bearer security')`, assert `Object.keys(paths['/prompts/{id}'].get.responses).sort()` equals `['200', '400', '404', '429']` and `paths['/prompts/{id}'].get.security` is `undefined`. Fails because the path item has no `get` operation.
