@@ -29,7 +29,7 @@ Plan: specs/20260914105014-get-prompt-by-id/plan.md
   - Green: none — `GetPromptUseCase` already throws `PromptNotFoundError` for a missing id and `errorMiddleware` already maps the `NotFound` category to 404; the T1 wiring makes the test pass.
   - Covers: AC3 "Given no prompt exists with a given well-formed identifier, When a consumer fetches by that identifier, Then a prompt-not-found error (E1) is returned."; E1
 
-- [ ] T5. Fetching with a malformed id returns invalid-identifier
+- [x] T5. Fetching with a malformed id returns invalid-identifier
   - Type: route handler
   - Depends on: T1
   - Red: In the same test file, `GET /prompts/not-a-uuid`; assert `status === 400` and `response.body.details.params` contains `{ id: 'Invalid UUID value' }`.
