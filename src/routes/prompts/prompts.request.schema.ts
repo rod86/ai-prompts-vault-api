@@ -33,3 +33,11 @@ export const DeletePromptSchema = z.object({
 });
 
 export type DeletePromptRequest = z.infer<typeof DeletePromptSchema>;
+
+export const GetPromptSchema = z.object({
+    params: z.object({
+        id: uuidField(),
+    }),
+});
+
+export type GetPromptRequest = z.infer<typeof GetPromptSchema>;

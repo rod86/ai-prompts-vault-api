@@ -1,7 +1,7 @@
 # Tasks: Get a prompt by id
 Plan: specs/20260914105014-get-prompt-by-id/plan.md
 
-- [ ] T1. Fetch an existing prompt without credentials
+- [x] T1. Fetch an existing prompt without credentials
   - Type: route handler
   - Depends on: none
   - Red: New integration test `tests/integration/handlers/prompts/getPromptHandler.test.ts` (`describe('GET /prompts/:id')`), wired like `deletePromptHandler.test.ts`: `createPromptCategoryFixture`/`createUserFixture`/`createPromptFixture`, shared category + user inserted in `beforeAll`, `promptFixture.cleanup()` in `afterEach`, category/user cleanup in `afterAll`, a unique `X-Forwarded-For` per test. Insert a prompt for that category and user, then `GET /prompts/<id>` with **no `Authorization` header**; assert `status === 200` and `response.body` equals the full prompt — `id`, `title`, `prompt`, `description`, `category: { id, name }`, `user: { id, name }`, `created_at`/`updated_at` as the fixture dates' `.toISOString()`. Fails because the route, handler, and schema do not exist yet (404 not-found envelope).
