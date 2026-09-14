@@ -19,7 +19,7 @@ response matching this suite's fixture ids (plan §7 assumption 5), and give eac
 test a unique `X-Forwarded-For` IP so the shared rate-limit allowance is not
 pooled.
 
-- [ ] T1. `GET /prompts` returns every prompt with full details, unauthenticated
+- [x] T1. `GET /prompts` returns every prompt with full details, unauthenticated
   - Type: route handler
   - Depends on: none
   - Red: in the new `listPromptsHandler.test.ts`, insert two prompts via the fixtures, then `request(app).get('/prompts')` with **no** `Authorization` header; assert `200` and that the entries matching the two fixture ids equal their full wire shape — `id`, `title`, `prompt`, `description`, `category: { id, name }`, `user: { id, name }`, `created_at`/`updated_at` as the fixtures' instants in ISO-8601. Fails now with `404 NOT_FOUND` — `/prompts` has no `GET` route.

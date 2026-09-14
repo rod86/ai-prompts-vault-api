@@ -3,6 +3,7 @@ import createPromptHandler from '@src/handlers/prompts/createPromptHandler.js';
 import deletePromptHandler from '@src/handlers/prompts/deletePromptHandler.js';
 import getPromptHandler from '@src/handlers/prompts/getPromptHandler.js';
 import listPromptCategoriesHandler from '@src/handlers/prompts/listPromptCategoriesHandler.js';
+import listPromptsHandler from '@src/handlers/prompts/listPromptsHandler.js';
 import updatePromptHandler from '@src/handlers/prompts/updatePromptHandler.js';
 import requireAuthMiddleware from '@src/middleware/requireAuthMiddleware.js';
 import validateRequestMiddleware from '@src/middleware/validateRequest/validateRequestMiddleware.js';
@@ -10,12 +11,14 @@ import {
     CreatePromptSchema,
     DeletePromptSchema,
     GetPromptSchema,
+    ListPromptsSchema,
     UpdatePromptSchema,
 } from '@src/routes/prompts/prompts.request.schema.js';
 
 export const promptsRouter = Router();
 
 promptsRouter.get('/prompt-categories', listPromptCategoriesHandler);
+promptsRouter.get('/prompts', validateRequestMiddleware(ListPromptsSchema), listPromptsHandler);
 promptsRouter.post(
     '/prompts',
     requireAuthMiddleware,

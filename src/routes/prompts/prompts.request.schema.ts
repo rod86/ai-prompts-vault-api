@@ -41,3 +41,11 @@ export const GetPromptSchema = z.object({
 });
 
 export type GetPromptRequest = z.infer<typeof GetPromptSchema>;
+
+export const ListPromptsSchema = z.object({
+    query: z.object({
+        category_id: uuidField().optional(),
+    }),
+});
+
+export type ListPromptsRequest = z.infer<typeof ListPromptsSchema>;
