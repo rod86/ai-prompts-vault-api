@@ -1,27 +1,45 @@
 import path from 'node:path';
 import process from 'node:process';
+import { loadEnvFileIfPresent, parseEnv, type Env } from '@src/config/env/env.js';
+import { InvalidEnvironmentError } from '@src/config/env/InvalidEnvironmentError.js';
 
-process.loadEnvFile(path.join(import.meta.dirname, '..', '..', '.env'));
+function loadEnv(): Env {
+    try {
+        return parseEnv(process.env);
+    } catch (error) {
+        if (error instanceof InvalidEnvironmentError) {
+            console.error(
+                '❌ Invalid environment variables:',
+                JSON.stringify(error.details, null, 4),
+            );
+            process.exit(1);
+        }
+        throw error;
+    }
+}
+
+loadEnvFileIfPresent(path.join(import.meta.dirname, '..', '..', '.env'));
+const env = loadEnv();
 
 export default {
-    port: process.env.PORT ?? 3000,
-    environment: process.env.ENVIRONMENT ?? 'development',
-    jwtSecret: process.env.JWT_SECRET ?? '',
-    jwtExpirationSeconds: Number(process.env.JWT_EXPIRATION_SECONDS ?? 3600),
+    port: env.PORT,
+    environment: env.ENVIRONMENT,
+    jwtSecret: env.JWT_SECRET,
+    jwtExpirationSeconds: env.JWT_EXPIRATION_SECONDS,
     database: {
-        host: process.env.DATABASE_HOST ?? 'localhost',
-        port: Number(process.env.DATABASE_PORT ?? 5432),
-        user: process.env.DATABASE_USER ?? '',
-        password: process.env.DATABASE_PASSWORD ?? '',
-        database: process.env.DATABASE_DB ?? '',
+        host: env.DATABASE_HOST,
+        port: env.DATABASE_PORT,
+        user: env.DATABASE_USER,
+        password: env.DATABASE_PASSWORD,
+        database: env.DATABASE_DB,
     },
     rateLimit: {
-        windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 900000),
-        max: Number(process.env.RATE_LIMIT_MAX ?? 100),
+        windowMs: env.RATE_LIMIT_WINDOW_MS,
+        max: env.RATE_LIMIT_MAX,
     },
     loginRateLimit: {
-        windowMs: Number(process.env.LOGIN_RATE_LIMIT_WINDOW_MS ?? 900000),
-        max: Number(process.env.LOGIN_RATE_LIMIT_MAX ?? 5),
+        windowMs: env.LOGIN_RATE_LIMIT_WINDOW_MS,
+        max: env.LOGIN_RATE_LIMIT_MAX,
     },
-    trustProxyHops: Number(process.env.TRUST_PROXY_HOPS ?? 0),
+    trustProxyHops: env.TRUST_PROXY_HOPS,
 };

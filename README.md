@@ -119,7 +119,8 @@ src/
     <resource>/            # per-resource: router + request/response schemas (auth, users, prompts, health)
     shared/                # cross-resource field validators + error envelope schemas
   config/
-    config.ts              # env vars + fixed params (no schema)
+    env/                   # environment vars loading and validation
+    config.ts              # validates env at boot (exits 1 on failure); fixed params (no schema)
     drizzle/               # Drizzle config (per-context schema files + index.ts barrel with types and config)
   types/                   # Additional TypeScript types declarations (e.g. custom req typing)
   app.ts                   # HTTP app: middleware + routes (no listen)

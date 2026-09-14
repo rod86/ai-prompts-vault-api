@@ -1,5 +1,5 @@
 # Spec: Validate environment settings at startup
-Status: READY TO IMPLEMENT
+Status: IMPLEMENTED
 Story: As an operator deploying this service, I want its environment settings checked when it starts so that a missing or malformed setting stops the service immediately with a clear report, instead of letting it run half-configured and fail later in confusing ways.
 
 ## 1. Behavior
