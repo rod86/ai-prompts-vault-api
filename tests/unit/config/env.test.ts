@@ -111,4 +111,8 @@ describe('parseEnv', () => {
             }),
         );
     });
+
+    it('accepts zero trusted proxy hops', () => {
+        expect(parseEnv({ ...validEnv, TRUST_PROXY_HOPS: '0' }).TRUST_PROXY_HOPS).toBe(0);
+    });
 });

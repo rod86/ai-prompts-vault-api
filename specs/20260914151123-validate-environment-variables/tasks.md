@@ -52,7 +52,7 @@ class-only or substring check.
   - Green: none expected. `z.coerce.number().int().positive()` from T1.
   - Covers: AC5 "Given numeric settings that are non-numeric, zero, fractional, and blank, When the settings are checked, Then an invalid-settings error (E1) is raised naming each of those settings with its reason."; V4, V7, E1
 
-- [ ] T6. Zero trusted proxy hops is accepted
+- [x] T6. Zero trusted proxy hops is accepted
   - Type: config
   - Depends on: T1
   - Red: `expect(parseEnv({ ...validEnv, TRUST_PROXY_HOPS: '0' }).TRUST_PROXY_HOPS).toBe(0)`.
