@@ -7,6 +7,7 @@ import {
 import {
     CreatePromptSchema,
     DeletePromptSchema,
+    GetPromptSchema,
     UpdatePromptSchema,
 } from '@src/routes/prompts/prompts.request.schema.js';
 import {
@@ -55,6 +56,23 @@ export const promptsPaths: ZodOpenApiPathsObject = {
         },
     },
     '/prompts/{id}': {
+        get: {
+            tags: ['Prompts'],
+            summary: 'Get a prompt by id',
+            requestParams: { path: GetPromptSchema.shape.params },
+            responses: {
+                '200': {
+                    description: 'The prompt',
+                    content: { 'application/json': { schema: PromptResponseSchema } },
+                },
+                '400': validationErrorResponse('Invalid input'),
+                '404': {
+                    description: 'Prompt not found',
+                    content: { 'application/json': { schema: ErrorResponseSchema } },
+                },
+                '429': rateLimitedResponse,
+            },
+        },
         put: {
             tags: ['Prompts'],
             summary: 'Update a prompt',

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import createPromptHandler from '@src/handlers/prompts/createPromptHandler.js';
 import deletePromptHandler from '@src/handlers/prompts/deletePromptHandler.js';
+import getPromptHandler from '@src/handlers/prompts/getPromptHandler.js';
 import listPromptCategoriesHandler from '@src/handlers/prompts/listPromptCategoriesHandler.js';
 import updatePromptHandler from '@src/handlers/prompts/updatePromptHandler.js';
 import requireAuthMiddleware from '@src/middleware/requireAuthMiddleware.js';
@@ -8,6 +9,7 @@ import validateRequestMiddleware from '@src/middleware/validateRequest/validateR
 import {
     CreatePromptSchema,
     DeletePromptSchema,
+    GetPromptSchema,
     UpdatePromptSchema,
 } from '@src/routes/prompts/prompts.request.schema.js';
 
@@ -20,6 +22,7 @@ promptsRouter.post(
     validateRequestMiddleware(CreatePromptSchema),
     createPromptHandler,
 );
+promptsRouter.get('/prompts/:id', validateRequestMiddleware(GetPromptSchema), getPromptHandler);
 promptsRouter.put(
     '/prompts/:id',
     requireAuthMiddleware,
