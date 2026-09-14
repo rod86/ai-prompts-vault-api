@@ -47,7 +47,7 @@ pooled.
   - Green: none expected — no existence check is performed anywhere (plan §5, V2).
   - Covers: AC4 "Given a well-formed category identifier that matches no prompts, When a consumer asks for the collection narrowed to it, Then an empty collection is returned rather than an error."; V2
 
-- [ ] T5. A malformed category filter is rejected
+- [x] T5. A malformed category filter is rejected
   - Type: route handler
   - Depends on: T1
   - Red: `GET /prompts?category_id=abc`; assert `400` and the exact envelope `{ status: 400, code: 'VALIDATION_ERROR', message: 'Request Validation data failed', details: { query: { category_id: 'Invalid UUID value' } } }` in a single statement.

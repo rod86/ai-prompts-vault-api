@@ -133,4 +133,19 @@ describe('GET /prompts', () => {
         expect(response.status).toBe(200);
         expect(response.body).toEqual([]);
     });
+
+    it('rejects a malformed category filter', async () => {
+        const response = await request(app)
+            .get('/prompts')
+            .query({ category_id: 'abc' })
+            .set('X-Forwarded-For', '10.90.0.5');
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({
+            status: 400,
+            code: 'VALIDATION_ERROR',
+            message: 'Request Validation data failed',
+            details: { query: { category_id: 'Invalid UUID value' } },
+        });
+    });
 });
