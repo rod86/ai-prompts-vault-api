@@ -22,7 +22,7 @@ Plan: specs/20260914105014-get-prompt-by-id/plan.md
   - Green: In `tests/lib/modelFactories/PromptModelFactory.ts`, honour an explicitly provided `description` key (use a presence check instead of `data.description ?? faker.lorem.sentence()`) so the prompt is persisted with no description. No production change — the handler's `description || null` mapping from T1 already produces `null`.
   - Covers: AC2 "Given a prompt that has no description, When a consumer fetches it by its identifier, Then the description is reported as empty rather than omitted."; field `description`
 
-- [ ] T4. Fetching an unknown prompt returns prompt-not-found
+- [x] T4. Fetching an unknown prompt returns prompt-not-found
   - Type: route handler
   - Depends on: T1
   - Red: In the same test file, `GET /prompts/<random-uuid>` for an id matching no prompt; assert `status === 404` and body equals `{ status: 404, code: 'PROMPT_NOT_FOUND', message: 'Prompt not found: <id>' }`.

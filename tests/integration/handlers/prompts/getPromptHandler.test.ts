@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
@@ -74,5 +75,18 @@ describe('GET /prompts/:id', () => {
 
         expect(response.status).toBe(200);
         expect(response.body.description).toBeNull();
+    });
+
+    it('returns a prompt-not-found error when the path id matches no prompt', async () => {
+        const unknownId = faker.string.uuid();
+
+        const response = await request(app).get(`/prompts/${unknownId}`);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({
+            status: 404,
+            code: 'PROMPT_NOT_FOUND',
+            message: `Prompt not found: ${unknownId}`,
+        });
     });
 });
