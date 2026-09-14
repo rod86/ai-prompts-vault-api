@@ -10,7 +10,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
 > holds. Tasks are ordered leaf-first (unit, then integration, then whole-suite
 > verification); none depends on a later one.
 
-- [ ] T1. Prompt read: collapse the not-found pair
+- [x] T1. Prompt read: collapse the not-found pair
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — this is a test-only refactor. Run
