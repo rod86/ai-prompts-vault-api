@@ -51,6 +51,7 @@ describe('GET /openapi.json', () => {
             '200',
             '429',
         ]);
+        expect(Object.keys(paths['/prompts'].get.responses).sort()).toEqual(['200', '400', '429']);
         expect(Object.keys(paths['/prompts'].post.responses).sort()).toEqual([
             '201',
             '400',
@@ -83,6 +84,7 @@ describe('GET /openapi.json', () => {
         ]);
 
         expect(components.securitySchemes.bearerAuth).toBeDefined();
+        expect(paths['/prompts'].get.security).toBeUndefined();
         expect(paths['/prompts'].post.security).toEqual([{ bearerAuth: [] }]);
         expect(paths['/prompts/{id}'].get.security).toBeUndefined();
         expect(paths['/prompts/{id}'].put.security).toEqual([{ bearerAuth: [] }]);

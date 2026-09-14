@@ -68,7 +68,7 @@ pooled.
   - Green: none expected — proves T1's `PromptListResponseSchema` describes what the handler actually returns.
   - Covers: AC7 "Given prompts exist, When a consumer asks for the collection, Then the returned collection conforms to the documented shape of a prompt list."
 
-- [ ] T8. The API description documents the list operation
+- [x] T8. The API description documents the list operation
   - Type: route handler
   - Depends on: T1
   - Red: in `tests/integration/docs.test.ts`, extend the prompt-endpoints test to assert `Object.keys(paths['/prompts'].get.responses).sort()` equals `['200', '400', '429']` and that `paths['/prompts'].get.security` is `undefined`. Fails now — `paths['/prompts']` has no `get`.

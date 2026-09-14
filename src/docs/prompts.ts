@@ -8,10 +8,12 @@ import {
     CreatePromptSchema,
     DeletePromptSchema,
     GetPromptSchema,
+    ListPromptsSchema,
     UpdatePromptSchema,
 } from '@src/routes/prompts/prompts.request.schema.js';
 import {
     PromptCategoryListResponseSchema,
+    PromptListResponseSchema,
     PromptResponseSchema,
 } from '@src/routes/prompts/prompts.response.schema.js';
 import { ErrorResponseSchema } from '@src/routes/shared/error.response.schema.js';
@@ -31,6 +33,19 @@ export const promptsPaths: ZodOpenApiPathsObject = {
         },
     },
     '/prompts': {
+        get: {
+            tags: ['Prompts'],
+            summary: 'List prompts, optionally filtered by category',
+            requestParams: { query: ListPromptsSchema.shape.query },
+            responses: {
+                '200': {
+                    description: 'The list of prompts',
+                    content: { 'application/json': { schema: PromptListResponseSchema } },
+                },
+                '400': validationErrorResponse('Invalid input'),
+                '429': rateLimitedResponse,
+            },
+        },
         post: {
             tags: ['Prompts'],
             summary: 'Create a prompt',
