@@ -94,7 +94,7 @@ class-only or substring check.
   - Green: none expected. T10's implementation loads existing files.
   - Covers: AC11 "Given a local settings file exists, When the service loads its settings file, Then its values become available in the environment."
 
-- [ ] T12. The service refuses to start on an invalid setting
+- [x] T12. The service refuses to start on an invalid setting
   - Type: config
   - Depends on: T3, T10
   - Red: new `tests/integration/config/config.test.ts`. Run `spawnSync(process.execPath, ['--import', 'tsx', 'src/config/config.ts'], { env: { ...process.env, JWT_SECRET: 'short-secret-sentinel' }, encoding: 'utf8' })` from the repo root, then assert `status` is `1`, `stderr` contains `'JWT_SECRET'`, and `stderr` does not contain `'short-secret-sentinel'`. Fails now: today's `config.ts` accepts any secret, so the child exits `0`.
