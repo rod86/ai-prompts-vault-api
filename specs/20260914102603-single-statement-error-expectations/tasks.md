@@ -24,7 +24,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     exercised, Then one expectation proves the failure is a *prompt not found* failure whose
     wording names the requested identifier."; V1, V2, V3, V4
 
-- [ ] T2. Prompt creation: collapse the category and creator pairs
+- [x] T2. Prompt creation: collapse the category and creator pairs
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
