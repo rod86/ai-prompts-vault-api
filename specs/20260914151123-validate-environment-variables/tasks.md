@@ -101,7 +101,7 @@ class-only or substring check.
   - Green: rewrite `src/config/config.ts` per plan §1/§3. Call `loadEnvFileIfPresent(path.join(import.meta.dirname, '..', '..', '.env'))`. Call `parseEnv(process.env)` inside a small local `loadEnv(): Env` helper: on `InvalidEnvironmentError` it runs `console.error('❌ Invalid environment variables:', JSON.stringify(error.details, null, 4))` and `process.exit(1)`, and rethrows anything else. Map the result onto the unchanged default-export shape (plan §3 table). Then run `npm run typecheck`, `npm run lint`, and the full `npm test`, all green. The existing integration suites exercise the mapped config. If boot fails on the developer's local `.env` (plan R1), stop and ask the user to fix `.env` **manually**.
   - Covers: AC12 "Given an invalid setting in the environment, When the service is started, Then it stops with a failure outcome and prints a report naming the invalid setting without echoing its value."; E1
 
-- [ ] T13. Document env validation in the project structure docs
+- [x] T13. Document env validation in the project structure docs
   - Type: docs
   - Depends on: T12
   - Red: none. Documentation only, no logic (see testing-practices).
