@@ -60,6 +60,10 @@ nvm install & nvm use
 ```shell
 npm i
 ```
+- Install git hooks.
+```shell
+npm run prepare
+```
 - Start docker services.
 ```shell
 docker compose up -d
@@ -85,6 +89,7 @@ npm run dev
 - `npm run lint`: ESLint (incl. hexagonal boundaries)
 - `npm run typecheck`: Type-check without emitting
 - `npm run db:migrate`: Apply database migrations
+- `npm run prepare`: Install git hooks
 
 ## Project Structure
 
