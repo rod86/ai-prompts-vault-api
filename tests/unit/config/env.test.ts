@@ -89,4 +89,26 @@ describe('parseEnv', () => {
             }),
         );
     });
+
+    it('rejects non-numeric, zero, fractional, and blank numeric settings', () => {
+        expect(() =>
+            parseEnv({
+                ...validEnv,
+                PORT: 'abc',
+                DATABASE_PORT: '0',
+                RATE_LIMIT_MAX: '1.5',
+                LOGIN_RATE_LIMIT_MAX: '',
+            }),
+        ).toThrow(
+            new InvalidEnvironmentError({
+                errors: [],
+                properties: {
+                    PORT: { errors: ['Invalid input: expected number, received NaN'] },
+                    DATABASE_PORT: { errors: ['Too small: expected number to be >0'] },
+                    RATE_LIMIT_MAX: { errors: ['Invalid input: expected int, received number'] },
+                    LOGIN_RATE_LIMIT_MAX: { errors: ['Too small: expected number to be >0'] },
+                },
+            }),
+        );
+    });
 });

@@ -45,7 +45,7 @@ class-only or substring check.
   - Green: none expected. `z.string().min(32)` from T1 plus T3's error.
   - Covers: AC4 "Given a `JWT_SECRET` shorter than 32 characters, When the settings are checked, Then an invalid-settings error (E1) is raised naming `JWT_SECRET` with its reason and without the supplied secret."; V2, E1
 
-- [ ] T5. Non-numeric, zero, fractional, and blank numbers are rejected
+- [x] T5. Non-numeric, zero, fractional, and blank numbers are rejected
   - Type: config
   - Depends on: T3
   - Red: `expect(() => parseEnv({ ...validEnv, PORT: 'abc', DATABASE_PORT: '0', RATE_LIMIT_MAX: '1.5', LOGIN_RATE_LIMIT_MAX: '' })).toThrow(new InvalidEnvironmentError({ errors: [], properties: { PORT: { errors: ['Invalid input: expected number, received NaN'] }, DATABASE_PORT: { errors: ['Too small: expected number to be >0'] }, RATE_LIMIT_MAX: { errors: ['Invalid input: expected int, received number'] }, LOGIN_RATE_LIMIT_MAX: { errors: ['Too small: expected number to be >0'] } } }))`.
