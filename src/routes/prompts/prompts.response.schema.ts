@@ -25,3 +25,7 @@ export const PromptResponseSchema = z
     .meta({ id: 'Prompt' });
 
 export type PromptResponse = z.infer<typeof PromptResponseSchema>;
+
+export const PromptListResponseSchema = z.array(PromptResponseSchema);
+
+export type PromptListResponse = z.infer<typeof PromptListResponseSchema>;

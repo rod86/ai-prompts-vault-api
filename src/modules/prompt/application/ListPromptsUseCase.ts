@@ -1,23 +1,14 @@
 import type PromptRepositoryInterface from '@src/modules/prompt/domain/interfaces/PromptRepositoryInterface.js';
+import { type Prompt } from '@src/modules/prompt/domain/Prompt.js';
 
 export type ListPromptsQuery = {
     categoryId?: string;
 };
 
-export type ListPromptsResponse = {
-    id: string;
-    category: { id: string; name: string };
-    title: string;
-    prompt: string;
-    description?: string;
-    createdAt: Date;
-    updatedAt: Date;
-};
-
 export class ListPromptsUseCase {
     constructor(private readonly repository: PromptRepositoryInterface) {}
 
-    public async invoke(query: ListPromptsQuery = {}): Promise<ListPromptsResponse[]> {
+    public async invoke(query: ListPromptsQuery = {}): Promise<Prompt[]> {
         return this.repository.findAll({ categoryId: query.categoryId });
     }
 }
