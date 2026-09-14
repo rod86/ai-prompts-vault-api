@@ -31,7 +31,7 @@ class-only or substring check.
   - Green: none expected. The `.default(...)` calls from T1 already produce this.
   - Covers: AC2 "Given only the required settings are supplied, When the settings are checked, Then every optional setting takes its default from §2."; V7
 
-- [ ] T3. Missing required settings are all reported together
+- [x] T3. Missing required settings are all reported together
   - Type: config
   - Depends on: T1
   - Red: `expect(() => parseEnv({})).toThrow(new InvalidEnvironmentError({ errors: [], properties: { JWT_SECRET: { errors: ['Invalid input: expected string, received undefined'] }, DATABASE_USER: { errors: ['Invalid input: expected string, received undefined'] }, DATABASE_DB: { errors: ['Invalid input: expected string, received undefined'] } } }))`. Fails now: `InvalidEnvironmentError` does not exist, and `parseEnv` throws a raw `ZodError`.

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
 
 export const EnvSchema = z.object({
     ENVIRONMENT: z.enum(['development', 'test', 'production']).default('development'),
@@ -20,5 +21,9 @@ export const EnvSchema = z.object({
 export type Env = z.output<typeof EnvSchema>;
 
 export function parseEnv(env: NodeJS.ProcessEnv): Env {
-    return EnvSchema.parse(env);
+    const result = EnvSchema.safeParse(env);
+    if (!result.success) {
+        throw new InvalidEnvironmentError(z.treeifyError(result.error));
+    }
+    return result.data;
 }

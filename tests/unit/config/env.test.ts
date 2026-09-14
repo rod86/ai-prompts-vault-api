@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseEnv } from '@src/config/env.js';
+import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
 
 const validEnv = {
     ENVIRONMENT: 'production',
@@ -59,5 +60,20 @@ describe('parseEnv', () => {
             LOGIN_RATE_LIMIT_MAX: 5,
             TRUST_PROXY_HOPS: 0,
         });
+    });
+
+    it('reports every missing required setting together', () => {
+        expect(() => parseEnv({})).toThrow(
+            new InvalidEnvironmentError({
+                errors: [],
+                properties: {
+                    JWT_SECRET: { errors: ['Invalid input: expected string, received undefined'] },
+                    DATABASE_USER: {
+                        errors: ['Invalid input: expected string, received undefined'],
+                    },
+                    DATABASE_DB: { errors: ['Invalid input: expected string, received undefined'] },
+                },
+            }),
+        );
     });
 });
