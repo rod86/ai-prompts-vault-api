@@ -28,8 +28,11 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
 - Express v5
 - PostgreSQL v18.4 + Drizzle ORM
 - Vitest + Supertest
+- Scalar
 
 ## API Documentation
+
+The API documentation is built with [Scalar](https://scalar.com/)
 
 Once the API is running, interactive documentation is available at
 [`/docs`](http://localhost:3000/docs) — a browsable reference generated from the same
