@@ -76,7 +76,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     names the offending identifier, and the follow-up expectation that nothing was deleted
     still holds."; V1, V2, V3, V4, V6
 
-- [ ] T5. User registration: collapse the duplicate-email pair and tighten the weak-password check
+- [x] T5. User registration: collapse the duplicate-email pair and tighten the weak-password check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run
