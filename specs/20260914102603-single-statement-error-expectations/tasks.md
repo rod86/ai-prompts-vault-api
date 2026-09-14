@@ -104,7 +104,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     one expectation proves the failure is the *invalid token* failure with its wording.";
     V1, V3, V6
 
-- [ ] T7. Token verification: tighten all four rejection checks
+- [x] T7. Token verification: tighten all four rejection checks
   - Type: infrastructure (test)
   - Depends on: none
   - Red: none in the classic sense — run
