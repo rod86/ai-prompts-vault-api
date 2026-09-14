@@ -135,7 +135,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     expectation each proves the failure is the *not connected* failure with its wording.";
     V1, V3, V6
 
-- [ ] T9. Verify the untouched cause-carrying tests and the whole suite
+- [x] T9. Verify the untouched cause-carrying tests and the whole suite
   - Type: verification
   - Depends on: T1, T2, T3, T4, T5, T6, T7, T8
   - Red: none in the classic sense — this task adds no test; it proves the refactor left the
