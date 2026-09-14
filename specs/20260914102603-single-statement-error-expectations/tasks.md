@@ -61,7 +61,7 @@ Plan: specs/20260914102603-single-statement-error-expectations/plan.md
     offending identifier, and the follow-up expectations that nothing was looked up,
     persisted, or timestamped still hold."; V1, V2, V3, V4, V6
 
-- [ ] T4. Prompt deletion: collapse the not-found pair and tighten the ownership check
+- [x] T4. Prompt deletion: collapse the not-found pair and tighten the ownership check
   - Type: application (test)
   - Depends on: none
   - Red: none in the classic sense — run

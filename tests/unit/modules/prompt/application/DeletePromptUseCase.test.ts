@@ -47,8 +47,7 @@ describe('DeletePromptUseCase', () => {
         const userId = faker.string.uuid();
         promptRepository.findById.mockResolvedValue(undefined);
 
-        await expect(useCase.invoke({ id, userId })).rejects.toThrow(PromptNotFoundError);
-        await expect(useCase.invoke({ id, userId })).rejects.toThrow(`Prompt not found: ${id}`);
+        await expect(useCase.invoke({ id, userId })).rejects.toThrow(new PromptNotFoundError(id));
         expect(promptRepository.delete).not.toHaveBeenCalled();
     });
 
@@ -58,7 +57,7 @@ describe('DeletePromptUseCase', () => {
         const userId = faker.string.uuid();
 
         await expect(useCase.invoke({ id: existingPrompt.id, userId })).rejects.toThrow(
-            PromptOwnershipError,
+            new PromptOwnershipError(existingPrompt.id),
         );
         expect(promptRepository.delete).not.toHaveBeenCalled();
     });
