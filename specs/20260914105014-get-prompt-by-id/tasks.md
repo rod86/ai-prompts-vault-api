@@ -8,7 +8,7 @@ Plan: specs/20260914105014-get-prompt-by-id/plan.md
   - Green: Add `GetPromptSchema` (`params.id` via `uuidField()`) + `GetPromptRequest` to `src/routes/prompts/prompts.request.schema.ts`; add `src/handlers/prompts/getPromptHandler.ts` typed `RequestHandler<Record<string, string>, PromptResponse>` invoking `getPromptUseCase.invoke({ id: params.id })` and responding `res.status(200).json({...})` with `description: prompt.description || null` and `.toISOString()` timestamps; register `promptsRouter.get('/prompts/:id', validateRequestMiddleware(GetPromptSchema), getPromptHandler)` in `src/routes/prompts/prompts.routes.ts` **without** `requireAuthMiddleware`.
   - Covers: AC1 "Given a prompt exists with a known identifier, When a consumer fetches it by that identifier **without supplying any credentials**, Then the prompt's full details are returned: identifier, title, prompt text, description, category (identifier and name), owner (identifier and name), and creation and last-update instants."; input field `id`, returned fields
 
-- [ ] T2. Response matches the documented prompt shape
+- [x] T2. Response matches the documented prompt shape
   - Type: route handler
   - Depends on: T1
   - Red: In the same test file, a dedicated `it` inserting a prompt and fetching it, asserting `expect(() => PromptResponseSchema.parse(response.body)).not.toThrow()` (the pattern of `updatePromptHandler.test.ts`).

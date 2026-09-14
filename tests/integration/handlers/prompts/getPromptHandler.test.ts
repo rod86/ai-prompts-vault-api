@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
 import { type PromptCategory } from '@src/modules/prompt/domain/PromptCategory.js';
 import { type User } from '@src/modules/user/domain/User.js';
+import { PromptResponseSchema } from '@src/routes/prompts/prompts.response.schema.js';
 import {
     createPromptCategoryFixture,
     createPromptFixture,
@@ -49,5 +50,16 @@ describe('GET /prompts/:id', () => {
             created_at: fixturePrompt.createdAt.toISOString(),
             updated_at: fixturePrompt.updatedAt.toISOString(),
         });
+    });
+
+    it('response matches the documented shape', async () => {
+        const fixturePrompt = await promptFixture.insert({
+            categoryId: fixtureCategory.id,
+            userId: fixtureUser.id,
+        });
+
+        const response = await request(app).get(`/prompts/${fixturePrompt.id}`);
+
+        expect(() => PromptResponseSchema.parse(response.body)).not.toThrow();
     });
 });
