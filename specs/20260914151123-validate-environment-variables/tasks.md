@@ -87,7 +87,7 @@ class-only or substring check.
   - Green: add `loadEnvFileIfPresent(filePath: string): void` to `src/config/env.ts`: `if (existsSync(filePath)) { process.loadEnvFile(filePath); }`.
   - Covers: AC10 "Given no local settings file exists, When the service loads its settings file, Then no error is raised and the environment is left unchanged."
 
-- [ ] T11. A present settings file is loaded into the environment
+- [x] T11. A present settings file is loaded into the environment
   - Type: config
   - Depends on: T10
   - Red: in `beforeEach`, write a temp file under `os.tmpdir()` containing one line, `ENV_TEST_<unique suffix>=loaded`. Call `loadEnvFileIfPresent(tempPath)`, then `expect(process.env[key]).toBe('loaded')`. In `afterEach`, `delete process.env[key]` and remove the file (plan R2).

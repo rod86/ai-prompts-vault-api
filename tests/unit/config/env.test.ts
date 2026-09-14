@@ -1,7 +1,8 @@
+import { writeFileSync, unlinkSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { faker } from '@faker-js/faker';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadEnvFileIfPresent, parseEnv } from '@src/config/env.js';
 import { InvalidEnvironmentError } from '@src/config/InvalidEnvironmentError.js';
 
@@ -155,5 +156,25 @@ describe('loadEnvFileIfPresent', () => {
         const missingPath = path.join(os.tmpdir(), faker.string.uuid());
 
         expect(() => loadEnvFileIfPresent(missingPath)).not.toThrow();
+    });
+
+    describe('when the settings file is present', () => {
+        const key = `ENV_TEST_${faker.string.alphanumeric(10)}`;
+        const tempPath = path.join(os.tmpdir(), faker.string.uuid());
+
+        beforeEach(() => {
+            writeFileSync(tempPath, `${key}=loaded\n`);
+        });
+
+        afterEach(() => {
+            delete process.env[key];
+            unlinkSync(tempPath);
+        });
+
+        it('loads its values into the environment', () => {
+            loadEnvFileIfPresent(tempPath);
+
+            expect(process.env[key]).toBe('loaded');
+        });
     });
 });
