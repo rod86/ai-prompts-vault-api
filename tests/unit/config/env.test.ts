@@ -18,6 +18,12 @@ const validEnv = {
     TRUST_PROXY_HOPS: '2',
 };
 
+const requiredEnv = {
+    JWT_SECRET: 'a'.repeat(40),
+    DATABASE_USER: 'someuser',
+    DATABASE_DB: 'somedb',
+};
+
 describe('parseEnv', () => {
     it('returns a fully valid environment converted to its domain type', () => {
         expect(parseEnv(validEnv)).toEqual({
@@ -35,6 +41,23 @@ describe('parseEnv', () => {
             LOGIN_RATE_LIMIT_WINDOW_MS: 54321,
             LOGIN_RATE_LIMIT_MAX: 3,
             TRUST_PROXY_HOPS: 2,
+        });
+    });
+
+    it('applies the default to every absent optional setting', () => {
+        expect(parseEnv(requiredEnv)).toEqual({
+            ...requiredEnv,
+            ENVIRONMENT: 'development',
+            PORT: 3000,
+            JWT_EXPIRATION_SECONDS: 3600,
+            DATABASE_HOST: 'localhost',
+            DATABASE_PORT: 5432,
+            DATABASE_PASSWORD: '',
+            RATE_LIMIT_WINDOW_MS: 900000,
+            RATE_LIMIT_MAX: 100,
+            LOGIN_RATE_LIMIT_WINDOW_MS: 900000,
+            LOGIN_RATE_LIMIT_MAX: 5,
+            TRUST_PROXY_HOPS: 0,
         });
     });
 });

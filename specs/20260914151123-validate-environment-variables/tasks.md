@@ -24,7 +24,7 @@ class-only or substring check.
   - Green: create `src/config/env.ts` exporting `EnvSchema` (verbatim from plan §5), `type Env = z.output<typeof EnvSchema>`, and `parseEnv(env: NodeJS.ProcessEnv): Env`, which returns `EnvSchema.parse(env)` for now.
   - Covers: AC1 "Given every setting in §2 is supplied with a valid value, When the settings are checked, Then each value is returned converted to its domain type: numbers as numbers and the environment as its choice."; §2 fields
 
-- [ ] T2. Absent optional settings take their defaults
+- [x] T2. Absent optional settings take their defaults
   - Type: config
   - Depends on: T1
   - Red: `expect(parseEnv(requiredEnv)).toEqual({ ...requiredEnv, ENVIRONMENT: 'development', PORT: 3000, JWT_EXPIRATION_SECONDS: 3600, DATABASE_HOST: 'localhost', DATABASE_PORT: 5432, DATABASE_PASSWORD: '', RATE_LIMIT_WINDOW_MS: 900000, RATE_LIMIT_MAX: 100, LOGIN_RATE_LIMIT_WINDOW_MS: 900000, LOGIN_RATE_LIMIT_MAX: 5, TRUST_PROXY_HOPS: 0 })`.
