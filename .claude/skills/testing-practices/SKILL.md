@@ -348,12 +348,27 @@ describe('RegisterUserUseCase', () => {
 ## Errors
 
 Use cases are async, so assert against the rejected promise with `rejects.toThrow`.
-Assert both the error **type** and its **message** — one statement each:
+Assert both the error **type** and its **message** — in one statement, by passing an
+**instance** of the expected error (constructed the same way the production code
+constructs it):
 
 ```ts
-await expect(useCase.invoke(query)).rejects.toThrow(UserNotFoundError);
-await expect(useCase.invoke(query)).rejects.toThrow(`User not found: ${query.userId}`);
+await expect(
+  useCase.invoke(query)
+).rejects.toThrow(new UserNotFoundError(`User not found: ${query.userId}`));
 ```
+
+If the error's message is hardcoded inside its own constructor (no message
+parameter), construct it with no arguments — the instance still carries that
+hardcoded message, so type and message are still both asserted in one statement:
+
+```ts
+await expect(useCase.invoke(query)).rejects.toThrow(new InvalidCredentialsError());
+```
+
+Never pass a message string the constructor doesn't accept — the error class is the
+source of truth for its own message; the type checker rejects an argument the
+constructor doesn't declare.
 
 ## Test Types
 

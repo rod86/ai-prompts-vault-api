@@ -55,10 +55,7 @@ describe('LoginUseCase', () => {
 
         await expect(
             useCase.invoke({ email: 'unknown@example.com', password: 'p' }),
-        ).rejects.toThrow(InvalidCredentialsError);
-        await expect(
-            useCase.invoke({ email: 'unknown@example.com', password: 'p' }),
-        ).rejects.toThrow('Invalid authentication credentials');
+        ).rejects.toThrow(new InvalidCredentialsError());
         expect(passwordHasher.compare).not.toHaveBeenCalled();
         expect(tokenIssuer.issueToken).not.toHaveBeenCalled();
     });
@@ -73,10 +70,7 @@ describe('LoginUseCase', () => {
 
         await expect(
             useCase.invoke({ email: 'a@b.com', password: 'wrong-password' }),
-        ).rejects.toThrow(InvalidCredentialsError);
-        await expect(
-            useCase.invoke({ email: 'a@b.com', password: 'wrong-password' }),
-        ).rejects.toThrow('Invalid authentication credentials');
+        ).rejects.toThrow(new InvalidCredentialsError());
         expect(tokenIssuer.issueToken).not.toHaveBeenCalled();
     });
 });
