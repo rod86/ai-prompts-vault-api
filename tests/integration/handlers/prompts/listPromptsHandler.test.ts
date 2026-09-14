@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import request from 'supertest';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import app from '@src/app.js';
@@ -121,5 +122,15 @@ describe('GET /prompts', () => {
 
         expect(responseIds).toContain(inCategoryA.id);
         expect(responseIds).not.toContain(inCategoryB.id);
+    });
+
+    it('returns an empty collection when the category filter matches no prompts', async () => {
+        const response = await request(app)
+            .get('/prompts')
+            .query({ category_id: faker.string.uuid() })
+            .set('X-Forwarded-For', '10.90.0.4');
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual([]);
     });
 });

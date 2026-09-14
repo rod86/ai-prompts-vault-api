@@ -40,7 +40,7 @@ pooled.
   - Green: none expected beyond T1's `categoryId` mapping — this proves `category_id` (wire) reaches the use case as `categoryId` (domain).
   - Covers: AC3 "Given prompts belonging to more than one category, When a consumer asks for the collection narrowed to one category's identifier, Then only the prompts belonging to that category are returned."; §2 field `category_id`
 
-- [ ] T4. A well-formed filter matching no prompts returns an empty collection
+- [x] T4. A well-formed filter matching no prompts returns an empty collection
   - Type: route handler
   - Depends on: T1
   - Red: `GET /prompts?category_id=<a freshly generated UUID belonging to no category>`; assert `200` and a body of `[]`.
