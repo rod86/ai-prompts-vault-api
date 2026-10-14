@@ -1,7 +1,8 @@
-import process from 'node:process';
 import { defineConfig } from 'drizzle-kit';
+import { loadEnvFileIfPresent } from './src/config/env/env.js';
+import path from 'node:path';
 
-process.loadEnvFile();
+loadEnvFileIfPresent(path.join(import.meta.dirname, '.env'));
 
 export default defineConfig({
     dialect: 'postgresql',
