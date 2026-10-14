@@ -12,6 +12,9 @@ A REST API to manage AI prompts, built with **Spec-Driven Development (SDD)**, *
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white" />
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white" />
   <img alt="Vitest" src="https://img.shields.io/badge/tested%20with-Vitest-6E9F18?logo=vitest&logoColor=white" />
+  <a href="https://github.com/rod86/ai-prompts-vault-api/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/rod86/ai-prompts-vault-api/actions/workflows/ci.yml/badge.svg?branch=main" />
+  </a>
 </p>
 
 <p align="center">
