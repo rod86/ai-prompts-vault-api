@@ -63,6 +63,6 @@ jobs:
             - name: Verify application
               run: npm run typecheck
             - name: Check application build
-              run: npm build
+              run: npm run build
             - name: Run tests
-              run: npm test
+              run: npm run test
