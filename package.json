@@ -17,7 +17,8 @@
         "lint:fix": "eslint . --ext .ts --fix && prettier --write .",
         "typecheck": "tsc --noEmit -p tsconfig.json",
         "db:migrate": "drizzle-kit migrate",
-        "prepare": "husky"
+        "prepare": "husky",
+        "verify": "npm run typecheck && npm run build"
     },
     "dependencies": {
         "@zxcvbn-ts/core": "^4.1.2",

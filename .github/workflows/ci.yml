@@ -1,0 +1,60 @@
+name: CI
+
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+
+permissions:
+    contents: read
+
+env:
+    ENVIRONMENT: ${{secrets.ENVIRONMENT}}
+    PORT: ${{secrets.PORT}}
+    DATABASE_HOST: ${{secrets.DATABASE_HOST}}
+    DATABASE_PORT: ${{secrets.DATABASE_PORT}}
+    DATABASE_USER: ${{secrets.DATABASE_USER}}
+    DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+    DATABASE_DB: ${{secrets.DATABASE_DB}}
+    JWT_SECRET: ${{secrets.JWT_SECRET}}
+    JWT_EXPIRATION_SECONDS: ${{secrets.JWT_EXPIRATION_SECONDS}}
+    RATE_LIMIT_WINDOW_MS: ${{secrets.RATE_LIMIT_WINDOW_MS}}
+    RATE_LIMIT_MAX: ${{secrets.RATE_LIMIT_MAX}}
+    TRUST_PROXY_HOPS: ${{secrets.TRUST_PROXY_HOPS}}
+    LOGIN_RATE_LIMIT_WINDOW_MS: ${{secrets.LOGIN_RATE_LIMIT_WINDOW_MS}}
+    LOGIN_RATE_LIMIT_MAX: ${{secrets.LOGIN_RATE_LIMIT_MAX}}
+jobs:
+    test:
+        name: Verify
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:18.4-alpine
+                env:
+                    POSTGRES_USER: ${{env.DATABASE_USER}}
+                    POSTGRES_PASSWORD: ${{env.DATABASE_PASSWORD}}
+                    POSTGRES_DB: ${{env.DATABASE_DB}}
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U ${{env.DATABASE_USER}}"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 10
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+            - name: Install dependencies
+              run: npm ci
+            - name: Run database migrations
+              run: npm run db:migrate
+            - name: Verify application
+              run: npm run verify
+            - name: Run tests
+              run: npm test
