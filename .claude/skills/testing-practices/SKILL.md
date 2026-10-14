@@ -16,6 +16,10 @@ when the app exposes HTTP. A project may pin or swap these — see its project d
   easy to read, understand, and maintain. Prefer the plain, obvious version over
   clever, compact, or over-abstracted code. If a test takes real effort to follow,
   simplify it (see [Keep tests simple](#keep-tests-simple)).
+- Whenever possible, use `it.each` to compact tests with the same behavior and different inputs and/or outputs.
+- Use the most specific assertion available (`toBeTruthy()`, `toBeFalsy()`, `toHaveLength()`,
+  `toContain()`, `toBeNull()`, …) instead of a generic `toBe(...)`/`toEqual(...)`.
+  Not ok: `expect(result).toBe(true);` — ok: `expect(result).toBeTruthy();`
 - Tests live under `tests/`, never in `src/`; mirror the `src/` path; suffix `.test.ts`.
 - TDD every change: red → green → refactor.
 - **A unit in isolation with every collaborator mocked → unit test. Two or more
@@ -48,6 +52,10 @@ trust at a glance — so favor the plain and obvious over the clever and compact
 - Prefer straightforward, linear tests: a clear Arrange / Act / Assert with no hidden
   control flow. Avoid loops, conditionals, and branching in a test body — if you're
   tempted, write separate `it`s or a table of cases instead.
+- Whenever possible, use `it.each` to compact tests: when several cases exercise the
+  same behavior with different inputs and/or outputs, group them in one `it.each` table
+  instead of repeating near-identical `it`s (e.g. one `it.each` for inputs that are
+  accepted, another for inputs that are rejected, or a table of `[input, expected]` pairs).
 - Don't over-abstract. Reach for shared helpers (model factories, fixtures, `tests/lib`)
   to remove real duplication and keep tests in domain terms — not to compress a test into
   something you have to decode. A little repetition is fine when it makes the test read

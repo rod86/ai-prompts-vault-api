@@ -21,11 +21,11 @@ src/modules/
     infrastructure/        # adapters, grouped in subfolders (persistence/, providerApi/, ...)
     services.ts              # wires infrastructure into use cases
   shared/                  # code used by 2+ contexts; imports from no context
-    domain/interfaces/     # cross-cutting ports: DateTimeInterface, IdGeneratorInterface, ...
-    infrastructure/         # their adapters, grouped in subfolders (datetime/, identity/, database/, ...)
+    domain/interfaces/     # shared ports
+    infrastructure/         # their adapters, grouped in subfolders (database/, ...)
 ```
 
-**Non-determinism is a port, not a call.** Time, random IDs, and env/config reads are impure — the domain and application layers never call `new Date()`, `Date.now()`, `randomUUID()`, or `process.env` directly. Each becomes a small interface (`DateTimeInterface.now()`, `IdGeneratorInterface.generate()`, `ConfigInterface.get(key)`), injected into the use case constructor like any other dependency, and produced inside `invoke()` when the business logic needs it — not passed in from the edge. Because these ports are used by many contexts, they live in `shared/domain/interfaces/` with their adapters in `shared/infrastructure/`, and every context's `services.ts` wires the same shared instance in. This is what makes use cases deterministic in tests: swap in a `FixedDateTime` and a `FixedIdGenerator` instead of mocking globals or freezing the system clock.
+**Generated values come from outside the logic.** Ids, timestamps, random codes and any other generated value are never produced inside a use case or entity. The caller (the edge: HTTP handler, CLI command, worker) generates them and passes them in the use case `Query` as native types (`id: string`, `createdAt: Date`). The business logic only validates and uses what it receives. Because nothing impure runs inside the logic, use cases are deterministic in tests with no mocked globals and no fixed clocks or generators.
 
 **Dependency rule** — imports point inward only: `infrastructure → application → domain`. The domain imports nothing from the other layers; the application never imports infrastructure. If code used by one context sits in `shared/`, move it into that context.
 
@@ -52,21 +52,21 @@ Entities are plain TypeScript types — one per file, file named after the entit
 ```typescript
 // domain/Order.ts
 export type Order = {
-    id: string;
-    customerName: string;
-    total: number;
-    createdAt: Date;
-    updatedAt: Date;
+  id: string;
+  customerName: string;
+  total: number;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type OrderFilter = {
-    customerName?: string;
+  customerName?: string;
 };
 
 export type UpdateOrder = {
-    customerName?: string;
-    total?: number;
-    updatedAt: Date;
+  customerName?: string;
+  total?: number;
+  updatedAt: Date;
 };
 ```
 
@@ -77,11 +77,11 @@ export type UpdateOrder = {
 import { type Order, type OrderFilter, type UpdateOrder } from '../Order.js';
 
 export default interface OrderRepositoryInterface {
-    findAll(filter?: OrderFilter): Promise<Order[]>;
-    findById(id: string): Promise<Order | undefined>;
-    create(order: Order): Promise<void>;
-    update(id: string, order: UpdateOrder): Promise<void>;
-    delete(id: string): Promise<void>;
+  findAll(filter?: OrderFilter): Promise<Order[]>;
+  findById(id: string): Promise<Order | undefined>;
+  create(order: Order): Promise<void>;
+  update(id: string, order: UpdateOrder): Promise<void>;
+  delete(id: string): Promise<void>;
 }
 ```
 
@@ -92,13 +92,13 @@ export default interface OrderRepositoryInterface {
 export type ErrorCategory = 'NotFound' | 'Forbidden' | 'Unauthorized' | 'Unprocessable';
 
 export abstract class DomainError extends Error {
-    abstract readonly code: string;
-    abstract readonly category: ErrorCategory;
+  abstract readonly code: string;
+  abstract readonly category: ErrorCategory;
 
-    protected constructor(message: string, options?: ErrorOptions) {
-        super(message, options);
-        this.name = new.target.name;
-    }
+  protected constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = new.target.name;
+  }
 }
 ```
 
@@ -107,12 +107,12 @@ export abstract class DomainError extends Error {
 import { DomainError, type ErrorCategory } from '../../shared/domain/DomainError.js';
 
 export class OrderNotFoundError extends DomainError {
-    readonly code = 'ORDER_NOT_FOUND';
-    readonly category: ErrorCategory = 'NotFound';
+  readonly code = 'ORDER_NOT_FOUND';
+  readonly category: ErrorCategory = 'NotFound';
 
-    constructor(id: string) {
-        super(`Order not found: ${id}`);
-    }
+  constructor(id: string) {
+    super(`Order not found: ${id}`);
+  }
 }
 ```
 
@@ -128,52 +128,49 @@ One use case per meaningful business operation. Each file is self-contained and 
 // application/CreateOrderUseCase.ts
 import { OrderTotalTooLowError } from '../domain/errors/OrderTotalTooLowError.js';
 import type OrderRepositoryInterface from '../domain/interfaces/OrderRepositoryInterface.js';
-import type DateTimeInterface from '../../shared/domain/interfaces/DateTimeInterface.js';
-import type IdGeneratorInterface from '../../shared/domain/interfaces/IdGeneratorInterface.js';
 import { type Order } from '../domain/Order.js';
 
 export interface CreateOrderQuery {
-    customerName: string;
-    total: number;
+  id: string; // generated by the caller, not by the use case
+  customerName: string;
+  total: number;
+  createdAt: Date; // generated by the caller, not by the use case
 }
 
 export interface CreateOrderResponse {
-    id: string;
-    customerName: string;
-    total: number;
-    createdAt: Date;
+  id: string;
+  customerName: string;
+  total: number;
+  createdAt: Date;
 }
 
 export class CreateOrderUseCase {
-    constructor(
-        private readonly orderRepository: OrderRepositoryInterface,
-        private readonly dateTime: DateTimeInterface,
-        private readonly idGenerator: IdGeneratorInterface,
-    ) {}
+  constructor(
+    private readonly orderRepository: OrderRepositoryInterface,
+  ) {}
 
-    public async invoke(query: CreateOrderQuery): Promise<CreateOrderResponse> {
-        if (query.total <= 0) {
-            throw new OrderTotalTooLowError(query.customerName);
-        }
-
-        const now = this.dateTime.now();
-        const order: Order = {
-            id: this.idGenerator.generate(),
-            customerName: query.customerName,
-            total: query.total,
-            createdAt: now,
-            updatedAt: now,
-        };
-        await this.orderRepository.create(order);
-
-        // Map the domain entity to a custom Response — never return the entity itself.
-        return {
-            id: order.id,
-            customerName: order.customerName,
-            total: order.total,
-            createdAt: order.createdAt,
-        };
+  public async invoke(query: CreateOrderQuery): Promise<CreateOrderResponse> {
+    if (query.total <= 0) {
+      throw new OrderTotalTooLowError(query.customerName);
     }
+
+    const order: Order = {
+      id: query.id,
+      customerName: query.customerName,
+      total: query.total,
+      createdAt: query.createdAt,
+      updatedAt: query.createdAt,
+    };
+    await this.orderRepository.create(order);
+
+    // Map the domain entity to a custom Response — never return the entity itself.
+    return {
+      id: order.id,
+      customerName: order.customerName,
+      total: order.total,
+      createdAt: order.createdAt,
+    };
+  }
 }
 ```
 
@@ -185,13 +182,13 @@ Rules:
 - Never return a domain entity from a use case — define and return a custom `<Name>Response` type instead. Returning the entity couples callers and the API to an internal domain shape.
 - Dependencies arrive through the constructor as `private readonly` domain interfaces.
 - The use case orchestrates: check existence, enforce business rules, throw domain errors, call repositories. No framework or library imports — if you need the database or crypto, depend on a domain interface for it.
-- Never call `new Date()`, `Date.now()`, `randomUUID()`, or read `process.env` inside a use case or entity. Depend on `DateTimeInterface` / `IdGeneratorInterface` / `ConfigInterface` (injected via the constructor, same as a repository) and call them inside `invoke()` instead. IDs and timestamps are generated by the business logic, not received from the edge.
+- Never generate values inside a use case or entity: no `new Date()`, `Date.now()`, `randomUUID()`, `Math.random()` or similar. Ids, timestamps and other generated values arrive in the `Query`, produced by the caller. Never read `process.env` either; configuration values are passed in through the constructor by the wiring.
 
 ## Infrastructure layer (`<context>/infrastructure/`)
 
 The only layer where third-party libraries appear (ORM, crypto, HTTP clients). Each class implements a domain interface and is named `<Technology><Contract>`: `DrizzleOrderRepository`, `BcryptPasswordHasher`, `JwtAuthCryptoAdapter`. This has no exceptions — even a low-level client/connection wrapper (e.g. a database connection provider) implements a domain interface; there is no category of adapter exempt from this.
 
-**No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories, `providerApi/` for external HTTP clients, `datetime/`, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
+**No class file sits directly under `infrastructure/`.** Every adapter goes in a subfolder named for its kind (`persistence/` for DB repositories, `providerApi/` for external HTTP clients, `database/`, `security/`, ...) — this applies identically to a context's own `infrastructure/` and to `shared/infrastructure/`, with no exception for single-file adapters. If the right grouping name isn't obvious, don't guess silently: ask the user, or propose 2–3 candidate names for them to pick from.
 
 **Schema placement.** ORM schema definitions belong to infrastructure. They may
 be co-located with a repository when they are local to a bounded context. If
@@ -209,7 +206,7 @@ Repositories translate between persistence rows and domain entities — the mapp
 import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const orders = pgTable('orders', {
-    /* ... */
+  /* ... */
 });
 
 export type OrderSchema = { orders: typeof orders };
@@ -224,56 +221,43 @@ import { type Order } from '../../domain/Order.js';
 import { type OrderSchema } from './schema.js'; // type only — the table objects arrive via the constructor
 
 export class DrizzleOrderRepository implements OrderRepositoryInterface {
-    constructor(
-        private readonly client: DatabaseClientInterface<OrderSchema>,
-        private readonly schema: OrderSchema,
-    ) {}
+  constructor(
+    private readonly client: DatabaseClientInterface<OrderSchema>,
+    private readonly schema: OrderSchema,
+  ) {}
 
-    public async findById(id: string): Promise<Order | undefined> {
-        const db = this.client.connect();
-        const { orders } = this.schema;
+  public async findById(id: string): Promise<Order | undefined> {
+    const db = this.client.connect();
+    const { orders } = this.schema;
 
-        const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
-        const row = rows[0];
+    const rows = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+    const row = rows[0];
 
-        if (!row) {
-            return undefined;
-        }
-
-        return {
-            id: row.id,
-            customerName: row.customerName,
-            total: row.total,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt,
-        };
+    if (!row) {
+      return undefined;
     }
 
-    // create/update/delete follow the same pattern
+    return {
+      id: row.id,
+      customerName: row.customerName,
+      total: row.total,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  // create/update/delete follow the same pattern
 }
 ```
 
 ## Shared cross-cutting ports (`shared/domain/interfaces/`)
 
-Time, randomness, and low-level infrastructure clients (a database connection provider, an
-HTTP client wrapper, …) are dependencies like any other — model them as ports in `shared/`,
-implemented once, and injected into every context that needs them. This applies without
-exception, even to a class that just wraps a driver/pool and exposes `connect`/`close`: it
-still implements a domain interface, exactly like a repository does.
-
-```typescript
-// shared/domain/interfaces/DateTimeInterface.ts
-export default interface DateTimeInterface {
-    now(): Date;
-}
-```
-
-```typescript
-// shared/domain/interfaces/IdGeneratorInterface.ts
-export default interface IdGeneratorInterface {
-    generate(): string;
-}
-```
+Low-level infrastructure clients (a database connection provider, an HTTP client wrapper, …)
+are dependencies like any other — model them as ports in `shared/`, implemented once, and
+injected into every context that needs them. This applies without exception, even to a class
+that just wraps a driver/pool and exposes `connect`/`close`: it still implements a domain
+interface, exactly like a repository does. Time, ids and randomness are not ports: they are
+generated by the caller and passed in the `Query` (see the top of this document).
 
 ```typescript
 // shared/domain/interfaces/DatabaseClientInterface.ts
@@ -283,29 +267,6 @@ export default interface DatabaseClientInterface<Connection = unknown> {
   connect(): void;
   getConnection(): DatabaseConnection<Connection>;
   close(): Promise<void>;
-}
-```
-
-```typescript
-// shared/infrastructure/datetime/SystemDateTime.ts
-import type DateTimeInterface from '@src/modules/shared/domain/interfaces/DateTimeInterface.js';
-
-export class SystemDateTime implements DateTimeInterface {
-    public now(): Date {
-        return new Date();
-    }
-}
-```
-
-```typescript
-// shared/infrastructure/identity/UuidGenerator.ts
-import { randomUUID } from 'node:crypto';
-import type IdGeneratorInterface from '@src/modules/shared/domain/interfaces/IdGeneratorInterface.js';
-
-export class UuidGenerator implements IdGeneratorInterface {
-    public generate(): string {
-        return randomUUID();
-    }
 }
 ```
 
@@ -356,16 +317,12 @@ export class DatabaseClient<DatabaseSchema extends Record<string, unknown>>
 
 ```typescript
 // shared/services.ts
-import { SystemDateTime } from './infrastructure/datetime/SystemDateTime.js';
-import { UuidGenerator } from './infrastructure/identity/UuidGenerator.js';
 import { DatabaseClient } from './infrastructure/database/DatabaseClient.js';
 
-export const systemDateTime = new SystemDateTime();
-export const uuidGenerator = new UuidGenerator();
 export const databaseClient = new DatabaseClient();
 ```
 
-In tests, swap these for a `FixedDateTime` / `FixedIdGenerator` that return constant values — no mocking `Date` or `crypto` globals, and use cases stay fully deterministic.
+In tests, pass fixed ids and dates in the `Query` — no mocking `Date` or `crypto` globals, and use cases stay fully deterministic.
 
 ## Wiring (`<context>/services.ts`)
 
@@ -377,11 +334,11 @@ import { CreateOrderUseCase } from './application/CreateOrderUseCase.js';
 import { GetOrderUseCase } from './application/GetOrderUseCase.js';
 import { DrizzleOrderRepository } from './infrastructure/persistence/DrizzleOrderRepository.js';
 import { schema } from './infrastructure/persistence/schema.js'; // or the shared location, if lifted out
-import { databaseClient, systemDateTime, uuidGenerator } from '../shared/services.js';
+import { databaseClient } from '../shared/services.js';
 
 const orderRepository = new DrizzleOrderRepository(databaseClient, schema);
 
-export const createOrderUseCase = new CreateOrderUseCase(orderRepository, systemDateTime, uuidGenerator);
+export const createOrderUseCase = new CreateOrderUseCase(orderRepository);
 export const getOrderUseCase = new GetOrderUseCase(orderRepository);
 ```
 
@@ -389,7 +346,7 @@ export const getOrderUseCase = new GetOrderUseCase(orderRepository);
 
 The architecture buys you two kinds of tests, plus what's left uncovered on purpose. Pure unit tests concentrate at the use-case layer; integration tests are reserved for adapters at the edge. The domain layer is never tested on its own.
 
-- **Use case → unit test.** Instantiate the use case with **mocks** of the domain ports, plus the fixed shared ports (`FixedDateTime`, `FixedIdGenerator`). Assert on the returned `Response` and on the mocks' interactions, and cover each domain-error branch. Fast, deterministic, no I/O and no mocking of globals — this is where the bulk of the business logic, and the domain errors it throws, gets verified.
+- **Use case → unit test.** Instantiate the use case with **mocks** of the domain ports, and pass fixed ids and dates in the `Query`. Assert on the returned `Response` and on the mocks' interactions, and cover each domain-error branch. Fast, deterministic, no I/O and no mocking of globals — this is where the bulk of the business logic, and the domain errors it throws, gets verified.
 - **Infrastructure adapter → integration test.** Test against the **real** dependency (real DB, real HTTP client), never a mock — a mocked dependency proves nothing. What's under test is the mapping (row ↔ entity, `null → undefined`) and that the port contract holds against the real technology. How you provision that dependency is up to your setup.
 - **Composed adapters (an adapter with other adapters injected) → still integration.** The injection graph doesn't decide the test type — what sits at the bottom of it does. If the class's value comes from touching real technology (directly or through an injected adapter that wraps it), test it end-to-end against the real dependency. Mocking the injected port would erase the very thing the adapter exists to do. Smell to watch for: an "adapter" with real branching logic that depends *only* on other domain ports (no real technology of its own) is application logic in disguise — move it into a use case, where it gets a proper unit test with port mocks, and leave the thin adapters to integration tests.
 - **Domain (types, interfaces, errors) → no dedicated tests.** It has no logic of its own, so it's covered indirectly: interfaces by the port mocks and real adapters above, errors by the use-case error-branch assertions, plain types by nothing. **Exception: the shared `DomainError` base itself.** Unlike its declarative subclasses (a `code`, a `category`, a one-line constructor forwarding to `super`), the base class has actual logic — deriving `name` from `new.target.name`, forwarding `cause` — so it earns its own unit test, once, in `shared/domain/`. A concrete subclass still gets no dedicated test of its own.
