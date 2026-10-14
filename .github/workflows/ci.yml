@@ -9,36 +9,40 @@ on:
 permissions:
     contents: read
 
+# Values come from repository secrets. Non-sensitive settings fall back to a default when the
+# secret is unset/empty (an empty string would defeat the Zod defaults and fail validation).
 env:
-    ENVIRONMENT: ${{secrets.ENVIRONMENT}}
-    PORT: ${{secrets.PORT}}
-    DATABASE_HOST: ${{secrets.DATABASE_HOST}}
-    DATABASE_PORT: ${{secrets.DATABASE_PORT}}
-    DATABASE_USER: ${{secrets.DATABASE_USER}}
-    DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
-    DATABASE_DB: ${{secrets.DATABASE_DB}}
-    JWT_SECRET: ${{secrets.JWT_SECRET}}
-    JWT_EXPIRATION_SECONDS: ${{secrets.JWT_EXPIRATION_SECONDS}}
-    RATE_LIMIT_WINDOW_MS: ${{secrets.RATE_LIMIT_WINDOW_MS}}
-    RATE_LIMIT_MAX: ${{secrets.RATE_LIMIT_MAX}}
-    TRUST_PROXY_HOPS: ${{secrets.TRUST_PROXY_HOPS}}
-    LOGIN_RATE_LIMIT_WINDOW_MS: ${{secrets.LOGIN_RATE_LIMIT_WINDOW_MS}}
-    LOGIN_RATE_LIMIT_MAX: ${{secrets.LOGIN_RATE_LIMIT_MAX}}
+    ENVIRONMENT: ${{ secrets.ENVIRONMENT || 'test' }}
+    PORT: ${{ secrets.PORT || '3000' }}
+    DATABASE_HOST: ${{ secrets.DATABASE_HOST || 'localhost' }}
+    DATABASE_PORT: ${{ secrets.DATABASE_PORT || '5432' }}
+    DATABASE_USER: ${{ secrets.DATABASE_USER }}
+    DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+    DATABASE_DB: ${{ secrets.DATABASE_DB }}
+    JWT_SECRET: ${{ secrets.JWT_SECRET }}
+    JWT_EXPIRATION_SECONDS: ${{ secrets.JWT_EXPIRATION_SECONDS || '3600' }}
+    RATE_LIMIT_WINDOW_MS: ${{ secrets.RATE_LIMIT_WINDOW_MS || '900000' }}
+    RATE_LIMIT_MAX: ${{ secrets.RATE_LIMIT_MAX || '100' }}
+    TRUST_PROXY_HOPS: ${{ secrets.TRUST_PROXY_HOPS || '1' }}
+    LOGIN_RATE_LIMIT_WINDOW_MS: ${{ secrets.LOGIN_RATE_LIMIT_WINDOW_MS || '900000' }}
+    LOGIN_RATE_LIMIT_MAX: ${{ secrets.LOGIN_RATE_LIMIT_MAX || '5' }}
+
 jobs:
     test:
         name: Verify
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         services:
             postgres:
                 image: postgres:18.4-alpine
                 env:
-                    POSTGRES_USER: ${{env.DATABASE_USER}}
-                    POSTGRES_PASSWORD: ${{env.DATABASE_PASSWORD}}
-                    POSTGRES_DB: ${{env.DATABASE_DB}}
+                    POSTGRES_USER: ${{ secrets.DATABASE_USER }}
+                    POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+                    POSTGRES_DB: ${{ secrets.DATABASE_DB }}
                 ports:
                     - 5432:5432
                 options: >-
-                    --health-cmd "pg_isready -U ${{env.DATABASE_USER}}"
+                    --health-cmd "pg_isready"
                     --health-interval 5s
                     --health-timeout 5s
                     --health-retries 10
@@ -54,7 +58,11 @@ jobs:
               run: npm ci
             - name: Run database migrations
               run: npm run db:migrate
+            - name: Lint
+              run: npm run lint
             - name: Verify application
-              run: npm run verify
+              run: npm run typecheck
+            - name: Check application build
+              run: npm build
             - name: Run tests
               run: npm test
